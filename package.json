@@ -1,0 +1,12 @@
+{
+  "name": "leveluxbag-seller-scan",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Backend function for the LeveLux seller scan tool (Shopify lookup + AI sales-pitch script generation).",
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "@vercel/functions": "^3.9.7"
+  }
+}
