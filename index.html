@@ -1,0 +1,916 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Seller Scan</title>
+<meta name="robots" content="noindex,nofollow">
+<style>
+  /* LeveLux Seller Scan -- dark theme. Everything else in this file stays inline-styled to
+     match the rest of the codebase, but the color values below are the single source of truth
+     for the palette -- change them here and every screen updates together. */
+  :root {
+    --bg: #0b0b0c;
+    --surface: #19191b;
+    --surface-alt: #222225;
+    --border: #333336;
+    --text: #f3f2ef;
+    --text-dim: #9d9da1;
+    --accent: #cda86e;
+    --accent-text: #1a1400;
+    --danger: #ff6b6b;
+    --danger-bg: #2a1414;
+    --success: #4fd07a;
+    --success-bg: #12291c;
+  }
+  * { box-sizing: border-box; }
+  html, body { background: var(--bg); margin: 0; }
+  body { color: var(--text); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+  input, select { background: var(--surface-alt); color: var(--text); border: 1px solid var(--border); }
+  input::placeholder { color: #7a7a7d; }
+  button { font-family: inherit; }
+  h2, h3 { color: var(--text); }
+</style>
+</head>
+<body>
+<div id="seller-scan-app" style="max-width:480px;margin:0 auto;padding:24px;min-height:100vh;">
+
+  <div id="gate" style="display:flex;flex-direction:column;justify-content:center;min-height:80vh;">
+    <div style="text-align:center;margin-bottom:32px;">
+      <div style="font-size:13px;letter-spacing:0.2em;color:var(--accent);text-transform:uppercase;margin-bottom:10px;">LeveLux</div>
+      <h2 style="margin:0;font-size:26px;font-weight:700;">Welcome, Seller</h2>
+      <p style="color:var(--text-dim);font-size:14px;margin:8px 0 0;">Enter your passcode to start scanning.</p>
+    </div>
+    <input id="passcode-input" type="text" placeholder="Enter passcode" autocomplete="off"
+      autocapitalize="off" autocorrect="off" spellcheck="false" autofocus
+      style="width:100%;padding:14px;font-size:16px;border-radius:10px;" />
+    <button id="passcode-submit" style="width:100%;padding:14px;margin-top:10px;font-size:16px;font-weight:700;border-radius:10px;border:none;background:var(--accent);color:var(--accent-text);">Enter</button>
+    <p id="passcode-error" style="color:var(--danger);display:none;text-align:center;margin-top:12px;">Wrong passcode.</p>
+    <p id="passcode-checking" style="color:var(--text-dim);display:none;text-align:center;margin-top:12px;">Checking…</p>
+  </div>
+
+  <div id="scanner" style="display:none;">
+
+    <div style="display:flex;gap:8px;margin-bottom:16px;">
+      <button type="button" id="tab-scan" style="flex:1;padding:10px;font-size:15px;font-weight:600;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--text);">Scan a SKU</button>
+      <button type="button" id="tab-search" style="flex:1;padding:10px;font-size:15px;font-weight:600;border-radius:8px;border:1px solid var(--accent);background:var(--accent);color:var(--accent-text);">Browse inventory</button>
+    </div>
+
+    <div id="scan-panel" style="display:none;">
+      <h2>Scan an item</h2>
+      <input id="scan-input" type="text" placeholder="Scan barcode / SKU" autofocus
+        style="width:100%;padding:14px;font-size:18px;border-radius:10px;" />
+    </div>
+
+    <div id="search-panel">
+      <h2>Browse inventory</h2>
+      <div style="display:flex;gap:8px;">
+        <input id="search-input" type="text" placeholder="e.g. Louis Vuitton wallet"
+          style="flex:1;padding:12px;font-size:16px;border-radius:10px;" />
+        <button type="button" id="search-submit" style="padding:0 20px;font-size:16px;border-radius:10px;border:1px solid var(--border);background:var(--surface);color:var(--text);">Search</button>
+      </div>
+      <div style="display:flex;gap:16px;align-items:center;margin-top:10px;flex-wrap:wrap;">
+        <select id="search-category" style="padding:10px;font-size:14px;border-radius:8px;">
+          <option value="">All categories</option>
+          <!-- These match the actual "Product type" values found across the live catalog.
+               Most bags/wallets/shoes/luggage are all typed "Pre owned" in Shopify -- that
+               field isn't broken out further, so this is the finest-grained filter available
+               without re-tagging products in Shopify. -->
+          <option value="Pre owned">Pre-Owned (Bags, Wallets, Shoes, Luggage)</option>
+          <option value="Sunglasses">Sunglasses</option>
+          <option value="Eyeglasses">Eyeglasses</option>
+          <option value="Jewelry">Jewelry</option>
+          <option value="Accessory">Accessory</option>
+          <option value="Hat">Hats</option>
+          <option value="Briefcase">Briefcases</option>
+        </select>
+        <label style="font-size:14px;display:flex;align-items:center;gap:6px;color:var(--text-dim);">
+          <input type="checkbox" id="search-in-stock" checked /> In stock only
+        </label>
+      </div>
+      <div id="lineup-bar" style="display:none;align-items:center;justify-content:space-between;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:10px 12px;margin-top:12px;">
+        <span style="font-size:14px;">🎬 <span id="lineup-count">0</span> in show lineup</span>
+        <button type="button" id="lineup-open" style="padding:6px 12px;font-size:13px;font-weight:600;border-radius:6px;border:1px solid var(--accent);background:var(--surface-alt);color:var(--accent);">View lineup →</button>
+      </div>
+      <div id="search-results" style="margin-top:16px;"></div>
+    </div>
+
+  </div>
+
+  <!-- Lineup view: build an ordered list of items for a planned show before you go live, then
+       start it and step through them one at a time on the item view below. -->
+  <div id="lineup-view" style="display:none;">
+    <button type="button" id="lineup-back" style="background:none;border:none;padding:8px 0;margin-bottom:8px;font-size:15px;color:var(--text-dim);">← Back</button>
+    <h2 style="margin-bottom:4px;">Show lineup</h2>
+    <p style="color:var(--text-dim);font-size:13px;margin-top:0;">Reorder with the arrows, then start the show to step through them in order.</p>
+    <div id="lineup-list" style="margin:12px 0;"></div>
+    <button type="button" id="lineup-start" style="width:100%;padding:14px;font-size:16px;font-weight:700;background:var(--accent);color:var(--accent-text);border:none;border-radius:8px;">▶ Start show</button>
+  </div>
+
+  <!-- Item view: its own dedicated screen, separate from the scan/search list, so pulling up
+       an item's selling info (prices, sales points, all four script lengths, teleprompter)
+       doesn't get lost scrolled below a long results list -- it takes over the screen, with a
+       Back button to return to wherever you were (Scan or Search, whichever was open). When a
+       show is running, Prev/Next replace plain browsing so you can walk your planned lineup in
+       order without going back to the list between items. -->
+  <div id="item-view" style="display:none;">
+    <button type="button" id="item-back" style="background:none;border:none;padding:8px 0;margin-bottom:8px;font-size:15px;color:var(--text-dim);">← Back</button>
+    <div id="show-nav" style="display:none;justify-content:space-between;align-items:center;background:var(--surface);border-radius:8px;padding:8px 12px;margin-bottom:12px;">
+      <button type="button" id="show-prev" style="padding:8px 14px;font-size:14px;font-weight:600;border-radius:6px;border:1px solid var(--border);background:var(--surface-alt);color:var(--text);">◀ Prev</button>
+      <span id="show-position" style="font-size:13px;color:var(--text-dim);"></span>
+      <button type="button" id="show-next" style="padding:8px 14px;font-size:14px;font-weight:600;border-radius:6px;border:none;background:var(--accent);color:var(--accent-text);">Next ▶</button>
+    </div>
+    <div id="browse-nav" style="display:none;justify-content:space-between;align-items:center;background:var(--surface);border-radius:8px;padding:8px 12px;margin-bottom:12px;">
+      <button type="button" id="browse-prev" style="padding:8px 14px;font-size:14px;font-weight:600;border-radius:6px;border:1px solid var(--border);background:var(--surface-alt);color:var(--text);">◀ Prev</button>
+      <span id="browse-position" style="font-size:13px;color:var(--text-dim);"></span>
+      <button type="button" id="browse-next" style="padding:8px 14px;font-size:14px;font-weight:600;border-radius:6px;border:none;background:var(--surface-alt);color:var(--text);border:1px solid var(--border);">Next ▶</button>
+    </div>
+    <div id="result"></div>
+    <div id="pairs-with" style="display:none;margin-top:18px;padding-top:16px;border-top:1px solid var(--border);"></div>
+    <div id="more-like-this" style="display:none;margin-top:18px;"></div>
+  </div>
+
+</div>
+
+<div id="teleprompter" style="display:none;position:fixed;inset:0;background:var(--bg);z-index:9999;flex-direction:column;">
+  <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 14px;background:var(--surface);flex-wrap:wrap;">
+    <button type="button" id="tp-close" style="background:none;border:none;color:var(--text);font-size:24px;line-height:1;padding:4px 8px;">✕</button>
+    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+      <button type="button" id="tp-font-minus" style="background:var(--surface-alt);color:var(--text);border:none;border-radius:6px;padding:8px 14px;font-size:16px;">A−</button>
+      <button type="button" id="tp-font-plus" style="background:var(--surface-alt);color:var(--text);border:none;border-radius:6px;padding:8px 14px;font-size:16px;">A+</button>
+      <label style="color:var(--text-dim);font-size:13px;display:flex;align-items:center;gap:6px;">
+        Speed
+        <input type="range" id="tp-speed" min="1" max="10" value="4" style="width:90px;vertical-align:middle;" />
+      </label>
+      <button type="button" id="tp-play" style="background:var(--success);color:#0a1f10;border:none;border-radius:6px;padding:8px 18px;font-size:16px;font-weight:600;min-width:90px;">▶ Play</button>
+    </div>
+  </div>
+  <div id="tp-text" style="flex:1;overflow-y:auto;padding:48px 32px 70vh;color:var(--text);font-size:32px;line-height:1.7;white-space:pre-wrap;font-family:-apple-system,sans-serif;"></div>
+</div>
+
+<script>
+(function () {
+  // Set this to your deployed Vercel function's base URL, e.g. "https://leveluxbag-seller-scan.vercel.app"
+  var BACKEND_URL = ""; // same-origin: this page is served from the same Vercel project as /api/scan and /api/search
+
+  var passcode = null;
+
+  var gate = document.getElementById('gate');
+  var scanner = document.getElementById('scanner');
+  var passcodeInput = document.getElementById('passcode-input');
+  var passcodeSubmit = document.getElementById('passcode-submit');
+  var passcodeError = document.getElementById('passcode-error');
+  var scanInput = document.getElementById('scan-input');
+  var result = document.getElementById('result');
+  var itemView = document.getElementById('item-view');
+  var itemBack = document.getElementById('item-back');
+  var pairsWith = document.getElementById('pairs-with');
+  var moreLikeThis = document.getElementById('more-like-this');
+
+  function showItemView() {
+    scanner.style.display = 'none';
+    lineupView.style.display = 'none';
+    itemView.style.display = 'block';
+  }
+  // "Pairs well with" and "See more" are separate DOM sections outside #result, so replacing
+  // #result's content (a loading message, or an error) does NOT clear them on its own -- without
+  // this, a failed/loading lookup would leave the PREVIOUS item's pairs-with suggestion and
+  // category shortcuts visibly stuck on screen underneath the new loading/error message, looking
+  // like leftover or contradictory content. Hide both any time we're not showing a fully-loaded
+  // item's result.
+  function hideItemExtras() {
+    pairsWith.style.display = 'none';
+    moreLikeThis.style.display = 'none';
+  }
+  function hideItemView() {
+    itemView.style.display = 'none';
+    scanner.style.display = 'block';
+  }
+  // Back always exits any running show too -- Prev/Next inside the show is the way to move
+  // between items while one is active; Back is the one way out of it.
+  itemBack.addEventListener('click', function () {
+    endShow();
+    hideItemView();
+  });
+
+  // ---- Show lineup: a planned running order, built before you go live ----
+  var lineupBar = document.getElementById('lineup-bar');
+  var lineupCount = document.getElementById('lineup-count');
+  var lineupOpen = document.getElementById('lineup-open');
+  var lineupView = document.getElementById('lineup-view');
+  var lineupBack = document.getElementById('lineup-back');
+  var lineupList = document.getElementById('lineup-list');
+  var lineupStart = document.getElementById('lineup-start');
+  var showNav = document.getElementById('show-nav');
+  var showPrev = document.getElementById('show-prev');
+  var showNext = document.getElementById('show-next');
+  var showPosition = document.getElementById('show-position');
+
+  var lineup = [];       // [{id, title}, ...] in planned order
+  var lastSearchItems = []; // last set of search results, so cards can re-render their +/added state
+  var showQueue = null;   // snapshot of the lineup once "Start show" is pressed, or null if not running
+  var showIndex = -1;
+  var browseQueue = [];  // the current Browse/Search results list, so opening any item lets you
+  var browseIndex = -1;  // step to the next/previous one without a formally-started show
+
+  function isInLineup(id) {
+    return lineup.some(function (it) { return it.id === id; });
+  }
+  function toggleLineup(id, title, sku) {
+    if (isInLineup(id)) {
+      lineup = lineup.filter(function (it) { return it.id !== id; });
+    } else {
+      lineup.push({ id: id, title: title, sku: sku || null });
+    }
+    renderLineupBar();
+    renderSearchResults(lastSearchItems); // refresh each card's +/✓ state
+  }
+  function renderLineupBar() {
+    lineupBar.style.display = lineup.length ? 'flex' : 'none';
+    lineupCount.textContent = lineup.length;
+  }
+  function showLineupView() {
+    scanner.style.display = 'none';
+    lineupView.style.display = 'block';
+    renderLineupView();
+  }
+  function hideLineupView() {
+    lineupView.style.display = 'none';
+    scanner.style.display = 'block';
+  }
+  lineupOpen.addEventListener('click', showLineupView);
+  lineupBack.addEventListener('click', hideLineupView);
+
+  function renderLineupView() {
+    if (!lineup.length) {
+      lineupList.innerHTML = '<p style="color:var(--text-dim);">No items yet — go back and tap the + on items in Search to add them here.</p>';
+      lineupStart.style.display = 'none';
+      return;
+    }
+    lineupStart.style.display = 'block';
+    lineupList.innerHTML = lineup.map(function (it, idx) {
+      return (
+        '<div style="display:flex;align-items:center;gap:6px;padding:12px 10px;border:1px solid var(--border);border-radius:10px;margin-bottom:10px;">' +
+        '<span style="flex:none;width:20px;color:var(--text-dim);font-size:13px;">' + (idx + 1) + '</span>' +
+        '<span style="flex:1;font-size:14px;min-width:0;">' + escapeHtml(it.title) + '</span>' +
+        '<button type="button" class="lineup-move-up" data-idx="' + idx + '" ' + (idx === 0 ? 'disabled' : '') + ' style="flex:none;width:44px;height:44px;border-radius:8px;border:1px solid var(--border);background:var(--surface);font-size:16px;">↑</button>' +
+        '<button type="button" class="lineup-move-down" data-idx="' + idx + '" ' + (idx === lineup.length - 1 ? 'disabled' : '') + ' style="flex:none;width:44px;height:44px;border-radius:8px;border:1px solid var(--border);background:var(--surface);font-size:16px;">↓</button>' +
+        '<button type="button" class="lineup-remove" data-idx="' + idx + '" style="flex:none;width:44px;height:44px;border-radius:8px;border:1px solid var(--danger);background:var(--surface);color:var(--danger);font-size:16px;">✕</button>' +
+        '</div>'
+      );
+    }).join('');
+  }
+
+  lineupList.addEventListener('click', function (e) {
+    var upBtn = e.target.closest('.lineup-move-up');
+    var downBtn = e.target.closest('.lineup-move-down');
+    var rmBtn = e.target.closest('.lineup-remove');
+    if (upBtn && !upBtn.disabled) {
+      var i1 = Number(upBtn.getAttribute('data-idx'));
+      var tmp1 = lineup[i1 - 1]; lineup[i1 - 1] = lineup[i1]; lineup[i1] = tmp1;
+      renderLineupView();
+    } else if (downBtn && !downBtn.disabled) {
+      var i2 = Number(downBtn.getAttribute('data-idx'));
+      var tmp2 = lineup[i2 + 1]; lineup[i2 + 1] = lineup[i2]; lineup[i2] = tmp2;
+      renderLineupView();
+    } else if (rmBtn) {
+      var i3 = Number(rmBtn.getAttribute('data-idx'));
+      lineup.splice(i3, 1);
+      renderLineupBar();
+      renderLineupView();
+    }
+  });
+
+  var currentShowId = null;
+
+  lineupStart.addEventListener('click', function () {
+    if (!lineup.length) return;
+    showQueue = lineup.slice();
+    currentShowId = null;
+    // Log the show starting -- fire this off before opening the first item so a show that's
+    // ended almost immediately still has a showId to log the end against. Best-effort: if this
+    // fails (network hiccup), the show still runs fine locally, it just won't show up on the
+    // Profit tab afterward.
+    fetch(BACKEND_URL + '/api/show-log', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'start', passcode: passcode, items: showQueue }),
+    })
+      .then(function (r) { return r.json(); })
+      .then(function (data) { if (data && data.showId) currentShowId = data.showId; })
+      .catch(function () { /* best-effort -- show still runs without a logged showId */ });
+    goToShowItem(0);
+  });
+
+  function goToShowItem(idx) {
+    showIndex = idx;
+    var item = showQueue[idx];
+    lookupById(item.id, item.title);
+  }
+
+  function endShow() {
+    if (showQueue && currentShowId) {
+      fetch(BACKEND_URL + '/api/show-log', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'end', passcode: passcode, showId: currentShowId }),
+      }).catch(function () { /* best-effort */ });
+    }
+    showQueue = null;
+    showIndex = -1;
+    currentShowId = null;
+  }
+
+  function updateShowNav() {
+    // A formally-started show takes priority over plain browsing -- its Prev/Next replace the
+    // browse nav for as long as it's running.
+    if (showQueue) {
+      browseNav.style.display = 'none';
+      showNav.style.display = 'flex';
+      showPosition.textContent = (showIndex + 1) + ' / ' + showQueue.length;
+      showPrev.disabled = showIndex <= 0;
+      showNext.textContent = showIndex < showQueue.length - 1 ? 'Next ▶' : 'Finish ✓';
+      return;
+    }
+    showNav.style.display = 'none';
+    // Plain browsing: Next/Prev through whatever the current Browse/Search results list was,
+    // as long as there's more than one item to step through.
+    if (browseQueue.length > 1 && browseIndex >= 0) {
+      browseNav.style.display = 'flex';
+      browsePosition.textContent = (browseIndex + 1) + ' / ' + browseQueue.length;
+      browsePrev.disabled = browseIndex <= 0;
+      browseNext.disabled = browseIndex >= browseQueue.length - 1;
+    } else {
+      browseNav.style.display = 'none';
+    }
+  }
+  showPrev.addEventListener('click', function () {
+    if (showQueue && showIndex > 0) goToShowItem(showIndex - 1);
+  });
+  showNext.addEventListener('click', function () {
+    if (!showQueue) return;
+    if (showIndex < showQueue.length - 1) {
+      goToShowItem(showIndex + 1);
+    } else {
+      endShow();
+      hideItemView();
+    }
+  });
+
+  var browseNav = document.getElementById('browse-nav');
+  var browsePrev = document.getElementById('browse-prev');
+  var browseNext = document.getElementById('browse-next');
+  var browsePosition = document.getElementById('browse-position');
+
+  function goToBrowseItem(idx) {
+    browseIndex = idx;
+    var item = browseQueue[idx];
+    lookupById(item.id, item.title);
+  }
+  browsePrev.addEventListener('click', function () {
+    if (browseIndex > 0) goToBrowseItem(browseIndex - 1);
+  });
+  browseNext.addEventListener('click', function () {
+    if (browseIndex < browseQueue.length - 1) goToBrowseItem(browseIndex + 1);
+  });
+
+  var passcodeChecking = document.getElementById('passcode-checking');
+  var checkingPasscode = false;
+
+  // Verifies the passcode against the server BEFORE ever showing the scan/search screen, so
+  // someone finds out immediately if they typed it wrong -- rather than the old behavior, where
+  // the app let anyone straight through and a wrong passcode only surfaced later, confusingly,
+  // the first time they tried to actually scan or search something.
+  function tryEnter() {
+    var entered = passcodeInput.value.trim();
+    if (!entered || checkingPasscode) return;
+    checkingPasscode = true;
+    passcodeError.style.display = 'none';
+    passcodeChecking.style.display = 'block';
+    passcodeSubmit.disabled = true;
+
+    fetch(BACKEND_URL + '/api/verify-passcode', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ passcode: entered }),
+    })
+      .then(function (r) { return r.json().then(function (data) { return { ok: r.ok, data: data }; }); })
+      .then(function (res) {
+        checkingPasscode = false;
+        passcodeChecking.style.display = 'none';
+        passcodeSubmit.disabled = false;
+        if (!res.ok) {
+          passcodeError.textContent = 'Wrong passcode.';
+          passcodeError.style.display = 'block';
+          return;
+        }
+        passcode = entered;
+        gate.style.display = 'none';
+        scanner.style.display = 'block';
+        // Land on Browse with the full catalog already loading, rather than an empty Scan
+        // input -- so the first thing anyone sees after the passcode is every item, not a
+        // blank field waiting for a barcode.
+        showSearchTab();
+        runSearch();
+      })
+      .catch(function () {
+        checkingPasscode = false;
+        passcodeChecking.style.display = 'none';
+        passcodeSubmit.disabled = false;
+        passcodeError.textContent = 'Network error -- try again.';
+        passcodeError.style.display = 'block';
+      });
+  }
+
+  passcodeSubmit.addEventListener('click', tryEnter);
+  passcodeInput.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter') tryEnter();
+  });
+
+  scanInput.addEventListener('keydown', function (e) {
+    if (e.key !== 'Enter') return;
+    var code = scanInput.value.trim();
+    if (!code) return;
+    scanInput.value = '';
+    lookup(code);
+  });
+
+  // ---- Scan / Search tabs ----
+  var tabScan = document.getElementById('tab-scan');
+  var tabSearch = document.getElementById('tab-search');
+  var scanPanel = document.getElementById('scan-panel');
+  var searchPanel = document.getElementById('search-panel');
+  var searchInput = document.getElementById('search-input');
+  var searchCategory = document.getElementById('search-category');
+  var searchInStock = document.getElementById('search-in-stock');
+  var searchResults = document.getElementById('search-results');
+
+  function activateTab(activeBtn, inactiveBtn) {
+    activeBtn.style.background = 'var(--accent)';
+    activeBtn.style.color = 'var(--accent-text)';
+    activeBtn.style.borderColor = 'var(--accent)';
+    inactiveBtn.style.background = 'var(--surface)';
+    inactiveBtn.style.color = 'var(--text)';
+    inactiveBtn.style.borderColor = 'var(--border)';
+  }
+  function showScanTab() {
+    activateTab(tabScan, tabSearch);
+    scanPanel.style.display = 'block';
+    searchPanel.style.display = 'none';
+    result.innerHTML = '';
+    scanInput.focus();
+  }
+  function showSearchTab() {
+    activateTab(tabSearch, tabScan);
+    scanPanel.style.display = 'none';
+    searchPanel.style.display = 'block';
+    result.innerHTML = '';
+  }
+  tabScan.addEventListener('click', showScanTab);
+  tabSearch.addEventListener('click', showSearchTab);
+
+  // Search is a lightweight browse/price lookup across many items at once -- it does not
+  // generate a full sales script per result (that would mean an expensive Claude call per
+  // item in a list). To pull the full script + condition-check walkthrough for one item,
+  // scan its barcode/SKU on the Scan tab instead.
+  function runSearch() {
+    searchResults.innerHTML = '<p>Searching...</p>';
+    fetch(BACKEND_URL + '/api/search', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        query: searchInput.value.trim(),
+        category: searchCategory.value,
+        inStockOnly: searchInStock.checked,
+        passcode: passcode,
+      }),
+    })
+      .then(function (r) { return r.json().then(function (data) { return { ok: r.ok, data: data }; }); })
+      .then(function (res) {
+        if (!res.ok) {
+          if (res.data.error === 'Not authorized') {
+            gate.style.display = 'block';
+            scanner.style.display = 'none';
+            passcodeError.style.display = 'block';
+            passcode = null;
+            return;
+          }
+          searchResults.innerHTML = '<p style="color:var(--danger);">' + (res.data.error || 'Search failed') + '</p>';
+          return;
+        }
+        lastSearchItems = res.data.items || [];
+        renderSearchResults(lastSearchItems);
+      })
+      .catch(function () {
+        searchResults.innerHTML = '<p style="color:var(--danger);">Network error -- try again.</p>';
+      });
+  }
+
+  function renderSearchResults(items) {
+    if (!items.length) {
+      searchResults.innerHTML = '<p>No matching items. Try a different keyword or clear the filters.</p>';
+      return;
+    }
+    searchResults.innerHTML = items.map(function (item) {
+      return (
+        '<div class="search-result-card" data-product-id="' + escapeHtml(item.id) + '" data-title="' + escapeHtml(item.title) + '" data-sku="' + escapeHtml(item.sku || '') + '" ' +
+        'style="display:flex;gap:14px;align-items:center;padding:16px;min-height:44px;border:1px solid var(--border);border-radius:10px;margin-bottom:10px;cursor:pointer;">' +
+        (item.image
+          ? '<img src="' + escapeHtml(item.image) + '" alt="" style="width:64px;height:64px;object-fit:cover;border-radius:8px;flex:none;" />'
+          : '<div style="width:64px;height:64px;background:var(--surface-alt);border-radius:8px;flex:none;"></div>') +
+        '<div style="min-width:0;flex:1;">' +
+        '<div style="font-size:15px;font-weight:600;line-height:1.35;">' + escapeHtml(item.title) +
+        (item.inStock ? '' : ' <span style="color:var(--danger);font-size:12px;">SOLD</span>') +
+        '</div>' +
+        '<div style="font-size:13px;color:var(--text-dim);margin-top:5px;">' +
+        'Flash $' + (item.flashPrice != null ? item.flashPrice : '--') +
+        ' | Asking $' + (item.askingPrice != null ? item.askingPrice : '--') +
+        ' | Floor $' + (item.redZonePrice != null ? item.redZonePrice : '--') +
+        '</div>' +
+        '</div>' +
+        (isInLineup(item.id)
+          ? '<button type="button" class="lineup-add-btn" data-id="' + escapeHtml(item.id) + '" data-title="' + escapeHtml(item.title) + '" data-sku="' + escapeHtml(item.sku || '') + '" style="flex:none;width:44px;height:44px;border-radius:50%;border:1px solid var(--success);background:var(--success-bg);color:var(--success);font-size:19px;line-height:1;">✓</button>'
+          : '<button type="button" class="lineup-add-btn" data-id="' + escapeHtml(item.id) + '" data-title="' + escapeHtml(item.title) + '" data-sku="' + escapeHtml(item.sku || '') + '" style="flex:none;width:44px;height:44px;border-radius:50%;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:22px;line-height:1;">+</button>') +
+        '<div style="flex:none;color:var(--text-dim);font-size:22px;">›</div>' +
+        '</div>'
+      );
+    }).join('');
+  }
+
+  // Clicking any search result pulls (or generates) that exact item's full script, same as
+  // scanning its barcode would -- keyed off the Shopify product ID we already have from the
+  // search results, so there's no need to know/type its SKU. The + button is a separate
+  // target: it adds the item to the show lineup instead of opening it, without also
+  // triggering the row's own click-to-view handler.
+  searchResults.addEventListener('click', function (e) {
+    var addBtn = e.target.closest('.lineup-add-btn');
+    if (addBtn) {
+      e.stopPropagation();
+      toggleLineup(addBtn.getAttribute('data-id'), addBtn.getAttribute('data-title'), addBtn.getAttribute('data-sku'));
+      return;
+    }
+    var card = e.target.closest('[data-product-id]');
+    if (!card) return;
+    // Opening any item from the browse/search list makes THIS list the browse queue, so
+    // Next/Prev on the item page steps through it -- no need to build a lineup first just to
+    // move from one item to the next.
+    var clickedId = card.getAttribute('data-product-id');
+    browseQueue = lastSearchItems.slice();
+    browseIndex = browseQueue.findIndex(function (it) { return it.id === clickedId; });
+    lookupById(clickedId, card.getAttribute('data-title'));
+  });
+
+  // Shared by both scan-by-code and click-by-productId lookups. A brand-new item that's never
+  // been looked up before still has to wait on one real research call (just the 2-minute script
+  // now, not all four -- see api/scan.js), which normally finishes in several seconds, not
+  // the up-to-a-minute wait the old single-call design could take. This still hard-aborts after
+  // SCAN_TIMEOUT_MS so the screen can never get stuck forever if something upstream really is
+  // stalled -- the seller sees a clear retry message instead of an endless spinner.
+  var SCAN_TIMEOUT_MS = 25000;
+
+  function fetchScanResult(body, retryFn) {
+    var controller = new AbortController();
+    var timedOut = false;
+    var timer = setTimeout(function () { timedOut = true; controller.abort(); }, SCAN_TIMEOUT_MS);
+
+    fetch(BACKEND_URL + '/api/scan', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(Object.assign({ passcode: passcode }, body)),
+      signal: controller.signal,
+    })
+      .then(function (r) { return r.json().then(function (data) { return { ok: r.ok, data: data }; }); })
+      .then(function (res) {
+        clearTimeout(timer);
+        if (!res.ok) {
+          if (res.data.error === 'Not authorized') {
+            itemView.style.display = 'none';
+            gate.style.display = 'block';
+            scanner.style.display = 'none';
+            passcodeError.style.display = 'block';
+            passcode = null;
+            return;
+          }
+          currentItem = null;
+          hideItemExtras();
+          result.innerHTML =
+            '<p style="color:var(--danger);">' + escapeHtml(res.data.error || 'Not found') + '</p>' +
+            '<button type="button" id="scan-retry" style="width:100%;padding:12px;margin-top:8px;font-size:15px;font-weight:600;background:var(--accent);color:var(--accent-text);border:none;border-radius:8px;">Try again</button>';
+          var errRetryBtn = document.getElementById('scan-retry');
+          if (errRetryBtn && retryFn) errRetryBtn.addEventListener('click', retryFn);
+          return;
+        }
+        render(res.data, body);
+      })
+      .catch(function () {
+        clearTimeout(timer);
+        currentItem = null;
+        hideItemExtras();
+        if (timedOut) {
+          result.innerHTML =
+            '<p style="color:var(--danger);">This is taking longer than expected. It may still finish in the background -- try opening it again in a moment.</p>' +
+            '<button type="button" id="scan-retry" style="width:100%;padding:12px;margin-top:8px;font-size:15px;font-weight:600;background:var(--accent);color:var(--accent-text);border:none;border-radius:8px;">Try again</button>';
+          var retryBtn = document.getElementById('scan-retry');
+          if (retryBtn && retryFn) retryBtn.addEventListener('click', retryFn);
+        } else {
+          result.innerHTML = '<p style="color:var(--danger);">Network error — try again.</p>';
+        }
+      });
+  }
+
+  function lookupById(productId, hintTitle) {
+    showItemView();
+    currentItem = null;
+    hideItemExtras();
+    result.innerHTML = '<p>Loading script for "' + escapeHtml(hintTitle || '') + '"…</p>';
+    fetchScanResult({ productId: productId }, function () { lookupById(productId, hintTitle); });
+  }
+
+  document.getElementById('search-submit').addEventListener('click', runSearch);
+  searchInput.addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); runSearch(); } });
+  searchCategory.addEventListener('change', runSearch);
+  searchInStock.addEventListener('change', runSearch);
+
+  function lookup(code) {
+    showItemView();
+    currentItem = null;
+    hideItemExtras();
+    result.innerHTML = '<p>Looking up…</p>';
+    fetchScanResult({ code: code }, function () { lookup(code); });
+  }
+
+  var currentScript = '';
+  var currentTitle = '';
+  var currentItem = null;
+  var currentLength = 'min2';
+  var LENGTH_LABELS = { sec20: '20 sec', min1: '1 min', min2: '2 min', min4: '4 min' };
+  var LENGTH_ORDER = ['sec20', 'min1', 'min2', 'min4'];
+
+  // Every item now comes back with FOUR script lengths (20 sec / 1 min / 2 min / 4 min) plus
+  // one shared LIVE CONDITION CHECK walkthrough. The condition check is appended after
+  // whichever length is selected -- it's about honestly presenting the physical item, not
+  // about how long the pitch is, so it always rides along.
+  function composeReadout(item, length) {
+    var body = (item.scripts && item.scripts[length]) || '';
+    if (!body && item.extendedPending && length !== 'min2') {
+      // The 20-sec/1-min/4-min lengths generate in the background after the 2-minute script --
+      // usually just a few seconds behind it. Rather than show a blank script, say so plainly;
+      // pollExtended() will silently refresh this as soon as it's ready.
+      return 'Still preparing this length -- usually just a few seconds behind. Try the 2-minute version in the meantime, or check back shortly.';
+    }
+    var cc = item.conditionCheck || '';
+    return cc ? (body + '\n\n' + cc) : body;
+  }
+
+  // While an item's 20-sec/1-min/4-min scripts are still generating in the background, quietly
+  // re-check every few seconds and refresh the on-screen content the moment they land -- without
+  // disrupting whatever the seller is currently reading (only the empty lengths were ever
+  // showing a placeholder, so re-rendering just fills those in).
+  function pollExtended(requestBody, attemptsLeft) {
+    if (!requestBody || attemptsLeft <= 0) return;
+    setTimeout(function () {
+      if (!currentItem || !currentItem.extendedPending) return; // seller moved on, or it already landed
+      fetch(BACKEND_URL + '/api/scan', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(Object.assign({ passcode: passcode }, requestBody)),
+      })
+        .then(function (r) { return r.json().then(function (data) { return { ok: r.ok, data: data }; }); })
+        .then(function (res) {
+          if (!res.ok || !currentItem || currentItem.title !== res.data.title) return; // silent -- background convenience only
+          currentItem = res.data;
+          renderResultBody();
+          if (res.data.extendedPending) pollExtended(requestBody, attemptsLeft - 1);
+        })
+        .catch(function () { /* silent -- background convenience poll, not user-facing */ });
+    }, 4000);
+  }
+
+  // A handful of quick browse shortcuts shown on every item page -- lets a host jump straight
+  // to "more of this kind of thing" without going back and re-typing a search. Most bags/
+  // wallets/shoes all share the single coarse "Pre owned" Shopify category, so these lean on a
+  // free-text keyword (which matches against title) for the categories that need it, and the
+  // real category filter only where Shopify's own product_type is actually granular enough.
+  var QUICK_CATEGORIES = [
+    { label: 'More Bags', query: 'bag', category: '' },
+    { label: 'More Wallets', query: 'wallet', category: '' },
+    { label: 'More Shoes', query: 'shoe', category: '' },
+    { label: 'More Sunglasses', query: '', category: 'Sunglasses' },
+    { label: 'More Jewelry', query: '', category: 'Jewelry' },
+  ];
+
+  function render(item, requestBody) {
+    currentItem = item;
+    currentLength = 'min2';
+    renderResultBody();
+    renderPairsWith(item);
+    renderMoreLikeThis();
+    updateShowNav();
+    if (item.extendedPending && requestBody) {
+      pollExtended(requestBody, 5); // a few tries, several seconds apart
+    }
+  }
+
+  function renderResultBody() {
+    var item = currentItem;
+    if (!item) return;
+    currentTitle = item.title || '';
+    currentScript = composeReadout(item, currentLength);
+
+    var hasScripts = item.scripts && (item.scripts.sec20 || item.scripts.min1 || item.scripts.min2 || item.scripts.min4);
+
+    var lengthButtons = LENGTH_ORDER.map(function (key) {
+      var active = key === currentLength;
+      return '<button type="button" class="length-btn" data-length="' + key + '" style="flex:1;padding:8px 4px;font-size:13px;font-weight:600;border-radius:6px;border:1px solid ' +
+        (active ? 'var(--accent)' : 'var(--border)') + ';background:' + (active ? 'var(--accent)' : 'var(--surface)') + ';color:' + (active ? 'var(--accent-text)' : 'var(--text)') + ';">' + LENGTH_LABELS[key] + '</button>';
+    }).join('');
+
+    result.innerHTML =
+      (item.image
+        ? '<img src="' + escapeHtml(item.image) + '" alt="" style="width:100%;max-height:280px;object-fit:cover;border-radius:10px;margin-bottom:14px;" />'
+        : '') +
+      (item.vendor
+        ? '<div style="font-size:12px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--accent);margin-bottom:2px;">' + escapeHtml(item.vendor) + '</div>'
+        : '') +
+      '<h3 style="margin-bottom:4px;">' + escapeHtml(item.title) + '</h3>' +
+      (item.sku
+        ? '<p style="color:var(--text-dim);font-size:13px;margin:0 0 6px;letter-spacing:0.02em;">SKU/Inventory #: <span style="color:var(--text);font-weight:600;">' + escapeHtml(item.sku) + '</span></p>'
+        : '') +
+      (item.pronunciation && item.pronunciation !== 'None needed.'
+        ? '<p style="color:var(--text-dim);font-style:italic;margin-top:0;">' + escapeHtml(item.pronunciation) + '</p>'
+        : '') +
+      '<div style="display:flex;gap:12px;margin:16px 0;flex-wrap:wrap;">' +
+        priceBox('Flash sale', item.flashPrice) +
+        priceBox('Asking', item.askingPrice) +
+        priceBox('Red zone (no-go)', item.redZonePrice, true) +
+      '</div>' +
+      (item.salesPoints
+        ? '<div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:12px 16px;margin-bottom:14px;white-space:pre-wrap;font-size:14px;line-height:1.6;">' +
+            escapeHtml(item.salesPoints) +
+          '</div>'
+        : '') +
+      (hasScripts
+        ? '<div style="display:flex;gap:6px;margin-bottom:6px;">' + lengthButtons + '</div>' +
+          (item.extendedPending
+            ? '<div style="font-size:12px;color:var(--text-dim);margin-bottom:10px;">⏳ Preparing the 20 sec / 1 min / 4 min versions…</div>'
+            : '<div style="margin-bottom:10px;"></div>') +
+          '<button type="button" id="tp-open" style="width:100%;padding:12px;margin-bottom:10px;font-size:15px;font-weight:600;background:var(--accent);color:var(--accent-text);border:none;border-radius:8px;">🎤 Read this length (teleprompter)</button>'
+        : '') +
+      '<pre style="white-space:pre-wrap;font-family:inherit;font-size:15px;line-height:1.5;background:var(--surface);padding:16px;border-radius:8px;">' +
+        escapeHtml(currentScript) +
+      '</pre>';
+
+    var tpOpen = document.getElementById('tp-open');
+    if (tpOpen) tpOpen.addEventListener('click', openTeleprompter);
+
+    var lengthBtns = result.querySelectorAll('.length-btn');
+    for (var i = 0; i < lengthBtns.length; i++) {
+      lengthBtns[i].addEventListener('click', function (e) {
+        currentLength = e.currentTarget.getAttribute('data-length');
+        renderResultBody();
+      });
+    }
+  }
+
+  // "Pairs well with" -- a REAL, currently-in-stock item from this store's own inventory
+  // (resolved server-side from an AI search hint -- see findPairsWithProduct in api/scan.js),
+  // shown as a clickable card a host can tap to pull up that item's own script mid-show.
+  function renderPairsWith(item) {
+    var p = item.pairsWithProduct;
+    if (!p) {
+      pairsWith.style.display = 'none';
+      return;
+    }
+    pairsWith.style.display = 'block';
+    pairsWith.innerHTML =
+      '<div style="font-size:12px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:var(--accent);margin-bottom:6px;">✨ Pairs well with</div>' +
+      '<div id="pairs-with-card" style="display:flex;gap:12px;align-items:center;padding:10px;border:1px solid var(--border);border-radius:10px;cursor:pointer;background:var(--surface);">' +
+      (p.image
+        ? '<img src="' + escapeHtml(p.image) + '" alt="" style="width:52px;height:52px;object-fit:cover;border-radius:8px;flex:none;" />'
+        : '<div style="width:52px;height:52px;background:var(--surface-alt);border-radius:8px;flex:none;"></div>') +
+      '<div style="min-width:0;flex:1;">' +
+      '<div style="font-size:14px;font-weight:600;line-height:1.35;">' + escapeHtml(p.title) + '</div>' +
+      '<div style="font-size:12px;color:var(--text-dim);margin-top:3px;">' +
+      'Flash $' + (p.flashPrice != null ? p.flashPrice : '--') +
+      ' | Asking $' + (p.askingPrice != null ? p.askingPrice : '--') +
+      '</div>' +
+      '</div>' +
+      '<div style="flex:none;color:var(--text-dim);font-size:20px;">›</div>' +
+      '</div>';
+
+    var card = document.getElementById('pairs-with-card');
+    if (card) {
+      card.addEventListener('click', function () {
+        // This is a detour outside whatever list the host was browsing -- treat it as its own
+        // single-item queue rather than pretending it belongs to the current Search/Browse list.
+        browseQueue = [p];
+        browseIndex = 0;
+        lookupById(p.id, p.title);
+      });
+    }
+  }
+
+  // Quick category shortcuts -- jump to Browse pre-filtered, without needing to go back and
+  // retype a search.
+  function renderMoreLikeThis() {
+    moreLikeThis.style.display = 'block';
+    moreLikeThis.innerHTML =
+      '<div style="font-size:12px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:var(--text-dim);margin-bottom:8px;">See more</div>' +
+      '<div style="display:flex;gap:8px;flex-wrap:wrap;">' +
+      QUICK_CATEGORIES.map(function (qc, idx) {
+        return '<button type="button" class="quick-category-btn" data-idx="' + idx + '" style="padding:8px 14px;font-size:13px;border-radius:20px;border:1px solid var(--border);background:var(--surface);color:var(--text);">' + escapeHtml(qc.label) + '</button>';
+      }).join('') +
+      '</div>';
+
+    var btns = moreLikeThis.querySelectorAll('.quick-category-btn');
+    for (var i = 0; i < btns.length; i++) {
+      btns[i].addEventListener('click', function (e) {
+        var qc = QUICK_CATEGORIES[Number(e.currentTarget.getAttribute('data-idx'))];
+        endShow();
+        hideItemView();
+        showSearchTab();
+        searchInput.value = qc.query;
+        searchCategory.value = qc.category;
+        runSearch();
+      });
+    }
+  }
+
+  // ---- Teleprompter ----
+  var teleprompter = document.getElementById('teleprompter');
+  var tpText = document.getElementById('tp-text');
+  var tpPlay = document.getElementById('tp-play');
+  var tpSpeed = document.getElementById('tp-speed');
+  var tpClose = document.getElementById('tp-close');
+  var tpFontMinus = document.getElementById('tp-font-minus');
+  var tpFontPlus = document.getElementById('tp-font-plus');
+  var tpFontSize = 32;
+  var tpScrollTimer = null;
+  var tpPlaying = false;
+
+  function openTeleprompter() {
+    tpText.textContent = (currentTitle ? currentTitle + '\n\n' : '') + currentScript;
+    tpText.scrollTop = 0;
+    tpFontSize = 32;
+    tpText.style.fontSize = tpFontSize + 'px';
+    teleprompter.style.display = 'flex';
+    stopScrolling();
+  }
+
+  function closeTeleprompter() {
+    teleprompter.style.display = 'none';
+    stopScrolling();
+  }
+
+  function startScrolling() {
+    stopScrolling();
+    tpPlaying = true;
+    tpPlay.textContent = '⏸ Pause';
+    tpScrollTimer = setInterval(function () {
+      tpText.scrollTop += Number(tpSpeed.value) * 0.6;
+    }, 30);
+  }
+
+  function stopScrolling() {
+    tpPlaying = false;
+    tpPlay.textContent = '▶ Play';
+    if (tpScrollTimer) {
+      clearInterval(tpScrollTimer);
+      tpScrollTimer = null;
+    }
+  }
+
+  tpClose.addEventListener('click', closeTeleprompter);
+  tpPlay.addEventListener('click', function () {
+    if (tpPlaying) stopScrolling(); else startScrolling();
+  });
+  tpFontMinus.addEventListener('click', function () {
+    tpFontSize = Math.max(18, tpFontSize - 4);
+    tpText.style.fontSize = tpFontSize + 'px';
+  });
+  tpFontPlus.addEventListener('click', function () {
+    tpFontSize = Math.min(64, tpFontSize + 4);
+    tpText.style.fontSize = tpFontSize + 'px';
+  });
+  // Tap the script itself to pause/resume without hunting for the button.
+  tpText.addEventListener('click', function () {
+    if (tpPlaying) stopScrolling(); else startScrolling();
+  });
+
+  function priceBox(label, value, warn) {
+    return '<div style="flex:1;min-width:110px;padding:10px;border-radius:8px;background:' +
+      (warn ? 'var(--danger-bg)' : 'var(--surface-alt)') + ';text-align:center;">' +
+      '<div style="font-size:12px;color:var(--text-dim);">' + label + '</div>' +
+      '<div style="font-size:18px;font-weight:600;">' + (value != null ? '$' + value : '—') + '</div>' +
+    '</div>';
+  }
+
+  function escapeHtml(s) {
+    return String(s == null ? '' : s)
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  }
+})();
+</script>
+
+</body>
+</html>
