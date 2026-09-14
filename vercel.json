@@ -1,0 +1,13 @@
+{
+  "functions": {
+    "api/scan.js": {
+      "maxDuration": 60
+    },
+    "api/search.js": {
+      "maxDuration": 30
+    },
+    "api/profit.js": {
+      "maxDuration": 30
+    }
+  }
+}
