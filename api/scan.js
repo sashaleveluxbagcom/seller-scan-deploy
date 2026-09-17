@@ -10,7 +10,11 @@
  *      keep themselves current without ever blocking a lookup. This is a deliberate choice:
  *      it means an item scanned repeatedly in one show re-researches repeatedly in the
  *      background too (a real, ongoing Anthropic API cost per lookup) in exchange for never
- *      staying frozen on stale first-draft research.
+ *      staying frozen on stale first-draft research. IMPORTANT: this background refresh (and the
+ *      extended-lengths generation in step 3) only fires for a real lookup -- a request carrying
+ *      `pollOnly: true` (see step 3 and index.html's pollExtended) always just reads whatever is
+ *      cached right now and never triggers new generation work, so the frontend's status-check
+ *      polling can never pile up duplicate background jobs on top of each other.
  *   3. If nothing is cached yet (first time this exact product has ever been looked up), this
  *      is a TWO-PHASE generation so the seller never has to wait on the whole thing:
  *        Phase 1 ("core", synchronous -- this is what the seller actually waits on): a SMALL,
@@ -116,7 +120,7 @@ module.exports = async function handler(req, res) {
     return;
   }
 
-  const { code, productId, passcode } = req.body || {};
+  const { code, productId, passcode, pollOnly } = req.body || {};
 
   if (!passcodeMatches(passcode)) {
     res.status(401).json({ error: 'Not authorized' });
@@ -166,13 +170,24 @@ module.exports = async function handler(req, res) {
     } else if (!cached.full) {
       // Core is ready (fast to serve), but the 20-sec/1-min/4-min lengths never finished
       // generating (e.g. a previous visit's background job hadn't completed yet, or never got
-      // kicked off). Serve what's cached instantly and make sure that background job is running.
-      kickOffExtendedGeneration(product, cached);
-    } else {
+      // kicked off). Serve what's cached instantly. Only kick off a (re)generation job for a
+      // real lookup -- NOT for a `pollOnly` status check. The frontend polls this endpoint every
+      // few seconds while it's waiting on the extended lengths (see pollExtended in index.html);
+      // without this guard, every one of those polls used to kick off its OWN duplicate
+      // background Claude call for the same item on top of whatever was already running, so a
+      // single new item could fire five or more concurrent/overlapping extended-generation
+      // requests in the first 20 seconds. Scanning a couple more new items while those were still
+      // in flight was enough to trip Anthropic's rate limit and surface as "Something went wrong
+      // looking that item up" on the 2nd/3rd item -- this is the fix for that.
+      if (!pollOnly) {
+        kickOffExtendedGeneration(product, cached);
+      }
+    } else if (!pollOnly) {
       // Everything is ready -- serve instantly, but keep it current: re-research the core facts
-      // in the background on every hit (same "always keep it current" trade-off as before), and
-      // separately keep the three extended lengths in sync with whatever core is cached. Neither
-      // of these blocks the response or blocks each other.
+      // in the background on every real (non-poll) hit, and separately keep the three extended
+      // lengths in sync with whatever core is cached. Neither of these blocks the response or
+      // blocks each other. Skipped for pollOnly requests for the same reason as above -- a status
+      // check should never itself trigger more background API work.
       waitUntil(
         generateCore(product.title)
           .then((freshCore) =>
@@ -419,12 +434,17 @@ const CLAUDE_MODEL = 'claude-sonnet-4-5';
 // 8192 is comfortable headroom rather than a tight squeeze.
 const CLAUDE_MAX_TOKENS = 8192;
 
-// Shared by generateCore and generateExtended: calls Claude, requires a stop_reason that means
-// "finished normally," and parses its response as JSON. Deliberately does NOT fall back to
-// returning the raw/truncated text as if it were usable content -- that silent fallback is
-// exactly how a seller used to end up staring at the model's own preamble and JSON syntax on
-// screen. Any failure here throws, so the handler returns a clean error and caches nothing broken.
-async function callClaudeForJSON({ prompt, useWebSearch }) {
+function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+// One single call to Claude: requires a stop_reason that means "finished normally," and parses
+// its response as JSON. Deliberately does NOT fall back to returning the raw/truncated text as
+// if it were usable content -- that silent fallback is exactly how a seller used to end up
+// staring at the model's own preamble and JSON syntax on screen. Any failure here throws (with
+// `anthropicErrorType`/`httpStatus` attached when known) so callClaudeForJSON below can decide
+// whether it's worth retrying.
+async function callClaudeOnce({ prompt, useWebSearch }) {
   const resp = await fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
     headers: {
@@ -444,7 +464,10 @@ async function callClaudeForJSON({ prompt, useWebSearch }) {
 
   const data = await resp.json();
   if (data.error) {
-    throw new Error('Anthropic API error: ' + JSON.stringify(data.error));
+    const err = new Error('Anthropic API error: ' + JSON.stringify(data.error));
+    err.anthropicErrorType = data.error && data.error.type;
+    err.httpStatus = resp.status;
+    throw err;
   }
   if (data.stop_reason === 'max_tokens') {
     // The model ran out of output room before it finished -- its response is cut off mid-JSON
@@ -467,6 +490,36 @@ async function callClaudeForJSON({ prompt, useWebSearch }) {
   }
 }
 
+// Shared by generateCore and generateExtended: calls Claude, retrying transient failures --
+// rate limits, momentary overload, a server error, a cut-off/malformed response -- with a short
+// backoff between attempts. Fails immediately (no retry) on anything a retry can't fix, like a
+// bad API key or a request Claude flatly rejects, so a real problem surfaces right away instead
+// of just adding wait time. This is the fix for scans that worked the first time in a show but
+// then failed on the 2nd/3rd item: back-to-back new-item scans mean several concurrent Anthropic
+// calls in a short window, which is exactly when a plain rate-limit error used to have no retry
+// and immediately became "Something went wrong looking that item up" on screen.
+async function callClaudeForJSON({ prompt, useWebSearch }, maxAttempts = 3) {
+  let lastErr;
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    try {
+      return await callClaudeOnce({ prompt, useWebSearch });
+    } catch (err) {
+      lastErr = err;
+      const retryable =
+        err.anthropicErrorType === 'rate_limit_error' ||
+        err.anthropicErrorType === 'overloaded_error' ||
+        err.anthropicErrorType === 'api_error' ||
+        (err.httpStatus && err.httpStatus >= 500) ||
+        /cut off|could not parse/i.test(err.message || '');
+      if (!retryable || attempt === maxAttempts) throw err;
+      const delayMs = 700 * attempt; // 700ms, then 1400ms
+      console.error(`Claude call failed (attempt ${attempt}/${maxAttempts}), retrying in ${delayMs}ms:`, err.message);
+      await sleep(delayMs);
+    }
+  }
+  throw lastErr;
+}
+
 // PHASE 1 -- fast, synchronous, WITH web search. This is the only generation a seller ever
 // waits on directly: pronunciation, sales points, the condition-check walkthrough, the
 // pairs-with suggestion, and just the 2-minute script (the app's default view).
@@ -478,6 +531,13 @@ CONFIDENT as the best live-sale narrations in the industry: the kind where the h
 the brand cold, name-drops specifics, and never sounds like they're reading a product description.
 
 Item title: "${title}"
+
+WRITE FOR EASY LISTENING, ROUGHLY A 5TH-GRADE READING LEVEL: short sentences, one idea at a time,
+everyday words instead of fancy ones. This gets read out loud to a live audience, not studied on a
+page, so plain and clear beats impressive-sounding. Keep every real fact, number, and confident
+detail this prompt asks for -- just say it simply. If a technical or brand-specific word is truly
+needed (a material, a hardware term), keep it, but say it in a short, plain way right there rather
+than assuming the audience already knows it.
 
 Research this specific brand/model/material/hardware combination using web search — brand history,
 this model's release era and collection name, original retail price, typical resold range on the
@@ -499,15 +559,19 @@ range typical for [Brand]'s [category]" rather than inventing a specific number.
 for a script to have one fewer flashy detail than to state something false on a live broadcast a
 customer could later check.
 
-1. PRONUNCIATION: cover the ENTIRE title, word by word — not just the single most obviously
-   foreign-looking word. Go through every distinct brand, collection/pattern, model, and material
-   name in "${title}" individually and give each its own short phonetic guide (in parentheses),
-   e.g. brand ("Louis Vuitton" → "loo-EE vwee-TOHN"), pattern/collection names ("Damier" →
-   "dah-mee-AY", "Azur" → "ah-ZUR", "Monogram" is often mispronounced too), and any other
-   French/Italian/foreign or easily-fumbled word. Never skip a pattern or collection name just
-   because it looks simple to read. Plain English words, model initials (MM, PM, GM), and sizes
-   don't need one. Get every pronunciation from your actual web research, not a guess. Only if
-   truly nothing in the whole title needs it, say "None needed."
+1. PRONUNCIATION: cover EVERY hard-to-say word the host will actually need to say out loud for
+   this item -- not just the product title. Go through (a) every distinct brand, collection/
+   pattern, model, and material name in the title "${title}" word by word, AND (b) any other hard
+   word you plan to use anywhere in the sales points, script, or condition check you write below --
+   material names (e.g. "vachetta"), hardware/technique terms, or any French/Italian/foreign or
+   easily-fumbled word, even if it never appears in the title itself. Give each one its own short
+   phonetic guide in parentheses, e.g. brand ("Louis Vuitton" → "loo-EE vwee-TOHN"), pattern/
+   collection names ("Damier" → "dah-mee-AY", "Azur" → "ah-ZUR", "Monogram" is often mispronounced
+   too), materials ("vachetta" → "vah-KET-uh"). Never skip a word just because it looks simple to
+   read if people commonly get it wrong. Plain everyday English words, model initials (MM, PM, GM),
+   and plain sizes don't need one. Get every pronunciation from your actual web research or
+   standard phonetics, not a guess. Only if truly nothing in the whole item needs one, say
+   "None needed."
 
 2. SALES POINTS: 5-7 short, punchy bullet-point selling angles (one line each) a host can glance
    at mid-broadcast without breaking eye contact with the camera for long.
@@ -573,18 +637,10 @@ fences, no explanation of what you're about to do. Just the JSON, exactly in thi
 LIVE CONDITION CHECK section. pairsWithHint holds only the short search-hint phrase, never a full
 sentence. pairsWithCategory holds only one value from the exact list above, or "".)`;
 
-  // This is the one call a seller actually waits on, so a single transient failure (a truncated
-  // response, a momentary Anthropic API hiccup) shouldn't turn into a hard "something went wrong"
-  // on the very first try -- retry once before giving up. If it fails twice in a row it's more
-  // likely a real, repeatable problem (a bad prompt for this title, a genuine outage) and the
-  // caller's clean-error handling takes over.
-  let parsed;
-  try {
-    parsed = await callClaudeForJSON({ prompt, useWebSearch: true });
-  } catch (firstErr) {
-    console.error('generateCore first attempt failed, retrying once:', firstErr.message);
-    parsed = await callClaudeForJSON({ prompt, useWebSearch: true });
-  }
+  // This is the one call a seller actually waits on -- callClaudeForJSON above retries transient
+  // failures (rate limits, momentary hiccups) with backoff before giving up, so a busy show
+  // scanning several new items in a row doesn't turn a temporary rate limit into a hard error.
+  const parsed = await callClaudeForJSON({ prompt, useWebSearch: true });
   return {
     pronunciation: parsed.pronunciation || '',
     salesPoints: parsed.salesPoints || '',
@@ -610,6 +666,9 @@ ALREADY WRITTEN (for consistency only -- do not repeat it back):
 2-MINUTE SCRIPT: ${core.script}
 CONDITION CHECK: ${core.conditionCheck}
 SALES POINTS: ${core.salesPoints}
+
+Keep the SAME easy-listening, roughly 5th-grade reading level as the script above: short sentences,
+everyday words, one idea at a time -- just as detailed and confident, just simpler to say and hear.
 
 Write three MORE complete, standalone scripts for the same item, in first person, natural spoken
 cadence, so a host can pick how much airtime this item gets live:
