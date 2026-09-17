@@ -670,10 +670,17 @@
     if (!requestBody || attemptsLeft <= 0) return;
     setTimeout(function () {
       if (!currentItem || !currentItem.extendedPending) return; // seller moved on, or it already landed
+      // pollOnly: true tells the backend this is just a "is it ready yet?" status check -- it
+      // must never itself kick off another background script-generation job. Without this flag,
+      // every 4-second poll used to fire its OWN duplicate Claude call on top of whatever was
+      // already running for this item, so a single new item could rack up 5+ overlapping
+      // background requests in well under a minute. Scanning a couple more new items while those
+      // were still in flight was enough to trip Anthropic's rate limit and show a hard error on
+      // the 2nd or 3rd item -- this is half of the fix for that (the other half is in api/scan.js).
       fetch(BACKEND_URL + '/api/scan', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(Object.assign({ passcode: passcode }, requestBody)),
+        body: JSON.stringify(Object.assign({ passcode: passcode, pollOnly: true }, requestBody)),
       })
         .then(function (r) { return r.json().then(function (data) { return { ok: r.ok, data: data }; }); })
         .then(function (res) {
