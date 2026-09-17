@@ -6,129 +6,129 @@
 <title>Seller Scan</title>
 <meta name="robots" content="noindex,nofollow">
 <style>
-  /* LeveLux Seller Scan -- dark theme. Everything else in this file stays inline-styled to
-     match the rest of the codebase, but the color values below are the single source of truth
-     for the palette -- change them here and every screen updates together. */
-  :root {
-    --bg: #0b0b0c;
-    --surface: #19191b;
-    --surface-alt: #222225;
-    --border: #333336;
-    --text: #f3f2ef;
-    --text-dim: #9d9da1;
-    --accent: #cda86e;
-    --accent-text: #1a1400;
-    --danger: #ff6b6b;
-    --danger-bg: #2a1414;
-    --success: #4fd07a;
-    --success-bg: #12291c;
-  }
-  * { box-sizing: border-box; }
-  html, body { background: var(--bg); margin: 0; }
-  body { color: var(--text); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
-  input, select { background: var(--surface-alt); color: var(--text); border: 1px solid var(--border); }
-  input::placeholder { color: #7a7a7d; }
-  button { font-family: inherit; }
-  h2, h3 { color: var(--text); }
+/* LeveLux Seller Scan -- dark theme. Everything else in this file stays inline-styled to
+   match the rest of the codebase, but the color values below are the single source of truth
+   for the palette -- change them here and every screen updates together. */
+:root {
+  --bg: #0b0b0c;
+  --surface: #19191b;
+  --surface-alt: #222225;
+  --border: #333336;
+  --text: #f3f2ef;
+  --text-dim: #9d9da1;
+  --accent: #cda86e;
+  --accent-text: #1a1400;
+  --danger: #ff6b6b;
+  --danger-bg: #2a1414;
+  --success: #4fd07a;
+  --success-bg: #12291c;
+}
+* { box-sizing: border-box; }
+html, body { background: var(--bg); margin: 0; }
+body { color: var(--text); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+input, select { background: var(--surface-alt); color: var(--text); border: 1px solid var(--border); }
+input::placeholder { color: #7a7a7d; }
+button { font-family: inherit; }
+h2, h3 { color: var(--text); }
 </style>
 </head>
 <body>
 <div id="seller-scan-app" style="max-width:480px;margin:0 auto;padding:24px;min-height:100vh;">
 
-  <div id="gate" style="display:flex;flex-direction:column;justify-content:center;min-height:80vh;">
-    <div style="text-align:center;margin-bottom:32px;">
-      <div style="font-size:13px;letter-spacing:0.2em;color:var(--accent);text-transform:uppercase;margin-bottom:10px;">LeveLux</div>
-      <h2 style="margin:0;font-size:26px;font-weight:700;">Welcome, Seller</h2>
-      <p style="color:var(--text-dim);font-size:14px;margin:8px 0 0;">Enter your passcode to start scanning.</p>
-    </div>
-    <input id="passcode-input" type="text" placeholder="Enter passcode" autocomplete="off"
-      autocapitalize="off" autocorrect="off" spellcheck="false" autofocus
-      style="width:100%;padding:14px;font-size:16px;border-radius:10px;" />
-    <button id="passcode-submit" style="width:100%;padding:14px;margin-top:10px;font-size:16px;font-weight:700;border-radius:10px;border:none;background:var(--accent);color:var(--accent-text);">Enter</button>
-    <p id="passcode-error" style="color:var(--danger);display:none;text-align:center;margin-top:12px;">Wrong passcode.</p>
-    <p id="passcode-checking" style="color:var(--text-dim);display:none;text-align:center;margin-top:12px;">Checking…</p>
+<div id="gate" style="display:flex;flex-direction:column;justify-content:center;min-height:80vh;">
+  <div style="text-align:center;margin-bottom:32px;">
+    <div style="font-size:13px;letter-spacing:0.2em;color:var(--accent);text-transform:uppercase;margin-bottom:10px;">LeveLux</div>
+    <h2 style="margin:0;font-size:26px;font-weight:700;">Welcome, Seller</h2>
+    <p style="color:var(--text-dim);font-size:14px;margin:8px 0 0;">Enter your passcode to start scanning.</p>
+  </div>
+  <input id="passcode-input" type="text" placeholder="Enter passcode" autocomplete="off"
+    autocapitalize="off" autocorrect="off" spellcheck="false" autofocus
+    style="width:100%;padding:14px;font-size:16px;border-radius:10px;" />
+  <button id="passcode-submit" style="width:100%;padding:14px;margin-top:10px;font-size:16px;font-weight:700;border-radius:10px;border:none;background:var(--accent);color:var(--accent-text);">Enter</button>
+  <p id="passcode-error" style="color:var(--danger);display:none;text-align:center;margin-top:12px;">Wrong passcode.</p>
+  <p id="passcode-checking" style="color:var(--text-dim);display:none;text-align:center;margin-top:12px;">Checking…</p>
+</div>
+
+<div id="scanner" style="display:none;">
+
+  <div style="display:flex;gap:8px;margin-bottom:16px;">
+    <button type="button" id="tab-scan" style="flex:1;padding:10px;font-size:15px;font-weight:600;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--text);">Scan a SKU</button>
+    <button type="button" id="tab-search" style="flex:1;padding:10px;font-size:15px;font-weight:600;border-radius:8px;border:1px solid var(--accent);background:var(--accent);color:var(--accent-text);">Browse inventory</button>
   </div>
 
-  <div id="scanner" style="display:none;">
-
-    <div style="display:flex;gap:8px;margin-bottom:16px;">
-      <button type="button" id="tab-scan" style="flex:1;padding:10px;font-size:15px;font-weight:600;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--text);">Scan a SKU</button>
-      <button type="button" id="tab-search" style="flex:1;padding:10px;font-size:15px;font-weight:600;border-radius:8px;border:1px solid var(--accent);background:var(--accent);color:var(--accent-text);">Browse inventory</button>
-    </div>
-
-    <div id="scan-panel" style="display:none;">
-      <h2>Scan an item</h2>
-      <input id="scan-input" type="text" placeholder="Scan barcode / SKU" autofocus
-        style="width:100%;padding:14px;font-size:18px;border-radius:10px;" />
-    </div>
-
-    <div id="search-panel">
-      <h2>Browse inventory</h2>
-      <div style="display:flex;gap:8px;">
-        <input id="search-input" type="text" placeholder="e.g. Louis Vuitton wallet"
-          style="flex:1;padding:12px;font-size:16px;border-radius:10px;" />
-        <button type="button" id="search-submit" style="padding:0 20px;font-size:16px;border-radius:10px;border:1px solid var(--border);background:var(--surface);color:var(--text);">Search</button>
-      </div>
-      <div style="display:flex;gap:16px;align-items:center;margin-top:10px;flex-wrap:wrap;">
-        <select id="search-category" style="padding:10px;font-size:14px;border-radius:8px;">
-          <option value="">All categories</option>
-          <!-- These match the actual "Product type" values found across the live catalog.
-               Most bags/wallets/shoes/luggage are all typed "Pre owned" in Shopify -- that
-               field isn't broken out further, so this is the finest-grained filter available
-               without re-tagging products in Shopify. -->
-          <option value="Pre owned">Pre-Owned (Bags, Wallets, Shoes, Luggage)</option>
-          <option value="Sunglasses">Sunglasses</option>
-          <option value="Eyeglasses">Eyeglasses</option>
-          <option value="Jewelry">Jewelry</option>
-          <option value="Accessory">Accessory</option>
-          <option value="Hat">Hats</option>
-          <option value="Briefcase">Briefcases</option>
-        </select>
-        <label style="font-size:14px;display:flex;align-items:center;gap:6px;color:var(--text-dim);">
-          <input type="checkbox" id="search-in-stock" checked /> In stock only
-        </label>
-      </div>
-      <div id="lineup-bar" style="display:none;align-items:center;justify-content:space-between;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:10px 12px;margin-top:12px;">
-        <span style="font-size:14px;">🎬 <span id="lineup-count">0</span> in show lineup</span>
-        <button type="button" id="lineup-open" style="padding:6px 12px;font-size:13px;font-weight:600;border-radius:6px;border:1px solid var(--accent);background:var(--surface-alt);color:var(--accent);">View lineup →</button>
-      </div>
-      <div id="search-results" style="margin-top:16px;"></div>
-    </div>
-
+  <div id="scan-panel" style="display:none;">
+    <h2>Scan an item</h2>
+    <input id="scan-input" type="text" placeholder="Scan barcode / SKU" autofocus
+      style="width:100%;padding:14px;font-size:18px;border-radius:10px;" />
   </div>
 
-  <!-- Lineup view: build an ordered list of items for a planned show before you go live, then
-       start it and step through them one at a time on the item view below. -->
-  <div id="lineup-view" style="display:none;">
-    <button type="button" id="lineup-back" style="background:none;border:none;padding:8px 0;margin-bottom:8px;font-size:15px;color:var(--text-dim);">← Back</button>
-    <h2 style="margin-bottom:4px;">Show lineup</h2>
-    <p style="color:var(--text-dim);font-size:13px;margin-top:0;">Reorder with the arrows, then start the show to step through them in order.</p>
-    <div id="lineup-list" style="margin:12px 0;"></div>
-    <button type="button" id="lineup-start" style="width:100%;padding:14px;font-size:16px;font-weight:700;background:var(--accent);color:var(--accent-text);border:none;border-radius:8px;">▶ Start show</button>
+  <div id="search-panel">
+    <h2>Browse inventory</h2>
+    <div style="display:flex;gap:8px;">
+      <input id="search-input" type="text" placeholder="e.g. Louis Vuitton wallet"
+        style="flex:1;padding:12px;font-size:16px;border-radius:10px;" />
+      <button type="button" id="search-submit" style="padding:0 20px;font-size:16px;border-radius:10px;border:1px solid var(--border);background:var(--surface);color:var(--text);">Search</button>
+    </div>
+    <div style="display:flex;gap:16px;align-items:center;margin-top:10px;flex-wrap:wrap;">
+      <select id="search-category" style="padding:10px;font-size:14px;border-radius:8px;">
+        <option value="">All categories</option>
+        <!-- These match the actual "Product type" values found across the live catalog.
+             Most bags/wallets/shoes/luggage are all typed "Pre owned" in Shopify -- that
+             field isn't broken out further, so this is the finest-grained filter available
+             without re-tagging products in Shopify. -->
+        <option value="Pre owned">Pre-Owned (Bags, Wallets, Shoes, Luggage)</option>
+        <option value="Sunglasses">Sunglasses</option>
+        <option value="Eyeglasses">Eyeglasses</option>
+        <option value="Jewelry">Jewelry</option>
+        <option value="Accessory">Accessory</option>
+        <option value="Hat">Hats</option>
+        <option value="Briefcase">Briefcases</option>
+      </select>
+      <label style="font-size:14px;display:flex;align-items:center;gap:6px;color:var(--text-dim);">
+        <input type="checkbox" id="search-in-stock" checked /> In stock only
+      </label>
+    </div>
+    <div id="lineup-bar" style="display:none;align-items:center;justify-content:space-between;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:10px 12px;margin-top:12px;">
+      <span style="font-size:14px;">🎬 <span id="lineup-count">0</span> in show lineup</span>
+      <button type="button" id="lineup-open" style="padding:6px 12px;font-size:13px;font-weight:600;border-radius:6px;border:1px solid var(--accent);background:var(--surface-alt);color:var(--accent);">View lineup →</button>
+    </div>
+    <div id="search-results" style="margin-top:16px;"></div>
   </div>
 
-  <!-- Item view: its own dedicated screen, separate from the scan/search list, so pulling up
-       an item's selling info (prices, sales points, all four script lengths, teleprompter)
-       doesn't get lost scrolled below a long results list -- it takes over the screen, with a
-       Back button to return to wherever you were (Scan or Search, whichever was open). When a
-       show is running, Prev/Next replace plain browsing so you can walk your planned lineup in
-       order without going back to the list between items. -->
-  <div id="item-view" style="display:none;">
-    <button type="button" id="item-back" style="background:none;border:none;padding:8px 0;margin-bottom:8px;font-size:15px;color:var(--text-dim);">← Back</button>
-    <div id="show-nav" style="display:none;justify-content:space-between;align-items:center;background:var(--surface);border-radius:8px;padding:8px 12px;margin-bottom:12px;">
-      <button type="button" id="show-prev" style="padding:8px 14px;font-size:14px;font-weight:600;border-radius:6px;border:1px solid var(--border);background:var(--surface-alt);color:var(--text);">◀ Prev</button>
-      <span id="show-position" style="font-size:13px;color:var(--text-dim);"></span>
-      <button type="button" id="show-next" style="padding:8px 14px;font-size:14px;font-weight:600;border-radius:6px;border:none;background:var(--accent);color:var(--accent-text);">Next ▶</button>
-    </div>
-    <div id="browse-nav" style="display:none;justify-content:space-between;align-items:center;background:var(--surface);border-radius:8px;padding:8px 12px;margin-bottom:12px;">
-      <button type="button" id="browse-prev" style="padding:8px 14px;font-size:14px;font-weight:600;border-radius:6px;border:1px solid var(--border);background:var(--surface-alt);color:var(--text);">◀ Prev</button>
-      <span id="browse-position" style="font-size:13px;color:var(--text-dim);"></span>
-      <button type="button" id="browse-next" style="padding:8px 14px;font-size:14px;font-weight:600;border-radius:6px;border:none;background:var(--surface-alt);color:var(--text);border:1px solid var(--border);">Next ▶</button>
-    </div>
-    <div id="result"></div>
-    <div id="pairs-with" style="display:none;margin-top:18px;padding-top:16px;border-top:1px solid var(--border);"></div>
-    <div id="more-like-this" style="display:none;margin-top:18px;"></div>
+</div>
+
+<!-- Lineup view: build an ordered list of items for a planned show before you go live, then
+     start it and step through them one at a time on the item view below. -->
+<div id="lineup-view" style="display:none;">
+  <button type="button" id="lineup-back" style="background:none;border:none;padding:8px 0;margin-bottom:8px;font-size:15px;color:var(--text-dim);">← Back</button>
+  <h2 style="margin-bottom:4px;">Show lineup</h2>
+  <p style="color:var(--text-dim);font-size:13px;margin-top:0;">Reorder with the arrows, then start the show to step through them in order.</p>
+  <div id="lineup-list" style="margin:12px 0;"></div>
+  <button type="button" id="lineup-start" style="width:100%;padding:14px;font-size:16px;font-weight:700;background:var(--accent);color:var(--accent-text);border:none;border-radius:8px;">▶ Start show</button>
+</div>
+
+<!-- Item view: its own dedicated screen, separate from the scan/search list, so pulling up
+     an item's selling info (prices, sales points, all four script lengths, teleprompter)
+     doesn't get lost scrolled below a long results list -- it takes over the screen, with a
+     Back button to return to wherever you were (Scan or Search, whichever was open). When a
+     show is running, Prev/Next replace plain browsing so you can walk your planned lineup in
+     order without going back to the list between items. -->
+<div id="item-view" style="display:none;">
+  <button type="button" id="item-back" style="background:none;border:none;padding:8px 0;margin-bottom:8px;font-size:15px;color:var(--text-dim);">← Back</button>
+  <div id="show-nav" style="display:none;justify-content:space-between;align-items:center;background:var(--surface);border-radius:8px;padding:8px 12px;margin-bottom:12px;">
+    <button type="button" id="show-prev" style="padding:8px 14px;font-size:14px;font-weight:600;border-radius:6px;border:1px solid var(--border);background:var(--surface-alt);color:var(--text);">◀ Prev</button>
+    <span id="show-position" style="font-size:13px;color:var(--text-dim);"></span>
+    <button type="button" id="show-next" style="padding:8px 14px;font-size:14px;font-weight:600;border-radius:6px;border:none;background:var(--accent);color:var(--accent-text);">Next ▶</button>
   </div>
+  <div id="browse-nav" style="display:none;justify-content:space-between;align-items:center;background:var(--surface);border-radius:8px;padding:8px 12px;margin-bottom:12px;">
+    <button type="button" id="browse-prev" style="padding:8px 14px;font-size:14px;font-weight:600;border-radius:6px;border:1px solid var(--border);background:var(--surface-alt);color:var(--text);">◀ Prev</button>
+    <span id="browse-position" style="font-size:13px;color:var(--text-dim);"></span>
+    <button type="button" id="browse-next" style="padding:8px 14px;font-size:14px;font-weight:600;border-radius:6px;border:none;background:var(--surface-alt);color:var(--text);border:1px solid var(--border);">Next ▶</button>
+  </div>
+  <div id="result"></div>
+  <div id="pairs-with" style="display:none;margin-top:18px;padding-top:16px;border-top:1px solid var(--border);"></div>
+  <div id="more-like-this" style="display:none;margin-top:18px;"></div>
+</div>
 
 </div>
 
@@ -206,12 +206,12 @@
   var showNext = document.getElementById('show-next');
   var showPosition = document.getElementById('show-position');
 
-  var lineup = [];       // [{id, title}, ...] in planned order
+  var lineup = []; // [{id, title}, ...] in planned order
   var lastSearchItems = []; // last set of search results, so cards can re-render their +/added state
-  var showQueue = null;   // snapshot of the lineup once "Start show" is pressed, or null if not running
+  var showQueue = null; // snapshot of the lineup once "Start show" is pressed, or null if not running
   var showIndex = -1;
-  var browseQueue = [];  // the current Browse/Search results list, so opening any item lets you
-  var browseIndex = -1;  // step to the next/previous one without a formally-started show
+  var browseQueue = []; // the current Browse/Search results list, so opening any item lets you
+  var browseIndex = -1; // step to the next/previous one without a formally-started show
 
   function isInLineup(id) {
     return lineup.some(function (it) { return it.id === id; });
@@ -251,11 +251,11 @@
     lineupList.innerHTML = lineup.map(function (it, idx) {
       return (
         '<div style="display:flex;align-items:center;gap:6px;padding:12px 10px;border:1px solid var(--border);border-radius:10px;margin-bottom:10px;">' +
-        '<span style="flex:none;width:20px;color:var(--text-dim);font-size:13px;">' + (idx + 1) + '</span>' +
-        '<span style="flex:1;font-size:14px;min-width:0;">' + escapeHtml(it.title) + '</span>' +
-        '<button type="button" class="lineup-move-up" data-idx="' + idx + '" ' + (idx === 0 ? 'disabled' : '') + ' style="flex:none;width:44px;height:44px;border-radius:8px;border:1px solid var(--border);background:var(--surface);font-size:16px;">↑</button>' +
-        '<button type="button" class="lineup-move-down" data-idx="' + idx + '" ' + (idx === lineup.length - 1 ? 'disabled' : '') + ' style="flex:none;width:44px;height:44px;border-radius:8px;border:1px solid var(--border);background:var(--surface);font-size:16px;">↓</button>' +
-        '<button type="button" class="lineup-remove" data-idx="' + idx + '" style="flex:none;width:44px;height:44px;border-radius:8px;border:1px solid var(--danger);background:var(--surface);color:var(--danger);font-size:16px;">✕</button>' +
+          '<span style="flex:none;width:20px;color:var(--text-dim);font-size:13px;">' + (idx + 1) + '</span>' +
+          '<span style="flex:1;font-size:14px;min-width:0;">' + escapeHtml(it.title) + '</span>' +
+          '<button type="button" class="lineup-move-up" data-idx="' + idx + '" ' + (idx === 0 ? 'disabled' : '') + ' style="flex:none;width:44px;height:44px;border-radius:8px;border:1px solid var(--border);background:var(--surface);font-size:16px;">↑</button>' +
+          '<button type="button" class="lineup-move-down" data-idx="' + idx + '" ' + (idx === lineup.length - 1 ? 'disabled' : '') + ' style="flex:none;width:44px;height:44px;border-radius:8px;border:1px solid var(--border);background:var(--surface);font-size:16px;">↓</button>' +
+          '<button type="button" class="lineup-remove" data-idx="' + idx + '" style="flex:none;width:44px;height:44px;border-radius:8px;border:1px solid var(--danger);background:var(--surface);color:var(--danger);font-size:16px;">✕</button>' +
         '</div>'
       );
     }).join('');
@@ -514,24 +514,24 @@
     searchResults.innerHTML = items.map(function (item) {
       return (
         '<div class="search-result-card" data-product-id="' + escapeHtml(item.id) + '" data-title="' + escapeHtml(item.title) + '" data-sku="' + escapeHtml(item.sku || '') + '" ' +
-        'style="display:flex;gap:14px;align-items:center;padding:16px;min-height:44px;border:1px solid var(--border);border-radius:10px;margin-bottom:10px;cursor:pointer;">' +
-        (item.image
-          ? '<img src="' + escapeHtml(item.image) + '" alt="" style="width:64px;height:64px;object-fit:cover;border-radius:8px;flex:none;" />'
-          : '<div style="width:64px;height:64px;background:var(--surface-alt);border-radius:8px;flex:none;"></div>') +
-        '<div style="min-width:0;flex:1;">' +
-        '<div style="font-size:15px;font-weight:600;line-height:1.35;">' + escapeHtml(item.title) +
-        (item.inStock ? '' : ' <span style="color:var(--danger);font-size:12px;">SOLD</span>') +
-        '</div>' +
-        '<div style="font-size:13px;color:var(--text-dim);margin-top:5px;">' +
-        'Flash $' + (item.flashPrice != null ? item.flashPrice : '--') +
-        ' | Asking $' + (item.askingPrice != null ? item.askingPrice : '--') +
-        ' | Floor $' + (item.redZonePrice != null ? item.redZonePrice : '--') +
-        '</div>' +
-        '</div>' +
-        (isInLineup(item.id)
-          ? '<button type="button" class="lineup-add-btn" data-id="' + escapeHtml(item.id) + '" data-title="' + escapeHtml(item.title) + '" data-sku="' + escapeHtml(item.sku || '') + '" style="flex:none;width:44px;height:44px;border-radius:50%;border:1px solid var(--success);background:var(--success-bg);color:var(--success);font-size:19px;line-height:1;">✓</button>'
-          : '<button type="button" class="lineup-add-btn" data-id="' + escapeHtml(item.id) + '" data-title="' + escapeHtml(item.title) + '" data-sku="' + escapeHtml(item.sku || '') + '" style="flex:none;width:44px;height:44px;border-radius:50%;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:22px;line-height:1;">+</button>') +
-        '<div style="flex:none;color:var(--text-dim);font-size:22px;">›</div>' +
+          'style="display:flex;gap:14px;align-items:center;padding:16px;min-height:44px;border:1px solid var(--border);border-radius:10px;margin-bottom:10px;cursor:pointer;">' +
+          (item.image
+            ? '<img src="' + escapeHtml(item.image) + '" alt="" style="width:64px;height:64px;object-fit:cover;border-radius:8px;flex:none;" />'
+            : '<div style="width:64px;height:64px;background:var(--surface-alt);border-radius:8px;flex:none;"></div>') +
+          '<div style="min-width:0;flex:1;">' +
+            '<div style="font-size:15px;font-weight:600;line-height:1.35;">' + escapeHtml(item.title) +
+              (item.inStock ? '' : ' <span style="color:var(--danger);font-size:12px;">SOLD</span>') +
+            '</div>' +
+            '<div style="font-size:13px;color:var(--text-dim);margin-top:5px;">' +
+              'Flash $' + (item.flashPrice != null ? item.flashPrice : '--') +
+              ' | Asking $' + (item.askingPrice != null ? item.askingPrice : '--') +
+              ' | Floor $' + (item.redZonePrice != null ? item.redZonePrice : '--') +
+            '</div>' +
+          '</div>' +
+          (isInLineup(item.id)
+            ? '<button type="button" class="lineup-add-btn" data-id="' + escapeHtml(item.id) + '" data-title="' + escapeHtml(item.title) + '" data-sku="' + escapeHtml(item.sku || '') + '" style="flex:none;width:44px;height:44px;border-radius:50%;border:1px solid var(--success);background:var(--success-bg);color:var(--success);font-size:19px;line-height:1;">✓</button>'
+            : '<button type="button" class="lineup-add-btn" data-id="' + escapeHtml(item.id) + '" data-title="' + escapeHtml(item.title) + '" data-sku="' + escapeHtml(item.sku || '') + '" style="flex:none;width:44px;height:44px;border-radius:50%;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:22px;line-height:1;">+</button>') +
+          '<div style="flex:none;color:var(--text-dim);font-size:22px;">›</div>' +
         '</div>'
       );
     }).join('');
@@ -718,6 +718,44 @@
     }
   }
 
+  var printingTag = false;
+
+  // Prints a physical tag for the currently-open item: same 50mm x 30mm label design (wrapped
+  // title, Code39 barcode, SKU, footer) already used for new intake at the Photo Intake app,
+  // generated server-side as a PDF and opened in a new tab. From there, the browser's normal
+  // print dialog handles the actual printer -- a Rollo label printer (once its driver is
+  // installed as a system printer) or any AirPrint-enabled printer both just show up as
+  // ordinary printer choices; no special-casing needed here for either.
+  function printTag() {
+    if (!currentItem || !currentItem.sku || printingTag) return;
+    printingTag = true;
+    var btn = document.getElementById('print-tag-btn');
+    if (btn) { btn.disabled = true; btn.textContent = 'Preparing tag…'; }
+    fetch(BACKEND_URL + '/api/tag', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ sku: currentItem.sku, title: currentItem.title, passcode: passcode }),
+    })
+      .then(function (r) {
+        if (!r.ok) {
+          return r.json().then(function (data) { throw new Error((data && data.error) || 'Tag generation failed'); });
+        }
+        return r.blob();
+      })
+      .then(function (blob) {
+        var url = URL.createObjectURL(blob);
+        window.open(url, '_blank');
+      })
+      .catch(function (err) {
+        alert(err.message);
+      })
+      .then(function () {
+        printingTag = false;
+        var btn2 = document.getElementById('print-tag-btn');
+        if (btn2) { btn2.disabled = false; btn2.textContent = '🖨 Print tag'; }
+      });
+  }
+
   function renderResultBody() {
     var item = currentItem;
     if (!item) return;
@@ -741,7 +779,8 @@
         : '') +
       '<h3 style="margin-bottom:4px;">' + escapeHtml(item.title) + '</h3>' +
       (item.sku
-        ? '<p style="color:var(--text-dim);font-size:13px;margin:0 0 6px;letter-spacing:0.02em;">SKU/Inventory #: <span style="color:var(--text);font-weight:600;">' + escapeHtml(item.sku) + '</span></p>'
+        ? '<p style="color:var(--text-dim);font-size:13px;margin:0 0 6px;letter-spacing:0.02em;">SKU/Inventory #: <span style="color:var(--text);font-weight:600;">' + escapeHtml(item.sku) + '</span></p>' +
+          '<button type="button" id="print-tag-btn" style="padding:8px 14px;font-size:13px;font-weight:600;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--text);margin-bottom:10px;">🖨 Print tag</button>'
         : '') +
       (item.pronunciation && item.pronunciation !== 'None needed.'
         ? '<p style="color:var(--text-dim);font-style:italic;margin-top:0;">' + escapeHtml(item.pronunciation) + '</p>'
@@ -770,6 +809,9 @@
     var tpOpen = document.getElementById('tp-open');
     if (tpOpen) tpOpen.addEventListener('click', openTeleprompter);
 
+    var printTagBtn = document.getElementById('print-tag-btn');
+    if (printTagBtn) printTagBtn.addEventListener('click', printTag);
+
     var lengthBtns = result.querySelectorAll('.length-btn');
     for (var i = 0; i < lengthBtns.length; i++) {
       lengthBtns[i].addEventListener('click', function (e) {
@@ -792,17 +834,17 @@
     pairsWith.innerHTML =
       '<div style="font-size:12px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:var(--accent);margin-bottom:6px;">✨ Pairs well with</div>' +
       '<div id="pairs-with-card" style="display:flex;gap:12px;align-items:center;padding:10px;border:1px solid var(--border);border-radius:10px;cursor:pointer;background:var(--surface);">' +
-      (p.image
-        ? '<img src="' + escapeHtml(p.image) + '" alt="" style="width:52px;height:52px;object-fit:cover;border-radius:8px;flex:none;" />'
-        : '<div style="width:52px;height:52px;background:var(--surface-alt);border-radius:8px;flex:none;"></div>') +
-      '<div style="min-width:0;flex:1;">' +
-      '<div style="font-size:14px;font-weight:600;line-height:1.35;">' + escapeHtml(p.title) + '</div>' +
-      '<div style="font-size:12px;color:var(--text-dim);margin-top:3px;">' +
-      'Flash $' + (p.flashPrice != null ? p.flashPrice : '--') +
-      ' | Asking $' + (p.askingPrice != null ? p.askingPrice : '--') +
-      '</div>' +
-      '</div>' +
-      '<div style="flex:none;color:var(--text-dim);font-size:20px;">›</div>' +
+        (p.image
+          ? '<img src="' + escapeHtml(p.image) + '" alt="" style="width:52px;height:52px;object-fit:cover;border-radius:8px;flex:none;" />'
+          : '<div style="width:52px;height:52px;background:var(--surface-alt);border-radius:8px;flex:none;"></div>') +
+        '<div style="min-width:0;flex:1;">' +
+          '<div style="font-size:14px;font-weight:600;line-height:1.35;">' + escapeHtml(p.title) + '</div>' +
+          '<div style="font-size:12px;color:var(--text-dim);margin-top:3px;">' +
+            'Flash $' + (p.flashPrice != null ? p.flashPrice : '--') +
+            ' | Asking $' + (p.askingPrice != null ? p.askingPrice : '--') +
+          '</div>' +
+        '</div>' +
+        '<div style="flex:none;color:var(--text-dim);font-size:20px;">›</div>' +
       '</div>';
 
     var card = document.getElementById('pairs-with-card');
@@ -824,9 +866,9 @@
     moreLikeThis.innerHTML =
       '<div style="font-size:12px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:var(--text-dim);margin-bottom:8px;">See more</div>' +
       '<div style="display:flex;gap:8px;flex-wrap:wrap;">' +
-      QUICK_CATEGORIES.map(function (qc, idx) {
-        return '<button type="button" class="quick-category-btn" data-idx="' + idx + '" style="padding:8px 14px;font-size:13px;border-radius:20px;border:1px solid var(--border);background:var(--surface);color:var(--text);">' + escapeHtml(qc.label) + '</button>';
-      }).join('') +
+        QUICK_CATEGORIES.map(function (qc, idx) {
+          return '<button type="button" class="quick-category-btn" data-idx="' + idx + '" style="padding:8px 14px;font-size:13px;border-radius:20px;border:1px solid var(--border);background:var(--surface);color:var(--text);">' + escapeHtml(qc.label) + '</button>';
+        }).join('') +
       '</div>';
 
     var btns = moreLikeThis.querySelectorAll('.quick-category-btn');
