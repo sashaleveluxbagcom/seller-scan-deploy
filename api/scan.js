@@ -96,11 +96,12 @@ const FLASH_SALE_KEY = 'preferred_price';     // labeled "Flash Sale Price" in A
 
 // Staff commission: what the seller who moves this item personally earns, shown to them (not
 // customers) right on the item view. Flat 1% of the red zone (floor) price -- Sasha's rule as of
-// 2026-09-18. Change STAFF_COMMISSION_RATE here if the rate ever changes.
+// 2026-09-18. Rounded UP to a whole dollar (Sasha: "round it up... whole numbers") rather than
+// showing cents. Change STAFF_COMMISSION_RATE here if the rate ever changes.
 const STAFF_COMMISSION_RATE = 0.01;
 function computeStaffCommission(redZonePrice) {
   const n = parseFloat(redZonePrice);
-  return isFinite(n) ? (n * STAFF_COMMISSION_RATE).toFixed(2) : null;
+  return isFinite(n) ? String(Math.ceil(n * STAFF_COMMISSION_RATE)) : null;
 }
 
 const PRONUNCIATION_KEY = 'brand_pronunciation';
