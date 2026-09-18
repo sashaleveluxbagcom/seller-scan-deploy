@@ -790,6 +790,7 @@ h2, h3 { color: var(--text); }
         priceBox('Asking', item.askingPrice) +
         priceBox('Red zone (no-go)', item.redZonePrice, true) +
       '</div>' +
+      (item.staffCommission != null ? commissionBanner(item.staffCommission) : '') +
       (item.salesPoints
         ? '<div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:12px 16px;margin-bottom:14px;white-space:pre-wrap;font-size:14px;line-height:1.6;">' +
             escapeHtml(item.salesPoints) +
@@ -945,6 +946,16 @@ h2, h3 { color: var(--text); }
   tpText.addEventListener('click', function () {
     if (tpPlaying) stopScrolling(); else startScrolling();
   });
+
+  // Staff-facing only -- what the seller personally earns on this item (1% of red zone price).
+  // Deliberately a full-width banner, separate from the price row above, so it reads clearly as
+  // "your commission" rather than blending in with the customer-facing prices.
+  function commissionBanner(value) {
+    return '<div style="margin:-6px 0 16px;padding:10px 14px;border-radius:8px;background:var(--success-bg);display:flex;align-items:center;justify-content:space-between;">' +
+      '<span style="font-size:13px;color:var(--success);font-weight:600;">💰 Your commission on this item</span>' +
+      '<span style="font-size:18px;color:var(--success);font-weight:700;">$' + value + '</span>' +
+    '</div>';
+  }
 
   function priceBox(label, value, warn) {
     return '<div style="flex:1;min-width:110px;padding:10px;border-radius:8px;background:' +
