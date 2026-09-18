@@ -105,6 +105,12 @@ function computeStaffCommission(redZonePrice) {
 }
 
 const PRONUNCIATION_KEY = 'brand_pronunciation';
+// Separate from PRONUNCIATION_KEY above (which is the full combined guide covering every hard
+// word in the item -- brand, collection/model, materials, etc). This one holds JUST the vendor/
+// brand name's own phonetic guide, so the frontend can show it right next to the brand label
+// itself (Sasha, 2026-09-18: "make sure pronunciation is in the brands... as well" -- she wants
+// it visible right where the brand name is, not only buried in the combined paragraph below).
+const BRAND_ONLY_PRONUNCIATION_KEY = 'brand_only_pronunciation';
 const SCRIPT_KEY = 'sales_script';            // legacy single-script field -- kept in sync with min4
 const SALES_POINTS_KEY = 'sales_points';
 const SCRIPT_20S_KEY = 'script_20s';
@@ -168,13 +174,14 @@ module.exports = async function handler(req, res) {
       // other three lengths (20 sec / 1 min / 4 min) are generated afterward in the background
       // (see kickOffExtendedGeneration below) so they don't make the seller wait on a much
       // bigger, slower call just to see anything at all.
-      const core = await generateCore(product.title);
+      const core = await generateCore(product.title, product.vendor);
       cached = {
         core: true,
         full: false,
         scripts: { sec20: '', min1: '', min2: core.script, min4: '' },
         conditionCheck: core.conditionCheck,
         pronunciation: core.pronunciation,
+        brandPronunciation: core.brandPronunciation,
         salesPoints: core.salesPoints,
         pairsWith: core.pairsWith,
         pairsWithCategory: core.pairsWithCategory,
@@ -203,12 +210,13 @@ module.exports = async function handler(req, res) {
       // blocks each other. Skipped for pollOnly requests for the same reason as above -- a status
       // check should never itself trigger more background API work.
       waitUntil(
-        generateCore(product.title)
+        generateCore(product.title, product.vendor)
           .then((freshCore) =>
             cacheOnProduct(product.id, {
               scripts: Object.assign({}, cached.scripts, { min2: freshCore.script }),
               conditionCheck: freshCore.conditionCheck,
               pronunciation: freshCore.pronunciation,
+              brandPronunciation: freshCore.brandPronunciation,
               salesPoints: freshCore.salesPoints,
               pairsWith: freshCore.pairsWith,
               pairsWithCategory: freshCore.pairsWithCategory,
@@ -232,6 +240,7 @@ module.exports = async function handler(req, res) {
       image: product.image,
       productType: product.productType,
       pronunciation: cached.pronunciation,
+      brandPronunciation: cached.brandPronunciation, // just the vendor/brand name's own guide, shown next to the brand label
       askingPrice: product.askingPrice,
       flashPrice: product.flashPrice,
       redZonePrice: product.redZonePrice,
@@ -276,6 +285,7 @@ const PRODUCT_METAFIELDS_GQL = `
   redZoneLegacy: metafield(namespace: "${NS}", key: "${RED_ZONE_KEY_LEGACY}") { value }
   flashSale: metafield(namespace: "${NS}", key: "${FLASH_SALE_KEY}") { value }
   pronunciation: metafield(namespace: "${NS}", key: "${PRONUNCIATION_KEY}") { value }
+  brandPronunciation: metafield(namespace: "${NS}", key: "${BRAND_ONLY_PRONUNCIATION_KEY}") { value }
   salesPoints: metafield(namespace: "${NS}", key: "${SALES_POINTS_KEY}") { value }
   script20: metafield(namespace: "${NS}", key: "${SCRIPT_20S_KEY}") { value }
   script1: metafield(namespace: "${NS}", key: "${SCRIPT_1MIN_KEY}") { value }
@@ -298,6 +308,7 @@ function productNodeToRecord(p, askingPrice, sku) {
     flashPrice: moneyValue(p.flashSale?.value),
     redZonePrice: moneyValue(p.redZoneNew?.value) ?? moneyValue(p.redZoneLegacy?.value),
     cachedPronunciation: p.pronunciation?.value || null,
+    cachedBrandPronunciation: p.brandPronunciation?.value || null,
     cachedSalesPoints: p.salesPoints?.value || null,
     cachedScripts: {
       sec20: p.script20?.value || null,
@@ -392,7 +403,7 @@ function getCached(product) {
     product.cachedPairsWith
   );
   if (!core) {
-    return { core: false, full: false, scripts: null, conditionCheck: null, pronunciation: null, salesPoints: null, pairsWith: null };
+    return { core: false, full: false, scripts: null, conditionCheck: null, pronunciation: null, brandPronunciation: null, salesPoints: null, pairsWith: null };
   }
   const full = !!(s.sec20 && s.min1 && s.min4);
   return {
@@ -401,6 +412,7 @@ function getCached(product) {
     scripts: s,
     conditionCheck: product.cachedConditionCheck,
     pronunciation: product.cachedPronunciation,
+    brandPronunciation: product.cachedBrandPronunciation,
     salesPoints: product.cachedSalesPoints,
     // pairsWith is now a short search-hint phrase (e.g. "black Taiga leather wallet"), not
     // prose -- see PAIRS_WITH_KEY comment above. pairsWithCategory is optional (the AI doesn't
@@ -410,7 +422,7 @@ function getCached(product) {
   };
 }
 
-async function cacheOnProduct(productId, { scripts, conditionCheck, pronunciation, salesPoints, pairsWith, pairsWithCategory }) {
+async function cacheOnProduct(productId, { scripts, conditionCheck, pronunciation, brandPronunciation, salesPoints, pairsWith, pairsWithCategory }) {
   const mutation = `
     mutation SetMeta($metafields: [MetafieldsSetInput!]!) {
       metafieldsSet(metafields: $metafields) {
@@ -429,6 +441,7 @@ async function cacheOnProduct(productId, { scripts, conditionCheck, pronunciatio
       { ownerId: productId, namespace: NS, key: SCRIPT_4MIN_KEY, type: 'multi_line_text_field', value: scripts.min4 },
       { ownerId: productId, namespace: NS, key: CONDITION_CHECK_KEY, type: 'multi_line_text_field', value: conditionCheck || '' },
       { ownerId: productId, namespace: NS, key: PRONUNCIATION_KEY, type: 'single_line_text_field', value: pronunciation || '' },
+      { ownerId: productId, namespace: NS, key: BRAND_ONLY_PRONUNCIATION_KEY, type: 'single_line_text_field', value: brandPronunciation || '' },
       { ownerId: productId, namespace: NS, key: SALES_POINTS_KEY, type: 'multi_line_text_field', value: salesPoints || '' },
       { ownerId: productId, namespace: NS, key: PAIRS_WITH_KEY, type: 'multi_line_text_field', value: pairsWith || '' },
       { ownerId: productId, namespace: NS, key: PAIRS_WITH_CATEGORY_KEY, type: 'single_line_text_field', value: pairsWithCategory || '' },
@@ -538,7 +551,7 @@ async function callClaudeForJSON({ prompt, useWebSearch }, maxAttempts = 3) {
 // PHASE 1 -- fast, synchronous, WITH web search. This is the only generation a seller ever
 // waits on directly: pronunciation, sales points, the condition-check walkthrough, the
 // pairs-with suggestion, and just the 2-minute script (the app's default view).
-async function generateCore(title) {
+async function generateCore(title, vendor) {
   const prompt = `You are the top-performing live host at LeveLux, a luxury resale business, about to go
 on air (Whatnot/TikTok Shop style) with this exact item. You're writing your own script — the one
 you'll read almost word-for-word to sell it — and it needs to be AS DETAILED, AS ACCURATE, and AS
@@ -546,6 +559,7 @@ CONFIDENT as the best live-sale narrations in the industry: the kind where the h
 the brand cold, name-drops specifics, and never sounds like they're reading a product description.
 
 Item title: "${title}"
+${vendor ? `Brand (Shopify vendor field, use this exact spelling as the source of truth for the brand name): "${vendor}"` : ''}
 
 WRITE FOR EASY LISTENING, ROUGHLY A 5TH-GRADE READING LEVEL: short sentences, one idea at a time,
 everyday words instead of fancy ones. This gets read out loud to a live audience, not studied on a
@@ -603,8 +617,22 @@ customer could later check.
    pronunciation from your actual web research or standard phonetics, not a guess. Only if truly
    nothing in the whole item needs one, say "None needed."
 
+   BRAND NAME, SEPARATELY: in addition to the combined pronunciation guide above, also produce a
+   standalone "brandPronunciation" for JUST the brand name itself${vendor ? ` (the vendor field
+   given above: "${vendor}")` : ' (the brand named in the title)'}, using the exact same hyphen/
+   ALL-CAPS-stress format. This is shown to the host right next to the brand name on screen, so it
+   must work completely on its own without the rest of the guide for context. If the brand name is
+   already plain, ordinary English that no one mispronounces (e.g. "Coach"), it's fine to return
+   "" for this field -- don't force a guide where none is needed. This is separate from, and in
+   addition to, the brand's entry in the combined "pronunciation" checklist above -- fill in both.
+
 2. SALES POINTS: 5-7 short, punchy bullet-point selling angles (one line each) a host can glance
-   at mid-broadcast without breaking eye contact with the camera for long.
+   at mid-broadcast without breaking eye contact with the camera for long. The FIRST time any hard
+   word from your section 1 checklist (brand, collection/model, mythological/historical, or
+   material name) appears in these bullets, put its phonetic guide inline right after it in
+   parentheses, same hyphen/ALL-CAPS-stress format (e.g. "This Dionysus (dy-oh-NYE-suss) bag...").
+   After that first mention within the bullets, later mentions don't need to repeat it. Ordinary
+   words never need this treatment -- only the specific hard words already flagged in section 1.
 
 3. THE 2-MINUTE SCRIPT (~280-340 words, about 2 minutes spoken at ~150 words/minute — a target,
    not a hard limit): a COMPLETE, standalone narration in first person, natural spoken cadence
@@ -656,6 +684,7 @@ Return ONLY a raw JSON object and nothing else — no prose before or after it, 
 fences, no explanation of what you're about to do. Just the JSON, exactly in this shape:
 {
   "pronunciation": "...",
+  "brandPronunciation": "...",
   "salesPoints": "...",
   "script": "...",
   "conditionCheck": "...",
@@ -664,8 +693,10 @@ fences, no explanation of what you're about to do. Just the JSON, exactly in thi
 }
 (salesPoints as a single string with one bullet per line, each starting with "- ". script is the
 2-minute narration alone, with no condition-check text inside it. conditionCheck holds only the
-LIVE CONDITION CHECK section. pairsWithHint holds only the short search-hint phrase, never a full
-sentence. pairsWithCategory holds only one value from the exact list above, or "".)`;
+LIVE CONDITION CHECK section. brandPronunciation holds ONLY the brand name's own phonetic guide (or
+"" if none needed) -- it is separate from the combined "pronunciation" field, which still covers
+every hard word in the whole item. pairsWithHint holds only the short search-hint phrase, never a
+full sentence. pairsWithCategory holds only one value from the exact list above, or "".)`;
 
   // This is the one call a seller actually waits on -- callClaudeForJSON above retries transient
   // failures (rate limits, momentary hiccups) with backoff before giving up, so a busy show
@@ -673,6 +704,7 @@ sentence. pairsWithCategory holds only one value from the exact list above, or "
   const parsed = await callClaudeForJSON({ prompt, useWebSearch: true });
   return {
     pronunciation: parsed.pronunciation || '',
+    brandPronunciation: parsed.brandPronunciation || '',
     salesPoints: parsed.salesPoints || '',
     script: parsed.script || '',
     conditionCheck: parsed.conditionCheck || '',
@@ -746,6 +778,7 @@ function kickOffExtendedGeneration(product, coreCached) {
           scripts: { sec20: ext.sec20, min1: ext.min1, min2: coreCached.scripts.min2, min4: ext.min4 },
           conditionCheck: coreCached.conditionCheck,
           pronunciation: coreCached.pronunciation,
+          brandPronunciation: coreCached.brandPronunciation,
           salesPoints: coreCached.salesPoints,
           pairsWith: coreCached.pairsWith,
           pairsWithCategory: coreCached.pairsWithCategory,
