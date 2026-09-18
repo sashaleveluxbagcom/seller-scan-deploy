@@ -830,7 +830,11 @@ h2, h3 { color: var(--text); }
         ? '<img src="' + escapeHtml(item.image) + '" alt="" style="width:100%;max-height:280px;object-fit:cover;border-radius:10px;margin-bottom:14px;" />'
         : '') +
       (item.vendor
-        ? '<div style="font-size:12px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--accent);margin-bottom:2px;">' + escapeHtml(item.vendor) + '</div>'
+        ? '<div style="font-size:12px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--accent);margin-bottom:2px;">' + escapeHtml(item.vendor) +
+            (item.brandPronunciation
+              ? ' <span style="font-weight:600;letter-spacing:normal;text-transform:none;color:var(--text-dim);">(' + escapeHtml(item.brandPronunciation) + ')</span>'
+              : '') +
+          '</div>'
         : '') +
       '<h3 style="margin-bottom:4px;">' + escapeHtml(item.title) + '</h3>' +
       (item.sku
