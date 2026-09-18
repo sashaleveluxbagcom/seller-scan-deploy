@@ -60,6 +60,9 @@
  *   Condition check → NEW metafield custom.condition_check -- the physical walkaround guidance,
  *                      shared across all four script lengths (it's about honestly presenting the
  *                      physical item, not about pitch length).
+ *   Staff commission → NOT a Shopify field -- computed on every response as 1% of the red zone
+ *                      price (see STAFF_COMMISSION_RATE below), shown to the seller only, never
+ *                      persisted anywhere.
  *   These all already existed (or were added for this exact purpose) in the store -- this code
  *   fills them in automatically on first scan/click rather than requiring manual setup.
  *
@@ -90,6 +93,16 @@ const NS = 'custom';
 const RED_ZONE_KEY_NEW = 'red_zone_price';    // correct key, only 15 products populated so far
 const RED_ZONE_KEY_LEGACY = 'flash_price';    // mislabeled "Red Zone Price" in Admin UI, 642 products
 const FLASH_SALE_KEY = 'preferred_price';     // labeled "Flash Sale Price" in Admin UI
+
+// Staff commission: what the seller who moves this item personally earns, shown to them (not
+// customers) right on the item view. Flat 1% of the red zone (floor) price -- Sasha's rule as of
+// 2026-09-18. Change STAFF_COMMISSION_RATE here if the rate ever changes.
+const STAFF_COMMISSION_RATE = 0.01;
+function computeStaffCommission(redZonePrice) {
+  const n = parseFloat(redZonePrice);
+  return isFinite(n) ? (n * STAFF_COMMISSION_RATE).toFixed(2) : null;
+}
+
 const PRONUNCIATION_KEY = 'brand_pronunciation';
 const SCRIPT_KEY = 'sales_script';            // legacy single-script field -- kept in sync with min4
 const SALES_POINTS_KEY = 'sales_points';
@@ -221,6 +234,7 @@ module.exports = async function handler(req, res) {
       askingPrice: product.askingPrice,
       flashPrice: product.flashPrice,
       redZonePrice: product.redZonePrice,
+      staffCommission: computeStaffCommission(product.redZonePrice), // 1% of red zone price, staff-facing only
       salesPoints: cached.salesPoints,
       scripts: cached.scripts,       // { sec20, min1, min2, min4 } -- sec20/min1/min4 may be '' if still generating
       conditionCheck: cached.conditionCheck,
