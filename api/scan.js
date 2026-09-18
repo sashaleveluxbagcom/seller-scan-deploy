@@ -576,17 +576,32 @@ customer could later check.
 
 1. PRONUNCIATION: cover EVERY hard-to-say word the host will actually need to say out loud for
    this item -- not just the product title. Go through (a) every distinct brand, collection/
-   pattern, model, and material name in the title "${title}" word by word, AND (b) any other hard
-   word you plan to use anywhere in the sales points, script, or condition check you write below --
-   material names (e.g. "vachetta"), hardware/technique terms, or any French/Italian/foreign or
-   easily-fumbled word, even if it never appears in the title itself. Give each one its own short
-   phonetic guide in parentheses, e.g. brand ("Louis Vuitton" → "loo-EE vwee-TOHN"), pattern/
+   pattern, model, mythological/historical, and material name in the title "${title}" word by
+   word, AND (b) any other hard word you plan to use anywhere in the sales points, script, or
+   condition check you write below -- material names (e.g. "vachetta"), hardware/technique terms,
+   or any French/Italian/Greek/foreign or easily-fumbled word, even if it never appears in the
+   title itself. This includes collection/model names borrowed from mythology or history that
+   read like ordinary words but aren't (e.g. Gucci's "Dionysus", "Sylvie", "Ophidia") -- these are
+   exactly the names hosts stumble on and customers notice.
+
+   FORMAT every phonetic guide the SAME simple way, so it's instantly readable out loud, mid-show,
+   by someone who has never seen the word before: hyphens between syllables, the STRESSED syllable
+   in ALL CAPS, plain everyday English letter-sounds only -- no IPA symbols, no diacritical marks,
+   no linguistics notation. Example: brand ("Louis Vuitton" → "loo-EE vwee-TOHN"), pattern/
    collection names ("Damier" → "dah-mee-AY", "Azur" → "ah-ZUR", "Monogram" is often mispronounced
-   too), materials ("vachetta" → "vah-KET-uh"). Never skip a word just because it looks simple to
-   read if people commonly get it wrong. Plain everyday English words, model initials (MM, PM, GM),
-   and plain sizes don't need one. Get every pronunciation from your actual web research or
-   standard phonetics, not a guess. Only if truly nothing in the whole item needs one, say
-   "None needed."
+   too), materials ("vachetta" → "vah-KET-uh"), mythological/historical names ("Dionysus" →
+   "dy-oh-NYE-suss").
+
+   USE THE PRONUNCIATION REAL ENGLISH-SPEAKING HOSTS AND CUSTOMERS ACTUALLY USE, not a
+   hyper-literal rendering of the word's original language -- a name like "Dionysus" should get
+   its standard English dictionary pronunciation ("dy-oh-NYE-suss"), not a classical-Greek one
+   nobody selling or buying on Whatnot would recognize. When you're not sure, prefer the
+   pronunciation you actually find used in real fashion/retail sources over a textbook one.
+
+   Never skip a word just because it looks simple to read if people commonly get it wrong. Plain
+   everyday English words, model initials (MM, PM, GM), and plain sizes don't need one. Get every
+   pronunciation from your actual web research or standard phonetics, not a guess. Only if truly
+   nothing in the whole item needs one, say "None needed."
 
 2. SALES POINTS: 5-7 short, punchy bullet-point selling angles (one line each) a host can glance
    at mid-broadcast without breaking eye contact with the camera for long.
