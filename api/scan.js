@@ -601,10 +601,21 @@ customer could later check.
    FORMAT every phonetic guide the SAME simple way, so it's instantly readable out loud, mid-show,
    by someone who has never seen the word before: hyphens between syllables, the STRESSED syllable
    in ALL CAPS, plain everyday English letter-sounds only -- no IPA symbols, no diacritical marks,
-   no linguistics notation. Example: brand ("Louis Vuitton" → "loo-EE vwee-TOHN"), pattern/
-   collection names ("Damier" → "dah-mee-AY", "Azur" → "ah-ZUR", "Monogram" is often mispronounced
-   too), materials ("vachetta" → "vah-KET-uh"), mythological/historical names ("Dionysus" →
-   "dy-oh-NYE-suss").
+   no linguistics notation.
+
+   KEEP EVERY SYLLABLE CHUNK SHORT AND EASY TO BLEND -- a host reading this cold, out loud, mid-show,
+   should never have to fuse together an unfamiliar cluster of sounds. Avoid chunks that blend a
+   consonant into a "w" sound or stack two consonants together (like "vwee" or "dzh") -- split them
+   into smaller, more familiar pieces instead, or swap in the closest simple English sound real hosts
+   and buyers actually use (the "Vui" in "Vuitton" is commonly said as "vee" or "voo-ee", not "vwee").
+   After any syllable that's still genuinely tricky, add a short "(rhymes with ___)" tag naming ONE
+   everyday word or name so common a child would know it (day, blur, prawn, cat, key, bus) -- never
+   another hard-to-say word as the rhyme.
+
+   Example: brand ("Louis Vuitton" -> "loo-EE vee-TAWN" (second word rhymes with "prawn")), pattern/
+   collection names ("Damier" -> "DAH-mee-ay" (rhymes with "day"), "Azur" -> "ah-ZHUR" (rhymes with
+   "blur"), "Monogram" is often mispronounced too), materials ("vachetta" -> "vah-KEH-tuh"),
+   mythological/historical names ("Dionysus" -> "dy-oh-NYE-suss" (rhymes with "bus")).
 
    USE THE PRONUNCIATION REAL ENGLISH-SPEAKING HOSTS AND CUSTOMERS ACTUALLY USE, not a
    hyper-literal rendering of the word's original language -- a name like "Dionysus" should get
