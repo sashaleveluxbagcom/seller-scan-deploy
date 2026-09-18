@@ -51,6 +51,20 @@ h2, h3 { color: var(--text); }
 
 <div id="scanner" style="display:none;">
 
+  <!-- Seller attribution: who is currently working this device, so every item scanned/pulled up
+       can be credited to a person for the CEO Dashboard's per-seller commission breakdown
+       (Sasha, 2026-09-18). Free text rather than a fixed staff dropdown, so nobody is ever
+       blocked by an out-of-date roster; persisted in this browser so it doesn't have to be
+       retyped between scans, but always visible here and quick to change the moment a different
+       person picks up the device mid-show. Never blocks scanning if left blank -- see
+       logSellerActivity() below -- attribution rides on top of the tool's real job, it's never a
+       gate in front of it. -->
+  <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px;">
+    <label for="seller-name-input" style="font-size:13px;color:var(--text-dim);white-space:nowrap;">Selling as</label>
+    <input id="seller-name-input" type="text" placeholder="Type your name" autocomplete="off"
+      style="flex:1;padding:10px 12px;font-size:14px;border-radius:8px;" />
+  </div>
+
   <div style="display:flex;gap:8px;margin-bottom:16px;">
     <button type="button" id="tab-scan" style="flex:1;padding:10px;font-size:15px;font-weight:600;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--text);">Scan a SKU</button>
     <button type="button" id="tab-search" style="flex:1;padding:10px;font-size:15px;font-weight:600;border-radius:8px;border:1px solid var(--accent);background:var(--accent);color:var(--accent-text);">Browse inventory</button>
@@ -161,11 +175,24 @@ h2, h3 { color: var(--text); }
   var passcodeSubmit = document.getElementById('passcode-submit');
   var passcodeError = document.getElementById('passcode-error');
   var scanInput = document.getElementById('scan-input');
+  var sellerNameInput = document.getElementById('seller-name-input');
   var result = document.getElementById('result');
   var itemView = document.getElementById('item-view');
   var itemBack = document.getElementById('item-back');
   var pairsWith = document.getElementById('pairs-with');
   var moreLikeThis = document.getElementById('more-like-this');
+
+  // ---- Seller attribution: who's currently at this device (see the "Selling as" field) ----
+  function currentSellerName() {
+    return (sellerNameInput.value || '').trim();
+  }
+  try {
+    var savedSellerName = localStorage.getItem('sellerScanCurrentSeller');
+    if (savedSellerName) sellerNameInput.value = savedSellerName;
+  } catch (e) { /* localStorage unavailable -- just won't persist across reloads */ }
+  sellerNameInput.addEventListener('input', function () {
+    try { localStorage.setItem('sellerScanCurrentSeller', sellerNameInput.value.trim()); } catch (e) { /* ignore */ }
+  });
 
   function showItemView() {
     scanner.style.display = 'none';
@@ -713,9 +740,37 @@ h2, h3 { color: var(--text); }
     renderPairsWith(item);
     renderMoreLikeThis();
     updateShowNav();
+    logSellerActivity(item, requestBody);
     if (item.extendedPending && requestBody) {
       pollExtended(requestBody, 5); // a few tries, several seconds apart
     }
+  }
+
+  // Best-effort attribution log for the CEO Dashboard's per-seller commission breakdown
+  // (Sasha, 2026-09-18): every time an item is scanned or pulled up, credit whoever is
+  // currently entered in "Selling as" -- not just once per show -- so two people trading off
+  // mid-show each get credit for their own items. Skipped entirely with no name set, rather
+  // than logging blank/anonymous rows. Fire-and-forget, same pattern as the show-log calls
+  // above: a failed log never interrupts or blocks the seller's screen. Only fires from a real
+  // render() (a scan, a search click, a Prev/Next step) -- NOT from pollExtended's background
+  // refreshes of the same item, so one item view is never double-counted.
+  function logSellerActivity(item, requestBody) {
+    var seller = currentSellerName();
+    if (!seller || !item) return;
+    fetch(BACKEND_URL + '/api/seller-log', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        action: 'log',
+        passcode: passcode,
+        sellerName: seller,
+        itemId: (requestBody && requestBody.productId) || null,
+        sku: item.sku || null,
+        title: item.title || null,
+        redZonePrice: item.redZonePrice != null ? item.redZonePrice : null,
+        staffCommission: item.staffCommission != null ? item.staffCommission : null,
+      }),
+    }).catch(function () { /* best-effort -- doesn't affect the seller's session */ });
   }
 
   var printingTag = false;
