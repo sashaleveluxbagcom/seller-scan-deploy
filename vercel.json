@@ -8,7 +8,15 @@
     },
     "api/profit.js": {
       "maxDuration": 30
+    },
+    "api/backfill.js": {
+      "maxDuration": 300
     }
-  }
+  },
+  "crons": [
+    {
+      "path": "/api/backfill",
+      "schedule": "*/15 * * * *"
+    }
+  ]
 }
-
