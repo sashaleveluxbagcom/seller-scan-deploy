@@ -36,89 +36,112 @@ h2, h3 { color: var(--text); }
 <div id="seller-scan-app" style="max-width:480px;margin:0 auto;padding:24px;min-height:100vh;">
 
 <div id="gate" style="display:flex;flex-direction:column;justify-content:center;min-height:80vh;">
-  <div style="text-align:center;margin-bottom:32px;">
-    <div style="font-size:13px;letter-spacing:0.2em;color:var(--accent);text-transform:uppercase;margin-bottom:10px;">LeveLux</div>
-    <h2 style="margin:0;font-size:26px;font-weight:700;">Welcome, Seller</h2>
-    <p style="color:var(--text-dim);font-size:14px;margin:8px 0 0;">Enter your passcode to start scanning.</p>
-  </div>
-  <input id="passcode-input" type="text" placeholder="Enter passcode" autocomplete="off"
-    autocapitalize="off" autocorrect="off" spellcheck="false" autofocus
-    style="width:100%;padding:14px;font-size:16px;border-radius:10px;" />
-  <button id="passcode-submit" style="width:100%;padding:14px;margin-top:10px;font-size:16px;font-weight:700;border-radius:10px;border:none;background:var(--accent);color:var(--accent-text);">Enter</button>
-  <p id="passcode-error" style="color:var(--danger);display:none;text-align:center;margin-top:12px;">Wrong passcode.</p>
-  <p id="passcode-checking" style="color:var(--text-dim);display:none;text-align:center;margin-top:12px;">Checking…</p>
+<div style="text-align:center;margin-bottom:32px;">
+<div style="font-size:13px;letter-spacing:0.2em;color:var(--accent);text-transform:uppercase;margin-bottom:10px;">LeveLux</div>
+<h2 style="margin:0;font-size:26px;font-weight:700;">Welcome, Seller</h2>
+<p style="color:var(--text-dim);font-size:14px;margin:8px 0 0;">Enter your passcode to start scanning.</p>
+</div>
+<input id="passcode-input" type="text" placeholder="Enter passcode" autocomplete="off"
+  autocapitalize="off" autocorrect="off" spellcheck="false" autofocus
+  style="width:100%;padding:14px;font-size:16px;border-radius:10px;" />
+<button id="passcode-submit" style="width:100%;padding:14px;margin-top:10px;font-size:16px;font-weight:700;border-radius:10px;border:none;background:var(--accent);color:var(--accent-text);">Enter</button>
+<p id="passcode-error" style="color:var(--danger);display:none;text-align:center;margin-top:12px;">Wrong passcode.</p>
+<p id="passcode-checking" style="color:var(--text-dim);display:none;text-align:center;margin-top:12px;">Checking…</p>
+</div>
+
+<!-- Hub: the first screen after the passcode, same idea as the Picker/Packer role choice --
+     pick what you need right now instead of always landing straight in the scanner. -->
+<div id="hub" style="display:none;flex-direction:column;justify-content:center;min-height:80vh;">
+<div style="text-align:center;margin-bottom:28px;">
+<div style="font-size:13px;letter-spacing:0.2em;color:var(--accent);text-transform:uppercase;margin-bottom:10px;">LeveLux</div>
+<h2 style="margin:0;font-size:24px;font-weight:700;">What do you need right now?</h2>
+</div>
+<button type="button" id="hub-sell" style="width:100%;padding:20px;margin-bottom:12px;font-size:17px;font-weight:700;border-radius:12px;border:none;background:var(--accent);color:var(--accent-text);text-align:left;">
+🛒 Sell live
+<div style="font-size:13px;font-weight:500;margin-top:4px;opacity:0.85;">Scan or browse inventory, pull scripts &amp; prices</div>
+</button>
+<button type="button" id="hub-training" style="width:100%;padding:20px;margin-bottom:12px;font-size:17px;font-weight:700;border-radius:12px;border:1px solid var(--border);background:var(--surface);color:var(--text);text-align:left;">
+🎓 Training
+<div style="font-size:13px;font-weight:500;margin-top:4px;color:var(--text-dim);">Day 1 checklist, brands, pronunciation, sunglasses 101</div>
+</button>
+<button type="button" id="hub-messages" style="width:100%;padding:20px;font-size:17px;font-weight:700;border-radius:12px;border:1px solid var(--border);background:var(--surface);color:var(--text);text-align:left;">
+💬 Messages
+<div style="font-size:13px;font-weight:500;margin-top:4px;color:var(--text-dim);">Open LeveLux Chat</div>
+</button>
 </div>
 
 <div id="scanner" style="display:none;">
 
-  <!-- Seller attribution: who is currently working this device, so every item scanned/pulled up
-       can be credited to a person for the CEO Dashboard's per-seller commission breakdown
-       (Sasha, 2026-09-18). Free text rather than a fixed staff dropdown, so nobody is ever
-       blocked by an out-of-date roster; persisted in this browser so it doesn't have to be
-       retyped between scans, but always visible here and quick to change the moment a different
-       person picks up the device mid-show. Never blocks scanning if left blank -- see
-       logSellerActivity() below -- attribution rides on top of the tool's real job, it's never a
-       gate in front of it. -->
-  <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px;">
-    <label for="seller-name-input" style="font-size:13px;color:var(--text-dim);white-space:nowrap;">Selling as</label>
-    <input id="seller-name-input" type="text" placeholder="Type your name" autocomplete="off"
-      style="flex:1;padding:10px 12px;font-size:14px;border-radius:8px;" />
-  </div>
+<button type="button" id="scanner-to-hub" style="background:none;border:none;padding:8px 0;margin-bottom:6px;font-size:14px;color:var(--text-dim);">☰ Menu</button>
 
-  <div style="display:flex;gap:8px;margin-bottom:16px;">
-    <button type="button" id="tab-scan" style="flex:1;padding:10px;font-size:15px;font-weight:600;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--text);">Scan a SKU</button>
-    <button type="button" id="tab-search" style="flex:1;padding:10px;font-size:15px;font-weight:600;border-radius:8px;border:1px solid var(--accent);background:var(--accent);color:var(--accent-text);">Browse inventory</button>
-  </div>
+<!-- Seller attribution: who is currently working this device, so every item scanned/pulled up
+     can be credited to a person for the CEO Dashboard's per-seller commission breakdown
+     (Sasha, 2026-09-18). Free text rather than a fixed staff dropdown, so nobody is ever
+     blocked by an out-of-date roster; persisted in this browser so it doesn't have to be
+     retyped between scans, but always visible here and quick to change the moment a different
+     person picks up the device mid-show. Never blocks scanning if left blank -- see
+     logSellerActivity() below -- attribution rides on top of the tool's real job, it's never a
+     gate in front of it. -->
+<div style="display:flex;align-items:center;gap:8px;margin-bottom:14px;">
+<label for="seller-name-input" style="font-size:13px;color:var(--text-dim);white-space:nowrap;">Selling as</label>
+<input id="seller-name-input" type="text" placeholder="Type your name" autocomplete="off"
+  style="flex:1;padding:10px 12px;font-size:14px;border-radius:8px;" />
+</div>
 
-  <div id="scan-panel" style="display:none;">
-    <h2>Scan an item</h2>
-    <input id="scan-input" type="text" placeholder="Scan barcode / SKU" autofocus
-      style="width:100%;padding:14px;font-size:18px;border-radius:10px;" />
-  </div>
+<div style="display:flex;gap:8px;margin-bottom:16px;">
+<button type="button" id="tab-scan" style="flex:1;padding:10px;font-size:15px;font-weight:600;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--text);">Scan a SKU</button>
+<button type="button" id="tab-search" style="flex:1;padding:10px;font-size:15px;font-weight:600;border-radius:8px;border:1px solid var(--accent);background:var(--accent);color:var(--accent-text);">Browse inventory</button>
+</div>
 
-  <div id="search-panel">
-    <h2>Browse inventory</h2>
-    <div style="display:flex;gap:8px;">
-      <input id="search-input" type="text" placeholder="e.g. Louis Vuitton wallet"
-        style="flex:1;padding:12px;font-size:16px;border-radius:10px;" />
-      <button type="button" id="search-submit" style="padding:0 20px;font-size:16px;border-radius:10px;border:1px solid var(--border);background:var(--surface);color:var(--text);">Search</button>
-    </div>
-    <div style="display:flex;gap:16px;align-items:center;margin-top:10px;flex-wrap:wrap;">
-      <select id="search-category" style="padding:10px;font-size:14px;border-radius:8px;">
-        <option value="">All categories</option>
-        <!-- These match the actual "Product type" values found across the live catalog.
-             Most bags/wallets/shoes/luggage are all typed "Pre owned" in Shopify -- that
-             field isn't broken out further, so this is the finest-grained filter available
-             without re-tagging products in Shopify. -->
-        <option value="Pre owned">Pre-Owned (Bags, Wallets, Shoes, Luggage)</option>
-        <option value="Sunglasses">Sunglasses</option>
-        <option value="Eyeglasses">Eyeglasses</option>
-        <option value="Jewelry">Jewelry</option>
-        <option value="Accessory">Accessory</option>
-        <option value="Hat">Hats</option>
-        <option value="Briefcase">Briefcases</option>
-      </select>
-      <label style="font-size:14px;display:flex;align-items:center;gap:6px;color:var(--text-dim);">
-        <input type="checkbox" id="search-in-stock" checked /> In stock only
-      </label>
-    </div>
-    <div id="lineup-bar" style="display:none;align-items:center;justify-content:space-between;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:10px 12px;margin-top:12px;">
-      <span style="font-size:14px;">🎬 <span id="lineup-count">0</span> in show lineup</span>
-      <button type="button" id="lineup-open" style="padding:6px 12px;font-size:13px;font-weight:600;border-radius:6px;border:1px solid var(--accent);background:var(--surface-alt);color:var(--accent);">View lineup →</button>
-    </div>
-    <div id="search-results" style="margin-top:16px;"></div>
-  </div>
+<div id="scan-panel" style="display:none;">
+<h2>Scan an item</h2>
+<input id="scan-input" type="text" placeholder="Scan barcode / SKU" autofocus
+  style="width:100%;padding:14px;font-size:18px;border-radius:10px;" />
+</div>
+
+<div id="search-panel">
+<h2>Browse inventory</h2>
+<div style="display:flex;gap:8px;">
+<input id="search-input" type="text" placeholder="e.g. Louis Vuitton wallet"
+  style="flex:1;padding:12px;font-size:16px;border-radius:10px;" />
+<button type="button" id="search-submit" style="padding:0 20px;font-size:16px;border-radius:10px;border:1px solid var(--border);background:var(--surface);color:var(--text);">Search</button>
+</div>
+<div style="display:flex;gap:16px;align-items:center;margin-top:10px;flex-wrap:wrap;">
+<select id="search-category" style="padding:10px;font-size:14px;border-radius:8px;">
+<option value="">All categories</option>
+<!-- These match the actual "Product type" values found across the live catalog.
+     Most bags/wallets/shoes/luggage are all typed "Pre owned" in Shopify -- that
+     field isn't broken out further, so this is the finest-grained filter available
+     without re-tagging products in Shopify. -->
+<option value="Pre owned">Pre-Owned (Bags, Wallets, Shoes, Luggage)</option>
+<option value="Sunglasses">Sunglasses</option>
+<option value="Eyeglasses">Eyeglasses</option>
+<option value="Jewelry">Jewelry</option>
+<option value="Accessory">Accessory</option>
+<option value="Hat">Hats</option>
+<option value="Briefcase">Briefcases</option>
+</select>
+<label style="font-size:14px;display:flex;align-items:center;gap:6px;color:var(--text-dim);">
+<input type="checkbox" id="search-in-stock" checked /> In stock only
+</label>
+</div>
+<div id="lineup-bar" style="display:none;align-items:center;justify-content:space-between;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:10px 12px;margin-top:12px;">
+<span style="font-size:14px;">🎬 <span id="lineup-count">0</span> in show lineup</span>
+<button type="button" id="lineup-open" style="padding:6px 12px;font-size:13px;font-weight:600;border-radius:6px;border:1px solid var(--accent);background:var(--surface-alt);color:var(--accent);">View lineup →</button>
+</div>
+<div id="search-results" style="margin-top:16px;"></div>
+</div>
 
 </div>
 
 <!-- Lineup view: build an ordered list of items for a planned show before you go live, then
      start it and step through them one at a time on the item view below. -->
 <div id="lineup-view" style="display:none;">
-  <button type="button" id="lineup-back" style="background:none;border:none;padding:8px 0;margin-bottom:8px;font-size:15px;color:var(--text-dim);">← Back</button>
-  <h2 style="margin-bottom:4px;">Show lineup</h2>
-  <p style="color:var(--text-dim);font-size:13px;margin-top:0;">Reorder with the arrows, then start the show to step through them in order.</p>
-  <div id="lineup-list" style="margin:12px 0;"></div>
-  <button type="button" id="lineup-start" style="width:100%;padding:14px;font-size:16px;font-weight:700;background:var(--accent);color:var(--accent-text);border:none;border-radius:8px;">▶ Start show</button>
+<button type="button" id="lineup-back" style="background:none;border:none;padding:8px 0;margin-bottom:8px;font-size:15px;color:var(--text-dim);">← Back</button>
+<h2 style="margin-bottom:4px;">Show lineup</h2>
+<p style="color:var(--text-dim);font-size:13px;margin-top:0;">Reorder with the arrows, then start the show to step through them in order.</p>
+<div id="lineup-list" style="margin:12px 0;"></div>
+<button type="button" id="lineup-start" style="width:100%;padding:14px;font-size:16px;font-weight:700;background:var(--accent);color:var(--accent-text);border:none;border-radius:8px;">▶ Start show</button>
 </div>
 
 <!-- Item view: its own dedicated screen, separate from the scan/search list, so pulling up
@@ -128,906 +151,1321 @@ h2, h3 { color: var(--text); }
      show is running, Prev/Next replace plain browsing so you can walk your planned lineup in
      order without going back to the list between items. -->
 <div id="item-view" style="display:none;">
-  <button type="button" id="item-back" style="background:none;border:none;padding:8px 0;margin-bottom:8px;font-size:15px;color:var(--text-dim);">← Back</button>
-  <div id="show-nav" style="display:none;justify-content:space-between;align-items:center;background:var(--surface);border-radius:8px;padding:8px 12px;margin-bottom:12px;">
-    <button type="button" id="show-prev" style="padding:8px 14px;font-size:14px;font-weight:600;border-radius:6px;border:1px solid var(--border);background:var(--surface-alt);color:var(--text);">◀ Prev</button>
-    <span id="show-position" style="font-size:13px;color:var(--text-dim);"></span>
-    <button type="button" id="show-next" style="padding:8px 14px;font-size:14px;font-weight:600;border-radius:6px;border:none;background:var(--accent);color:var(--accent-text);">Next ▶</button>
-  </div>
-  <div id="browse-nav" style="display:none;justify-content:space-between;align-items:center;background:var(--surface);border-radius:8px;padding:8px 12px;margin-bottom:12px;">
-    <button type="button" id="browse-prev" style="padding:8px 14px;font-size:14px;font-weight:600;border-radius:6px;border:1px solid var(--border);background:var(--surface-alt);color:var(--text);">◀ Prev</button>
-    <span id="browse-position" style="font-size:13px;color:var(--text-dim);"></span>
-    <button type="button" id="browse-next" style="padding:8px 14px;font-size:14px;font-weight:600;border-radius:6px;border:none;background:var(--surface-alt);color:var(--text);border:1px solid var(--border);">Next ▶</button>
-  </div>
-  <div id="result"></div>
-  <div id="pairs-with" style="display:none;margin-top:18px;padding-top:16px;border-top:1px solid var(--border);"></div>
-  <div id="more-like-this" style="display:none;margin-top:18px;"></div>
+<button type="button" id="item-back" style="background:none;border:none;padding:8px 0;margin-bottom:8px;font-size:15px;color:var(--text-dim);">← Back</button>
+<div id="show-nav" style="display:none;justify-content:space-between;align-items:center;background:var(--surface);border-radius:8px;padding:8px 12px;margin-bottom:12px;">
+<button type="button" id="show-prev" style="padding:8px 14px;font-size:14px;font-weight:600;border-radius:6px;border:1px solid var(--border);background:var(--surface-alt);color:var(--text);">◀ Prev</button>
+<span id="show-position" style="font-size:13px;color:var(--text-dim);"></span>
+<button type="button" id="show-next" style="padding:8px 14px;font-size:14px;font-weight:600;border-radius:6px;border:none;background:var(--accent);color:var(--accent-text);">Next ▶</button>
+</div>
+<div id="browse-nav" style="display:none;justify-content:space-between;align-items:center;background:var(--surface);border-radius:8px;padding:8px 12px;margin-bottom:12px;">
+<button type="button" id="browse-prev" style="padding:8px 14px;font-size:14px;font-weight:600;border-radius:6px;border:1px solid var(--border);background:var(--surface-alt);color:var(--text);">◀ Prev</button>
+<span id="browse-position" style="font-size:13px;color:var(--text-dim);"></span>
+<button type="button" id="browse-next" style="padding:8px 14px;font-size:14px;font-weight:600;border-radius:6px;border:none;background:var(--surface-alt);color:var(--text);border:1px solid var(--border);">Next ▶</button>
+</div>
+<div id="result"></div>
+<div id="pairs-with" style="display:none;margin-top:18px;padding-top:16px;border-top:1px solid var(--border);"></div>
+<div id="more-like-this" style="display:none;margin-top:18px;"></div>
 </div>
 
+<!-- Training: Day 1 checklist + an evergreen reference (brands/pronunciation/sunglasses code),
+     reachable from the hub any time, not just on day one. -->
+<div id="training" style="display:none;">
+<button type="button" id="training-to-hub" style="background:none;border:none;padding:8px 0;margin-bottom:6px;font-size:14px;color:var(--text-dim);">☰ Menu</button>
+<h2 style="margin-bottom:2px;">🎓 Seller Training</h2>
+<p style="color:var(--text-dim);font-size:13px;margin-top:0;">Day 1 essentials, plus a reference you can come back to anytime.</p>
+
+<div style="display:flex;gap:6px;margin:16px 0;flex-wrap:wrap;">
+<button type="button" class="training-tab" data-tab="day1" style="flex:1;min-width:90px;padding:10px 6px;font-size:13px;font-weight:600;border-radius:8px;border:1px solid var(--accent);background:var(--accent);color:var(--accent-text);">Day 1</button>
+<button type="button" class="training-tab" data-tab="brands" style="flex:1;min-width:90px;padding:10px 6px;font-size:13px;font-weight:600;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--text);">Brands</button>
+<button type="button" class="training-tab" data-tab="bags" style="flex:1;min-width:90px;padding:10px 6px;font-size:13px;font-weight:600;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--text);">Bags &amp; Leather</button>
+<button type="button" class="training-tab" data-tab="sunglasses" style="flex:1;min-width:90px;padding:10px 6px;font-size:13px;font-weight:600;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--text);">Sunglasses 101</button>
+<button type="button" class="training-tab" data-tab="care" style="flex:1;min-width:90px;padding:10px 6px;font-size:13px;font-weight:600;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--text);">Day 2: Care</button>
+<button type="button" class="training-tab" data-tab="selling" style="flex:1;min-width:90px;padding:10px 6px;font-size:13px;font-weight:600;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--text);">Selling Guide</button>
+</div>
+
+<div id="training-day1"></div>
+<div id="training-brands" style="display:none;"></div>
+<div id="training-bags" style="display:none;"></div>
+<div id="training-sunglasses" style="display:none;"></div>
+<div id="training-care" style="display:none;"></div>
+<div id="training-selling" style="display:none;"></div>
 </div>
 
 <div id="teleprompter" style="display:none;position:fixed;inset:0;background:var(--bg);z-index:9999;flex-direction:column;">
-  <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 14px;background:var(--surface);flex-wrap:wrap;">
-    <button type="button" id="tp-close" style="background:none;border:none;color:var(--text);font-size:24px;line-height:1;padding:4px 8px;">✕</button>
-    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
-      <button type="button" id="tp-font-minus" style="background:var(--surface-alt);color:var(--text);border:none;border-radius:6px;padding:8px 14px;font-size:16px;">A−</button>
-      <button type="button" id="tp-font-plus" style="background:var(--surface-alt);color:var(--text);border:none;border-radius:6px;padding:8px 14px;font-size:16px;">A+</button>
-      <label style="color:var(--text-dim);font-size:13px;display:flex;align-items:center;gap:6px;">
-        Speed
-        <input type="range" id="tp-speed" min="1" max="10" value="4" style="width:90px;vertical-align:middle;" />
-      </label>
-      <button type="button" id="tp-play" style="background:var(--success);color:#0a1f10;border:none;border-radius:6px;padding:8px 18px;font-size:16px;font-weight:600;min-width:90px;">▶ Play</button>
-    </div>
-  </div>
-  <div id="tp-text" style="flex:1;overflow-y:auto;padding:48px 32px 70vh;color:var(--text);font-size:32px;line-height:1.7;white-space:pre-wrap;font-family:-apple-system,sans-serif;"></div>
+<div style="display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 14px;background:var(--surface);flex-wrap:wrap;">
+<button type="button" id="tp-close" style="background:none;border:none;color:var(--text);font-size:24px;line-height:1;padding:4px 8px;">✕</button>
+<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+<button type="button" id="tp-font-minus" style="background:var(--surface-alt);color:var(--text);border:none;border-radius:6px;padding:8px 14px;font-size:16px;">A−</button>
+<button type="button" id="tp-font-plus" style="background:var(--surface-alt);color:var(--text);border:none;border-radius:6px;padding:8px 14px;font-size:16px;">A+</button>
+<label style="color:var(--text-dim);font-size:13px;display:flex;align-items:center;gap:6px;">
+Speed
+<input type="range" id="tp-speed" min="1" max="10" value="4" style="width:90px;vertical-align:middle;" />
+</label>
+<button type="button" id="tp-play" style="background:var(--success);color:#0a1f10;border:none;border-radius:6px;padding:8px 18px;font-size:16px;font-weight:600;min-width:90px;">▶ Play</button>
+</div>
+</div>
+<div id="tp-text" style="flex:1;overflow-y:auto;padding:48px 32px 70vh;color:var(--text);font-size:32px;line-height:1.7;white-space:pre-wrap;font-family:-apple-system,sans-serif;"></div>
 </div>
 
 <script>
 (function () {
-  // Set this to your deployed Vercel function's base URL, e.g. "https://leveluxbag-seller-scan.vercel.app"
-  var BACKEND_URL = ""; // same-origin: this page is served from the same Vercel project as /api/scan and /api/search
+var BACKEND_URL = ""; // same-origin: this page is served from the same Vercel project as /api/scan and /api/search
 
-  var passcode = null;
+var passcode = null;
 
-  var gate = document.getElementById('gate');
-  var scanner = document.getElementById('scanner');
-  var passcodeInput = document.getElementById('passcode-input');
-  var passcodeSubmit = document.getElementById('passcode-submit');
-  var passcodeError = document.getElementById('passcode-error');
-  var scanInput = document.getElementById('scan-input');
-  var sellerNameInput = document.getElementById('seller-name-input');
-  var result = document.getElementById('result');
-  var itemView = document.getElementById('item-view');
-  var itemBack = document.getElementById('item-back');
-  var pairsWith = document.getElementById('pairs-with');
-  var moreLikeThis = document.getElementById('more-like-this');
+var gate = document.getElementById('gate');
+var hub = document.getElementById('hub');
+var training = document.getElementById('training');
+var scanner = document.getElementById('scanner');
+var passcodeInput = document.getElementById('passcode-input');
+var passcodeSubmit = document.getElementById('passcode-submit');
+var passcodeError = document.getElementById('passcode-error');
+var scanInput = document.getElementById('scan-input');
+var sellerNameInput = document.getElementById('seller-name-input');
+var result = document.getElementById('result');
+var itemView = document.getElementById('item-view');
+var itemBack = document.getElementById('item-back');
+var pairsWith = document.getElementById('pairs-with');
+var moreLikeThis = document.getElementById('more-like-this');
 
-  // ---- Seller attribution: who's currently at this device (see the "Selling as" field) ----
-  function currentSellerName() {
-    return (sellerNameInput.value || '').trim();
+function currentSellerName() {
+  return (sellerNameInput.value || '').trim();
+}
+try {
+  var savedSellerName = localStorage.getItem('sellerScanCurrentSeller');
+  if (savedSellerName) sellerNameInput.value = savedSellerName;
+} catch (e) { /* localStorage unavailable -- just won't persist across reloads */ }
+sellerNameInput.addEventListener('input', function () {
+  try { localStorage.setItem('sellerScanCurrentSeller', sellerNameInput.value.trim()); } catch (e) { /* ignore */ }
+});
+
+function showItemView() {
+  scanner.style.display = 'none';
+  lineupView.style.display = 'none';
+  itemView.style.display = 'block';
+}
+function hideItemExtras() {
+  pairsWith.style.display = 'none';
+  moreLikeThis.style.display = 'none';
+}
+function hideItemView() {
+  itemView.style.display = 'none';
+  scanner.style.display = 'block';
+}
+itemBack.addEventListener('click', function () {
+  endShow();
+  hideItemView();
+});
+
+var lineupBar = document.getElementById('lineup-bar');
+var lineupCount = document.getElementById('lineup-count');
+var lineupOpen = document.getElementById('lineup-open');
+var lineupView = document.getElementById('lineup-view');
+var lineupBack = document.getElementById('lineup-back');
+var lineupList = document.getElementById('lineup-list');
+var lineupStart = document.getElementById('lineup-start');
+var showNav = document.getElementById('show-nav');
+var showPrev = document.getElementById('show-prev');
+var showNext = document.getElementById('show-next');
+var showPosition = document.getElementById('show-position');
+
+var lineup = [];
+var lastSearchItems = [];
+var showQueue = null;
+var showIndex = -1;
+var browseQueue = [];
+var browseIndex = -1;
+
+function isInLineup(id) {
+  return lineup.some(function (it) { return it.id === id; });
+}
+function toggleLineup(id, title, sku) {
+  if (isInLineup(id)) {
+    lineup = lineup.filter(function (it) { return it.id !== id; });
+  } else {
+    lineup.push({ id: id, title: title, sku: sku || null });
   }
-  try {
-    var savedSellerName = localStorage.getItem('sellerScanCurrentSeller');
-    if (savedSellerName) sellerNameInput.value = savedSellerName;
-  } catch (e) { /* localStorage unavailable -- just won't persist across reloads */ }
-  sellerNameInput.addEventListener('input', function () {
-    try { localStorage.setItem('sellerScanCurrentSeller', sellerNameInput.value.trim()); } catch (e) { /* ignore */ }
-  });
+  renderLineupBar();
+  renderSearchResults(lastSearchItems);
+}
+function renderLineupBar() {
+  lineupBar.style.display = lineup.length ? 'flex' : 'none';
+  lineupCount.textContent = lineup.length;
+}
+function showLineupView() {
+  scanner.style.display = 'none';
+  lineupView.style.display = 'block';
+  renderLineupView();
+}
+function hideLineupView() {
+  lineupView.style.display = 'none';
+  scanner.style.display = 'block';
+}
+lineupOpen.addEventListener('click', showLineupView);
+lineupBack.addEventListener('click', hideLineupView);
 
-  function showItemView() {
-    scanner.style.display = 'none';
-    lineupView.style.display = 'none';
-    itemView.style.display = 'block';
+function renderLineupView() {
+  if (!lineup.length) {
+    lineupList.innerHTML = '<p style="color:var(--text-dim);">No items yet — go back and tap the + on items in Search to add them here.</p>';
+    lineupStart.style.display = 'none';
+    return;
   }
-  // "Pairs well with" and "See more" are separate DOM sections outside #result, so replacing
-  // #result's content (a loading message, or an error) does NOT clear them on its own -- without
-  // this, a failed/loading lookup would leave the PREVIOUS item's pairs-with suggestion and
-  // category shortcuts visibly stuck on screen underneath the new loading/error message, looking
-  // like leftover or contradictory content. Hide both any time we're not showing a fully-loaded
-  // item's result.
-  function hideItemExtras() {
-    pairsWith.style.display = 'none';
-    moreLikeThis.style.display = 'none';
-  }
-  function hideItemView() {
-    itemView.style.display = 'none';
-    scanner.style.display = 'block';
-  }
-  // Back always exits any running show too -- Prev/Next inside the show is the way to move
-  // between items while one is active; Back is the one way out of it.
-  itemBack.addEventListener('click', function () {
-    endShow();
-    hideItemView();
-  });
+  lineupStart.style.display = 'block';
+  lineupList.innerHTML = lineup.map(function (it, idx) {
+    return (
+      '<div style="display:flex;align-items:center;gap:6px;padding:12px 10px;border:1px solid var(--border);border-radius:10px;margin-bottom:10px;">' +
+      '<span style="flex:none;width:20px;color:var(--text-dim);font-size:13px;">' + (idx + 1) + '</span>' +
+      '<span style="flex:1;font-size:14px;min-width:0;">' + escapeHtml(it.title) + '</span>' +
+      '<button type="button" class="lineup-move-up" data-idx="' + idx + '" ' + (idx === 0 ? 'disabled' : '') + ' style="flex:none;width:44px;height:44px;border-radius:8px;border:1px solid var(--border);background:var(--surface);font-size:16px;">↑</button>' +
+      '<button type="button" class="lineup-move-down" data-idx="' + idx + '" ' + (idx === lineup.length - 1 ? 'disabled' : '') + ' style="flex:none;width:44px;height:44px;border-radius:8px;border:1px solid var(--border);background:var(--surface);font-size:16px;">↓</button>' +
+      '<button type="button" class="lineup-remove" data-idx="' + idx + '" style="flex:none;width:44px;height:44px;border-radius:8px;border:1px solid var(--danger);background:var(--surface);color:var(--danger);font-size:16px;">✕</button>' +
+      '</div>'
+    );
+  }).join('');
+}
 
-  // ---- Show lineup: a planned running order, built before you go live ----
-  var lineupBar = document.getElementById('lineup-bar');
-  var lineupCount = document.getElementById('lineup-count');
-  var lineupOpen = document.getElementById('lineup-open');
-  var lineupView = document.getElementById('lineup-view');
-  var lineupBack = document.getElementById('lineup-back');
-  var lineupList = document.getElementById('lineup-list');
-  var lineupStart = document.getElementById('lineup-start');
-  var showNav = document.getElementById('show-nav');
-  var showPrev = document.getElementById('show-prev');
-  var showNext = document.getElementById('show-next');
-  var showPosition = document.getElementById('show-position');
-
-  var lineup = []; // [{id, title}, ...] in planned order
-  var lastSearchItems = []; // last set of search results, so cards can re-render their +/added state
-  var showQueue = null; // snapshot of the lineup once "Start show" is pressed, or null if not running
-  var showIndex = -1;
-  var browseQueue = []; // the current Browse/Search results list, so opening any item lets you
-  var browseIndex = -1; // step to the next/previous one without a formally-started show
-
-  function isInLineup(id) {
-    return lineup.some(function (it) { return it.id === id; });
-  }
-  function toggleLineup(id, title, sku) {
-    if (isInLineup(id)) {
-      lineup = lineup.filter(function (it) { return it.id !== id; });
-    } else {
-      lineup.push({ id: id, title: title, sku: sku || null });
-    }
+lineupList.addEventListener('click', function (e) {
+  var upBtn = e.target.closest('.lineup-move-up');
+  var downBtn = e.target.closest('.lineup-move-down');
+  var rmBtn = e.target.closest('.lineup-remove');
+  if (upBtn && !upBtn.disabled) {
+    var i1 = Number(upBtn.getAttribute('data-idx'));
+    var tmp1 = lineup[i1 - 1]; lineup[i1 - 1] = lineup[i1]; lineup[i1] = tmp1;
+    renderLineupView();
+  } else if (downBtn && !downBtn.disabled) {
+    var i2 = Number(downBtn.getAttribute('data-idx'));
+    var tmp2 = lineup[i2 + 1]; lineup[i2 + 1] = lineup[i2]; lineup[i2] = tmp2;
+    renderLineupView();
+  } else if (rmBtn) {
+    var i3 = Number(rmBtn.getAttribute('data-idx'));
+    lineup.splice(i3, 1);
     renderLineupBar();
-    renderSearchResults(lastSearchItems); // refresh each card's +/✓ state
-  }
-  function renderLineupBar() {
-    lineupBar.style.display = lineup.length ? 'flex' : 'none';
-    lineupCount.textContent = lineup.length;
-  }
-  function showLineupView() {
-    scanner.style.display = 'none';
-    lineupView.style.display = 'block';
     renderLineupView();
   }
-  function hideLineupView() {
-    lineupView.style.display = 'none';
-    scanner.style.display = 'block';
-  }
-  lineupOpen.addEventListener('click', showLineupView);
-  lineupBack.addEventListener('click', hideLineupView);
+});
 
-  function renderLineupView() {
-    if (!lineup.length) {
-      lineupList.innerHTML = '<p style="color:var(--text-dim);">No items yet — go back and tap the + on items in Search to add them here.</p>';
-      lineupStart.style.display = 'none';
-      return;
-    }
-    lineupStart.style.display = 'block';
-    lineupList.innerHTML = lineup.map(function (it, idx) {
-      return (
-        '<div style="display:flex;align-items:center;gap:6px;padding:12px 10px;border:1px solid var(--border);border-radius:10px;margin-bottom:10px;">' +
-          '<span style="flex:none;width:20px;color:var(--text-dim);font-size:13px;">' + (idx + 1) + '</span>' +
-          '<span style="flex:1;font-size:14px;min-width:0;">' + escapeHtml(it.title) + '</span>' +
-          '<button type="button" class="lineup-move-up" data-idx="' + idx + '" ' + (idx === 0 ? 'disabled' : '') + ' style="flex:none;width:44px;height:44px;border-radius:8px;border:1px solid var(--border);background:var(--surface);font-size:16px;">↑</button>' +
-          '<button type="button" class="lineup-move-down" data-idx="' + idx + '" ' + (idx === lineup.length - 1 ? 'disabled' : '') + ' style="flex:none;width:44px;height:44px;border-radius:8px;border:1px solid var(--border);background:var(--surface);font-size:16px;">↓</button>' +
-          '<button type="button" class="lineup-remove" data-idx="' + idx + '" style="flex:none;width:44px;height:44px;border-radius:8px;border:1px solid var(--danger);background:var(--surface);color:var(--danger);font-size:16px;">✕</button>' +
-        '</div>'
-      );
-    }).join('');
-  }
+var currentShowId = null;
 
-  lineupList.addEventListener('click', function (e) {
-    var upBtn = e.target.closest('.lineup-move-up');
-    var downBtn = e.target.closest('.lineup-move-down');
-    var rmBtn = e.target.closest('.lineup-remove');
-    if (upBtn && !upBtn.disabled) {
-      var i1 = Number(upBtn.getAttribute('data-idx'));
-      var tmp1 = lineup[i1 - 1]; lineup[i1 - 1] = lineup[i1]; lineup[i1] = tmp1;
-      renderLineupView();
-    } else if (downBtn && !downBtn.disabled) {
-      var i2 = Number(downBtn.getAttribute('data-idx'));
-      var tmp2 = lineup[i2 + 1]; lineup[i2 + 1] = lineup[i2]; lineup[i2] = tmp2;
-      renderLineupView();
-    } else if (rmBtn) {
-      var i3 = Number(rmBtn.getAttribute('data-idx'));
-      lineup.splice(i3, 1);
-      renderLineupBar();
-      renderLineupView();
-    }
-  });
+lineupStart.addEventListener('click', function () {
+  if (!lineup.length) return;
+  showQueue = lineup.slice();
+  currentShowId = null;
+  fetch(BACKEND_URL + '/api/show-log', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ action: 'start', passcode: passcode, items: showQueue }),
+  })
+    .then(function (r) { return r.json(); })
+    .then(function (data) { if (data && data.showId) currentShowId = data.showId; })
+    .catch(function () { /* best-effort -- show still runs without a logged showId */ });
+  goToShowItem(0);
+});
 
-  var currentShowId = null;
+function goToShowItem(idx) {
+  showIndex = idx;
+  var item = showQueue[idx];
+  lookupById(item.id, item.title);
+}
 
-  lineupStart.addEventListener('click', function () {
-    if (!lineup.length) return;
-    showQueue = lineup.slice();
-    currentShowId = null;
-    // Log the show starting -- fire this off before opening the first item so a show that's
-    // ended almost immediately still has a showId to log the end against. Best-effort: if this
-    // fails (network hiccup), the show still runs fine locally, it just won't show up on the
-    // Profit tab afterward.
+function endShow() {
+  if (showQueue && currentShowId) {
     fetch(BACKEND_URL + '/api/show-log', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action: 'start', passcode: passcode, items: showQueue }),
-    })
-      .then(function (r) { return r.json(); })
-      .then(function (data) { if (data && data.showId) currentShowId = data.showId; })
-      .catch(function () { /* best-effort -- show still runs without a logged showId */ });
-    goToShowItem(0);
-  });
-
-  function goToShowItem(idx) {
-    showIndex = idx;
-    var item = showQueue[idx];
-    lookupById(item.id, item.title);
+      body: JSON.stringify({ action: 'end', passcode: passcode, showId: currentShowId }),
+    }).catch(function () { /* best-effort */ });
   }
+  showQueue = null;
+  showIndex = -1;
+  currentShowId = null;
+}
 
-  function endShow() {
-    if (showQueue && currentShowId) {
-      fetch(BACKEND_URL + '/api/show-log', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'end', passcode: passcode, showId: currentShowId }),
-      }).catch(function () { /* best-effort */ });
-    }
-    showQueue = null;
-    showIndex = -1;
-    currentShowId = null;
+function updateShowNav() {
+  if (showQueue) {
+    browseNav.style.display = 'none';
+    showNav.style.display = 'flex';
+    showPosition.textContent = (showIndex + 1) + ' / ' + showQueue.length;
+    showPrev.disabled = showIndex <= 0;
+    showNext.textContent = showIndex < showQueue.length - 1 ? 'Next ▶' : 'Finish ✓';
+    return;
   }
-
-  function updateShowNav() {
-    // A formally-started show takes priority over plain browsing -- its Prev/Next replace the
-    // browse nav for as long as it's running.
-    if (showQueue) {
-      browseNav.style.display = 'none';
-      showNav.style.display = 'flex';
-      showPosition.textContent = (showIndex + 1) + ' / ' + showQueue.length;
-      showPrev.disabled = showIndex <= 0;
-      showNext.textContent = showIndex < showQueue.length - 1 ? 'Next ▶' : 'Finish ✓';
-      return;
-    }
-    showNav.style.display = 'none';
-    // Plain browsing: Next/Prev through whatever the current Browse/Search results list was,
-    // as long as there's more than one item to step through.
-    if (browseQueue.length > 1 && browseIndex >= 0) {
-      browseNav.style.display = 'flex';
-      browsePosition.textContent = (browseIndex + 1) + ' / ' + browseQueue.length;
-      browsePrev.disabled = browseIndex <= 0;
-      browseNext.disabled = browseIndex >= browseQueue.length - 1;
-    } else {
-      browseNav.style.display = 'none';
-    }
+  showNav.style.display = 'none';
+  if (browseQueue.length > 1 && browseIndex >= 0) {
+    browseNav.style.display = 'flex';
+    browsePosition.textContent = (browseIndex + 1) + ' / ' + browseQueue.length;
+    browsePrev.disabled = browseIndex <= 0;
+    browseNext.disabled = browseIndex >= browseQueue.length - 1;
+  } else {
+    browseNav.style.display = 'none';
   }
-  showPrev.addEventListener('click', function () {
-    if (showQueue && showIndex > 0) goToShowItem(showIndex - 1);
-  });
-  showNext.addEventListener('click', function () {
-    if (!showQueue) return;
-    if (showIndex < showQueue.length - 1) {
-      goToShowItem(showIndex + 1);
-    } else {
-      endShow();
-      hideItemView();
-    }
-  });
-
-  var browseNav = document.getElementById('browse-nav');
-  var browsePrev = document.getElementById('browse-prev');
-  var browseNext = document.getElementById('browse-next');
-  var browsePosition = document.getElementById('browse-position');
-
-  function goToBrowseItem(idx) {
-    browseIndex = idx;
-    var item = browseQueue[idx];
-    lookupById(item.id, item.title);
+}
+showPrev.addEventListener('click', function () {
+  if (showQueue && showIndex > 0) goToShowItem(showIndex - 1);
+});
+showNext.addEventListener('click', function () {
+  if (!showQueue) return;
+  if (showIndex < showQueue.length - 1) {
+    goToShowItem(showIndex + 1);
+  } else {
+    endShow();
+    hideItemView();
   }
-  browsePrev.addEventListener('click', function () {
-    if (browseIndex > 0) goToBrowseItem(browseIndex - 1);
-  });
-  browseNext.addEventListener('click', function () {
-    if (browseIndex < browseQueue.length - 1) goToBrowseItem(browseIndex + 1);
-  });
+});
 
-  var passcodeChecking = document.getElementById('passcode-checking');
-  var checkingPasscode = false;
+var browseNav = document.getElementById('browse-nav');
+var browsePrev = document.getElementById('browse-prev');
+var browseNext = document.getElementById('browse-next');
+var browsePosition = document.getElementById('browse-position');
 
-  // Verifies the passcode against the server BEFORE ever showing the scan/search screen, so
-  // someone finds out immediately if they typed it wrong -- rather than the old behavior, where
-  // the app let anyone straight through and a wrong passcode only surfaced later, confusingly,
-  // the first time they tried to actually scan or search something.
-  function tryEnter() {
-    var entered = passcodeInput.value.trim();
-    if (!entered || checkingPasscode) return;
-    checkingPasscode = true;
-    passcodeError.style.display = 'none';
-    passcodeChecking.style.display = 'block';
-    passcodeSubmit.disabled = true;
+function goToBrowseItem(idx) {
+  browseIndex = idx;
+  var item = browseQueue[idx];
+  lookupById(item.id, item.title);
+}
+browsePrev.addEventListener('click', function () {
+  if (browseIndex > 0) goToBrowseItem(browseIndex - 1);
+});
+browseNext.addEventListener('click', function () {
+  if (browseIndex < browseQueue.length - 1) goToBrowseItem(browseIndex + 1);
+});
 
-    fetch(BACKEND_URL + '/api/verify-passcode', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ passcode: entered }),
-    })
-      .then(function (r) { return r.json().then(function (data) { return { ok: r.ok, data: data }; }); })
-      .then(function (res) {
-        checkingPasscode = false;
-        passcodeChecking.style.display = 'none';
-        passcodeSubmit.disabled = false;
-        if (!res.ok) {
-          passcodeError.textContent = 'Wrong passcode.';
-          passcodeError.style.display = 'block';
-          return;
-        }
-        passcode = entered;
-        gate.style.display = 'none';
-        scanner.style.display = 'block';
-        // Land on Browse with the full catalog already loading, rather than an empty Scan
-        // input -- so the first thing anyone sees after the passcode is every item, not a
-        // blank field waiting for a barcode.
-        showSearchTab();
-        runSearch();
-      })
-      .catch(function () {
-        checkingPasscode = false;
-        passcodeChecking.style.display = 'none';
-        passcodeSubmit.disabled = false;
-        passcodeError.textContent = 'Network error -- try again.';
+var passcodeChecking = document.getElementById('passcode-checking');
+var checkingPasscode = false;
+
+function tryEnter() {
+  var entered = passcodeInput.value.trim();
+  if (!entered || checkingPasscode) return;
+  checkingPasscode = true;
+  passcodeError.style.display = 'none';
+  passcodeChecking.style.display = 'block';
+  passcodeSubmit.disabled = true;
+
+  fetch(BACKEND_URL + '/api/verify-passcode', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ passcode: entered }),
+  })
+    .then(function (r) { return r.json().then(function (data) { return { ok: r.ok, data: data }; }); })
+    .then(function (res) {
+      checkingPasscode = false;
+      passcodeChecking.style.display = 'none';
+      passcodeSubmit.disabled = false;
+      if (!res.ok) {
+        passcodeError.textContent = 'Wrong passcode.';
         passcodeError.style.display = 'block';
-      });
-  }
-
-  passcodeSubmit.addEventListener('click', tryEnter);
-  passcodeInput.addEventListener('keydown', function (e) {
-    if (e.key === 'Enter') tryEnter();
-  });
-
-  scanInput.addEventListener('keydown', function (e) {
-    if (e.key !== 'Enter') return;
-    var code = scanInput.value.trim();
-    if (!code) return;
-    scanInput.value = '';
-    lookup(code);
-  });
-
-  // ---- Scan / Search tabs ----
-  var tabScan = document.getElementById('tab-scan');
-  var tabSearch = document.getElementById('tab-search');
-  var scanPanel = document.getElementById('scan-panel');
-  var searchPanel = document.getElementById('search-panel');
-  var searchInput = document.getElementById('search-input');
-  var searchCategory = document.getElementById('search-category');
-  var searchInStock = document.getElementById('search-in-stock');
-  var searchResults = document.getElementById('search-results');
-
-  function activateTab(activeBtn, inactiveBtn) {
-    activeBtn.style.background = 'var(--accent)';
-    activeBtn.style.color = 'var(--accent-text)';
-    activeBtn.style.borderColor = 'var(--accent)';
-    inactiveBtn.style.background = 'var(--surface)';
-    inactiveBtn.style.color = 'var(--text)';
-    inactiveBtn.style.borderColor = 'var(--border)';
-  }
-  function showScanTab() {
-    activateTab(tabScan, tabSearch);
-    scanPanel.style.display = 'block';
-    searchPanel.style.display = 'none';
-    result.innerHTML = '';
-    scanInput.focus();
-  }
-  function showSearchTab() {
-    activateTab(tabSearch, tabScan);
-    scanPanel.style.display = 'none';
-    searchPanel.style.display = 'block';
-    result.innerHTML = '';
-  }
-  tabScan.addEventListener('click', showScanTab);
-  tabSearch.addEventListener('click', showSearchTab);
-
-  // Search is a lightweight browse/price lookup across many items at once -- it does not
-  // generate a full sales script per result (that would mean an expensive Claude call per
-  // item in a list). To pull the full script + condition-check walkthrough for one item,
-  // scan its barcode/SKU on the Scan tab instead.
-  function runSearch() {
-    searchResults.innerHTML = '<p>Searching...</p>';
-    fetch(BACKEND_URL + '/api/search', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        query: searchInput.value.trim(),
-        category: searchCategory.value,
-        inStockOnly: searchInStock.checked,
-        passcode: passcode,
-      }),
+        return;
+      }
+      passcode = entered;
+      gate.style.display = 'none';
+      hub.style.display = 'flex';
     })
-      .then(function (r) { return r.json().then(function (data) { return { ok: r.ok, data: data }; }); })
-      .then(function (res) {
-        if (!res.ok) {
-          if (res.data.error === 'Not authorized') {
-            gate.style.display = 'block';
-            scanner.style.display = 'none';
-            passcodeError.style.display = 'block';
-            passcode = null;
-            return;
-          }
-          searchResults.innerHTML = '<p style="color:var(--danger);">' + (res.data.error || 'Search failed') + '</p>';
+    .catch(function () {
+      checkingPasscode = false;
+      passcodeChecking.style.display = 'none';
+      passcodeSubmit.disabled = false;
+      passcodeError.textContent = 'Network error -- try again.';
+      passcodeError.style.display = 'block';
+    });
+}
+
+passcodeSubmit.addEventListener('click', tryEnter);
+passcodeInput.addEventListener('keydown', function (e) {
+  if (e.key === 'Enter') tryEnter();
+});
+
+scanInput.addEventListener('keydown', function (e) {
+  if (e.key !== 'Enter') return;
+  var code = scanInput.value.trim();
+  if (!code) return;
+  scanInput.value = '';
+  lookup(code);
+});
+
+var tabScan = document.getElementById('tab-scan');
+var tabSearch = document.getElementById('tab-search');
+var scanPanel = document.getElementById('scan-panel');
+var searchPanel = document.getElementById('search-panel');
+var searchInput = document.getElementById('search-input');
+var searchCategory = document.getElementById('search-category');
+var searchInStock = document.getElementById('search-in-stock');
+var searchResults = document.getElementById('search-results');
+
+function activateTab(activeBtn, inactiveBtn) {
+  activeBtn.style.background = 'var(--accent)';
+  activeBtn.style.color = 'var(--accent-text)';
+  activeBtn.style.borderColor = 'var(--accent)';
+  inactiveBtn.style.background = 'var(--surface)';
+  inactiveBtn.style.color = 'var(--text)';
+  inactiveBtn.style.borderColor = 'var(--border)';
+}
+function showScanTab() {
+  activateTab(tabScan, tabSearch);
+  scanPanel.style.display = 'block';
+  searchPanel.style.display = 'none';
+  result.innerHTML = '';
+  scanInput.focus();
+}
+function showSearchTab() {
+  activateTab(tabSearch, tabScan);
+  scanPanel.style.display = 'none';
+  searchPanel.style.display = 'block';
+  result.innerHTML = '';
+}
+tabScan.addEventListener('click', showScanTab);
+tabSearch.addEventListener('click', showSearchTab);
+
+function runSearch() {
+  searchResults.innerHTML = '<p>Searching...</p>';
+  fetch(BACKEND_URL + '/api/search', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      query: searchInput.value.trim(),
+      category: searchCategory.value,
+      inStockOnly: searchInStock.checked,
+      passcode: passcode,
+    }),
+  })
+    .then(function (r) { return r.json().then(function (data) { return { ok: r.ok, data: data }; }); })
+    .then(function (res) {
+      if (!res.ok) {
+        if (res.data.error === 'Not authorized') {
+          gate.style.display = 'block';
+          scanner.style.display = 'none';
+          passcodeError.style.display = 'block';
+          passcode = null;
           return;
         }
-        lastSearchItems = res.data.items || [];
-        renderSearchResults(lastSearchItems);
-      })
-      .catch(function () {
-        searchResults.innerHTML = '<p style="color:var(--danger);">Network error -- try again.</p>';
-      });
+        searchResults.innerHTML = '<p style="color:var(--danger);">' + (res.data.error || 'Search failed') + '</p>';
+        return;
+      }
+      lastSearchItems = res.data.items || [];
+      renderSearchResults(lastSearchItems);
+    })
+    .catch(function () {
+      searchResults.innerHTML = '<p style="color:var(--danger);">Network error -- try again.</p>';
+    });
+}
+
+function renderSearchResults(items) {
+  if (!items.length) {
+    searchResults.innerHTML = '<p>No matching items. Try a different keyword or clear the filters.</p>';
+    return;
   }
+  searchResults.innerHTML = items.map(function (item) {
+    return (
+      '<div class="search-result-card" data-product-id="' + escapeHtml(item.id) + '" data-title="' + escapeHtml(item.title) + '" data-sku="' + escapeHtml(item.sku || '') + '" ' +
+      'style="display:flex;gap:14px;align-items:center;padding:16px;min-height:44px;border:1px solid var(--border);border-radius:10px;margin-bottom:10px;cursor:pointer;">' +
+      (item.image
+        ? '<img src="' + escapeHtml(item.image) + '" alt="" style="width:64px;height:64px;object-fit:cover;border-radius:8px;flex:none;" />'
+        : '<div style="width:64px;height:64px;background:var(--surface-alt);border-radius:8px;flex:none;"></div>') +
+      '<div style="min-width:0;flex:1;">' +
+      '<div style="font-size:15px;font-weight:600;line-height:1.35;">' + escapeHtml(item.title) +
+      (item.inStock ? '' : ' <span style="color:var(--danger);font-size:12px;">SOLD</span>') +
+      '</div>' +
+      '<div style="font-size:13px;color:var(--text-dim);margin-top:5px;">' +
+      'Flash $' + (item.flashPrice != null ? item.flashPrice : '--') +
+      ' | Asking $' + (item.askingPrice != null ? item.askingPrice : '--') +
+      ' | Floor $' + (item.redZonePrice != null ? item.redZonePrice : '--') +
+      '</div>' +
+      '</div>' +
+      (isInLineup(item.id)
+        ? '<button type="button" class="lineup-add-btn" data-id="' + escapeHtml(item.id) + '" data-title="' + escapeHtml(item.title) + '" data-sku="' + escapeHtml(item.sku || '') + '" style="flex:none;width:44px;height:44px;border-radius:50%;border:1px solid var(--success);background:var(--success-bg);color:var(--success);font-size:19px;line-height:1;">✓</button>'
+        : '<button type="button" class="lineup-add-btn" data-id="' + escapeHtml(item.id) + '" data-title="' + escapeHtml(item.title) + '" data-sku="' + escapeHtml(item.sku || '') + '" style="flex:none;width:44px;height:44px;border-radius:50%;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:22px;line-height:1;">+</button>') +
+      '<div style="flex:none;color:var(--text-dim);font-size:22px;">›</div>' +
+      '</div>'
+    );
+  }).join('');
+}
 
-  function renderSearchResults(items) {
-    if (!items.length) {
-      searchResults.innerHTML = '<p>No matching items. Try a different keyword or clear the filters.</p>';
-      return;
-    }
-    searchResults.innerHTML = items.map(function (item) {
-      return (
-        '<div class="search-result-card" data-product-id="' + escapeHtml(item.id) + '" data-title="' + escapeHtml(item.title) + '" data-sku="' + escapeHtml(item.sku || '') + '" ' +
-          'style="display:flex;gap:14px;align-items:center;padding:16px;min-height:44px;border:1px solid var(--border);border-radius:10px;margin-bottom:10px;cursor:pointer;">' +
-          (item.image
-            ? '<img src="' + escapeHtml(item.image) + '" alt="" style="width:64px;height:64px;object-fit:cover;border-radius:8px;flex:none;" />'
-            : '<div style="width:64px;height:64px;background:var(--surface-alt);border-radius:8px;flex:none;"></div>') +
-          '<div style="min-width:0;flex:1;">' +
-            '<div style="font-size:15px;font-weight:600;line-height:1.35;">' + escapeHtml(item.title) +
-              (item.inStock ? '' : ' <span style="color:var(--danger);font-size:12px;">SOLD</span>') +
-            '</div>' +
-            '<div style="font-size:13px;color:var(--text-dim);margin-top:5px;">' +
-              'Flash $' + (item.flashPrice != null ? item.flashPrice : '--') +
-              ' | Asking $' + (item.askingPrice != null ? item.askingPrice : '--') +
-              ' | Floor $' + (item.redZonePrice != null ? item.redZonePrice : '--') +
-            '</div>' +
-          '</div>' +
-          (isInLineup(item.id)
-            ? '<button type="button" class="lineup-add-btn" data-id="' + escapeHtml(item.id) + '" data-title="' + escapeHtml(item.title) + '" data-sku="' + escapeHtml(item.sku || '') + '" style="flex:none;width:44px;height:44px;border-radius:50%;border:1px solid var(--success);background:var(--success-bg);color:var(--success);font-size:19px;line-height:1;">✓</button>'
-            : '<button type="button" class="lineup-add-btn" data-id="' + escapeHtml(item.id) + '" data-title="' + escapeHtml(item.title) + '" data-sku="' + escapeHtml(item.sku || '') + '" style="flex:none;width:44px;height:44px;border-radius:50%;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:22px;line-height:1;">+</button>') +
-          '<div style="flex:none;color:var(--text-dim);font-size:22px;">›</div>' +
-        '</div>'
-      );
-    }).join('');
+searchResults.addEventListener('click', function (e) {
+  var addBtn = e.target.closest('.lineup-add-btn');
+  if (addBtn) {
+    e.stopPropagation();
+    toggleLineup(addBtn.getAttribute('data-id'), addBtn.getAttribute('data-title'), addBtn.getAttribute('data-sku'));
+    return;
   }
+  var card = e.target.closest('[data-product-id]');
+  if (!card) return;
+  var clickedId = card.getAttribute('data-product-id');
+  browseQueue = lastSearchItems.slice();
+  browseIndex = browseQueue.findIndex(function (it) { return it.id === clickedId; });
+  lookupById(clickedId, card.getAttribute('data-title'));
+});
 
-  // Clicking any search result pulls (or generates) that exact item's full script, same as
-  // scanning its barcode would -- keyed off the Shopify product ID we already have from the
-  // search results, so there's no need to know/type its SKU. The + button is a separate
-  // target: it adds the item to the show lineup instead of opening it, without also
-  // triggering the row's own click-to-view handler.
-  searchResults.addEventListener('click', function (e) {
-    var addBtn = e.target.closest('.lineup-add-btn');
-    if (addBtn) {
-      e.stopPropagation();
-      toggleLineup(addBtn.getAttribute('data-id'), addBtn.getAttribute('data-title'), addBtn.getAttribute('data-sku'));
-      return;
-    }
-    var card = e.target.closest('[data-product-id]');
-    if (!card) return;
-    // Opening any item from the browse/search list makes THIS list the browse queue, so
-    // Next/Prev on the item page steps through it -- no need to build a lineup first just to
-    // move from one item to the next.
-    var clickedId = card.getAttribute('data-product-id');
-    browseQueue = lastSearchItems.slice();
-    browseIndex = browseQueue.findIndex(function (it) { return it.id === clickedId; });
-    lookupById(clickedId, card.getAttribute('data-title'));
-  });
+var SCAN_TIMEOUT_MS = 25000;
 
-  // Shared by both scan-by-code and click-by-productId lookups. A brand-new item that's never
-  // been looked up before still has to wait on one real research call (just the 2-minute script
-  // now, not all four -- see api/scan.js), which normally finishes in several seconds, not
-  // the up-to-a-minute wait the old single-call design could take. This still hard-aborts after
-  // SCAN_TIMEOUT_MS so the screen can never get stuck forever if something upstream really is
-  // stalled -- the seller sees a clear retry message instead of an endless spinner.
-  var SCAN_TIMEOUT_MS = 25000;
+function fetchScanResult(body, retryFn) {
+  var controller = new AbortController();
+  var timedOut = false;
+  var timer = setTimeout(function () { timedOut = true; controller.abort(); }, SCAN_TIMEOUT_MS);
 
-  function fetchScanResult(body, retryFn) {
-    var controller = new AbortController();
-    var timedOut = false;
-    var timer = setTimeout(function () { timedOut = true; controller.abort(); }, SCAN_TIMEOUT_MS);
+  fetch(BACKEND_URL + '/api/scan', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(Object.assign({ passcode: passcode }, body)),
+    signal: controller.signal,
+  })
+    .then(function (r) { return r.json().then(function (data) { return { ok: r.ok, data: data }; }); })
+    .then(function (res) {
+      clearTimeout(timer);
+      if (!res.ok) {
+        if (res.data.error === 'Not authorized') {
+          itemView.style.display = 'none';
+          gate.style.display = 'block';
+          scanner.style.display = 'none';
+          passcodeError.style.display = 'block';
+          passcode = null;
+          return;
+        }
+        currentItem = null;
+        hideItemExtras();
+        result.innerHTML =
+          '<p style="color:var(--danger);">' + escapeHtml(res.data.error || 'Not found') + '</p>' +
+          '<button type="button" id="scan-retry" style="width:100%;padding:12px;margin-top:8px;font-size:15px;font-weight:600;background:var(--accent);color:var(--accent-text);border:none;border-radius:8px;">Try again</button>';
+        var errRetryBtn = document.getElementById('scan-retry');
+        if (errRetryBtn && retryFn) errRetryBtn.addEventListener('click', retryFn);
+        return;
+      }
+      render(res.data, body);
+    })
+    .catch(function () {
+      clearTimeout(timer);
+      currentItem = null;
+      hideItemExtras();
+      if (timedOut) {
+        result.innerHTML =
+          '<p style="color:var(--danger);">This is taking longer than expected. It may still finish in the background -- try opening it again in a moment.</p>' +
+          '<button type="button" id="scan-retry" style="width:100%;padding:12px;margin-top:8px;font-size:15px;font-weight:600;background:var(--accent);color:var(--accent-text);border:none;border-radius:8px;">Try again</button>';
+        var retryBtn = document.getElementById('scan-retry');
+        if (retryBtn && retryFn) retryBtn.addEventListener('click', retryFn);
+      } else {
+        result.innerHTML = '<p style="color:var(--danger);">Network error — try again.</p>';
+      }
+    });
+}
 
+function lookupById(productId, hintTitle) {
+  showItemView();
+  currentItem = null;
+  hideItemExtras();
+  result.innerHTML = '<p>Loading script for "' + escapeHtml(hintTitle || '') + '"…</p>';
+  fetchScanResult({ productId: productId }, function () { lookupById(productId, hintTitle); });
+}
+
+document.getElementById('search-submit').addEventListener('click', runSearch);
+searchInput.addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); runSearch(); } });
+searchCategory.addEventListener('change', runSearch);
+searchInStock.addEventListener('change', runSearch);
+
+function lookup(code) {
+  showItemView();
+  currentItem = null;
+  hideItemExtras();
+  result.innerHTML = '<p>Looking up…</p>';
+  fetchScanResult({ code: code }, function () { lookup(code); });
+}
+
+var currentScript = '';
+var currentTitle = '';
+var currentItem = null;
+var currentLength = 'min2';
+var LENGTH_LABELS = { sec20: '20 sec', min1: '1 min', min2: '2 min', min4: '4 min' };
+var LENGTH_ORDER = ['sec20', 'min1', 'min2', 'min4'];
+
+function composeReadout(item, length) {
+  var body = (item.scripts && item.scripts[length]) || '';
+  if (!body && item.extendedPending && length !== 'min2') {
+    return 'Still preparing this length -- usually just a few seconds behind. Try the 2-minute version in the meantime, or check back shortly.';
+  }
+  var cc = item.conditionCheck || '';
+  return cc ? (body + '\n\n' + cc) : body;
+}
+
+function pollExtended(requestBody, attemptsLeft) {
+  if (!requestBody || attemptsLeft <= 0) return;
+  setTimeout(function () {
+    if (!currentItem || !currentItem.extendedPending) return;
     fetch(BACKEND_URL + '/api/scan', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(Object.assign({ passcode: passcode }, body)),
-      signal: controller.signal,
+      body: JSON.stringify(Object.assign({ passcode: passcode, pollOnly: true }, requestBody)),
     })
       .then(function (r) { return r.json().then(function (data) { return { ok: r.ok, data: data }; }); })
       .then(function (res) {
-        clearTimeout(timer);
-        if (!res.ok) {
-          if (res.data.error === 'Not authorized') {
-            itemView.style.display = 'none';
-            gate.style.display = 'block';
-            scanner.style.display = 'none';
-            passcodeError.style.display = 'block';
-            passcode = null;
-            return;
-          }
-          currentItem = null;
-          hideItemExtras();
-          result.innerHTML =
-            '<p style="color:var(--danger);">' + escapeHtml(res.data.error || 'Not found') + '</p>' +
-            '<button type="button" id="scan-retry" style="width:100%;padding:12px;margin-top:8px;font-size:15px;font-weight:600;background:var(--accent);color:var(--accent-text);border:none;border-radius:8px;">Try again</button>';
-          var errRetryBtn = document.getElementById('scan-retry');
-          if (errRetryBtn && retryFn) errRetryBtn.addEventListener('click', retryFn);
-          return;
-        }
-        render(res.data, body);
+        if (!res.ok || !currentItem || currentItem.title !== res.data.title) return;
+        currentItem = res.data;
+        renderResultBody();
+        if (res.data.extendedPending) pollExtended(requestBody, attemptsLeft - 1);
       })
-      .catch(function () {
-        clearTimeout(timer);
-        currentItem = null;
-        hideItemExtras();
-        if (timedOut) {
-          result.innerHTML =
-            '<p style="color:var(--danger);">This is taking longer than expected. It may still finish in the background -- try opening it again in a moment.</p>' +
-            '<button type="button" id="scan-retry" style="width:100%;padding:12px;margin-top:8px;font-size:15px;font-weight:600;background:var(--accent);color:var(--accent-text);border:none;border-radius:8px;">Try again</button>';
-          var retryBtn = document.getElementById('scan-retry');
-          if (retryBtn && retryFn) retryBtn.addEventListener('click', retryFn);
-        } else {
-          result.innerHTML = '<p style="color:var(--danger);">Network error — try again.</p>';
-        }
-      });
+      .catch(function () { /* silent -- background convenience poll, not user-facing */ });
+  }, 4000);
+}
+
+var QUICK_CATEGORIES = [
+  { label: 'More Bags', query: 'bag', category: '' },
+  { label: 'More Wallets', query: 'wallet', category: '' },
+  { label: 'More Shoes', query: 'shoe', category: '' },
+  { label: 'More Sunglasses', query: '', category: 'Sunglasses' },
+  { label: 'More Jewelry', query: '', category: 'Jewelry' },
+];
+
+function render(item, requestBody) {
+  currentItem = item;
+  currentLength = 'min2';
+  renderResultBody();
+  renderPairsWith(item);
+  renderMoreLikeThis();
+  updateShowNav();
+  logSellerActivity(item, requestBody);
+  if (item.extendedPending && requestBody) {
+    pollExtended(requestBody, 5);
   }
+}
 
-  function lookupById(productId, hintTitle) {
-    showItemView();
-    currentItem = null;
-    hideItemExtras();
-    result.innerHTML = '<p>Loading script for "' + escapeHtml(hintTitle || '') + '"…</p>';
-    fetchScanResult({ productId: productId }, function () { lookupById(productId, hintTitle); });
-  }
+function logSellerActivity(item, requestBody) {
+  var seller = currentSellerName();
+  if (!seller || !item) return;
+  fetch(BACKEND_URL + '/api/seller-log', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      action: 'log',
+      passcode: passcode,
+      sellerName: seller,
+      itemId: (requestBody && requestBody.productId) || null,
+      sku: item.sku || null,
+      title: item.title || null,
+      redZonePrice: item.redZonePrice != null ? item.redZonePrice : null,
+      staffCommission: item.staffCommission != null ? item.staffCommission : null,
+    }),
+  }).catch(function () { /* best-effort -- doesn't affect the seller's session */ });
+}
 
-  document.getElementById('search-submit').addEventListener('click', runSearch);
-  searchInput.addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); runSearch(); } });
-  searchCategory.addEventListener('change', runSearch);
-  searchInStock.addEventListener('change', runSearch);
+var printingTag = false;
 
-  function lookup(code) {
-    showItemView();
-    currentItem = null;
-    hideItemExtras();
-    result.innerHTML = '<p>Looking up…</p>';
-    fetchScanResult({ code: code }, function () { lookup(code); });
-  }
-
-  var currentScript = '';
-  var currentTitle = '';
-  var currentItem = null;
-  var currentLength = 'min2';
-  var LENGTH_LABELS = { sec20: '20 sec', min1: '1 min', min2: '2 min', min4: '4 min' };
-  var LENGTH_ORDER = ['sec20', 'min1', 'min2', 'min4'];
-
-  // Every item now comes back with FOUR script lengths (20 sec / 1 min / 2 min / 4 min) plus
-  // one shared LIVE CONDITION CHECK walkthrough. The condition check is appended after
-  // whichever length is selected -- it's about honestly presenting the physical item, not
-  // about how long the pitch is, so it always rides along.
-  function composeReadout(item, length) {
-    var body = (item.scripts && item.scripts[length]) || '';
-    if (!body && item.extendedPending && length !== 'min2') {
-      // The 20-sec/1-min/4-min lengths generate in the background after the 2-minute script --
-      // usually just a few seconds behind it. Rather than show a blank script, say so plainly;
-      // pollExtended() will silently refresh this as soon as it's ready.
-      return 'Still preparing this length -- usually just a few seconds behind. Try the 2-minute version in the meantime, or check back shortly.';
-    }
-    var cc = item.conditionCheck || '';
-    return cc ? (body + '\n\n' + cc) : body;
-  }
-
-  // While an item's 20-sec/1-min/4-min scripts are still generating in the background, quietly
-  // re-check every few seconds and refresh the on-screen content the moment they land -- without
-  // disrupting whatever the seller is currently reading (only the empty lengths were ever
-  // showing a placeholder, so re-rendering just fills those in).
-  function pollExtended(requestBody, attemptsLeft) {
-    if (!requestBody || attemptsLeft <= 0) return;
-    setTimeout(function () {
-      if (!currentItem || !currentItem.extendedPending) return; // seller moved on, or it already landed
-      // pollOnly: true tells the backend this is just a "is it ready yet?" status check -- it
-      // must never itself kick off another background script-generation job. Without this flag,
-      // every 4-second poll used to fire its OWN duplicate Claude call on top of whatever was
-      // already running for this item, so a single new item could rack up 5+ overlapping
-      // background requests in well under a minute. Scanning a couple more new items while those
-      // were still in flight was enough to trip Anthropic's rate limit and show a hard error on
-      // the 2nd or 3rd item -- this is half of the fix for that (the other half is in api/scan.js).
-      fetch(BACKEND_URL + '/api/scan', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(Object.assign({ passcode: passcode, pollOnly: true }, requestBody)),
-      })
-        .then(function (r) { return r.json().then(function (data) { return { ok: r.ok, data: data }; }); })
-        .then(function (res) {
-          if (!res.ok || !currentItem || currentItem.title !== res.data.title) return; // silent -- background convenience only
-          currentItem = res.data;
-          renderResultBody();
-          if (res.data.extendedPending) pollExtended(requestBody, attemptsLeft - 1);
-        })
-        .catch(function () { /* silent -- background convenience poll, not user-facing */ });
-    }, 4000);
-  }
-
-  // A handful of quick browse shortcuts shown on every item page -- lets a host jump straight
-  // to "more of this kind of thing" without going back and re-typing a search. Most bags/
-  // wallets/shoes all share the single coarse "Pre owned" Shopify category, so these lean on a
-  // free-text keyword (which matches against title) for the categories that need it, and the
-  // real category filter only where Shopify's own product_type is actually granular enough.
-  var QUICK_CATEGORIES = [
-    { label: 'More Bags', query: 'bag', category: '' },
-    { label: 'More Wallets', query: 'wallet', category: '' },
-    { label: 'More Shoes', query: 'shoe', category: '' },
-    { label: 'More Sunglasses', query: '', category: 'Sunglasses' },
-    { label: 'More Jewelry', query: '', category: 'Jewelry' },
-  ];
-
-  function render(item, requestBody) {
-    currentItem = item;
-    currentLength = 'min2';
-    renderResultBody();
-    renderPairsWith(item);
-    renderMoreLikeThis();
-    updateShowNav();
-    logSellerActivity(item, requestBody);
-    if (item.extendedPending && requestBody) {
-      pollExtended(requestBody, 5); // a few tries, several seconds apart
-    }
-  }
-
-  // Best-effort attribution log for the CEO Dashboard's per-seller commission breakdown
-  // (Sasha, 2026-09-18): every time an item is scanned or pulled up, credit whoever is
-  // currently entered in "Selling as" -- not just once per show -- so two people trading off
-  // mid-show each get credit for their own items. Skipped entirely with no name set, rather
-  // than logging blank/anonymous rows. Fire-and-forget, same pattern as the show-log calls
-  // above: a failed log never interrupts or blocks the seller's screen. Only fires from a real
-  // render() (a scan, a search click, a Prev/Next step) -- NOT from pollExtended's background
-  // refreshes of the same item, so one item view is never double-counted.
-  function logSellerActivity(item, requestBody) {
-    var seller = currentSellerName();
-    if (!seller || !item) return;
-    fetch(BACKEND_URL + '/api/seller-log', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        action: 'log',
-        passcode: passcode,
-        sellerName: seller,
-        itemId: (requestBody && requestBody.productId) || null,
-        sku: item.sku || null,
-        title: item.title || null,
-        redZonePrice: item.redZonePrice != null ? item.redZonePrice : null,
-        staffCommission: item.staffCommission != null ? item.staffCommission : null,
-      }),
-    }).catch(function () { /* best-effort -- doesn't affect the seller's session */ });
-  }
-
-  var printingTag = false;
-
-  // Prints a physical tag for the currently-open item: same 50mm x 30mm label design (wrapped
-  // title, Code39 barcode, SKU, footer) already used for new intake at the Photo Intake app,
-  // generated server-side as a PDF and opened in a new tab. From there, the browser's normal
-  // print dialog handles the actual printer -- a Rollo label printer (once its driver is
-  // installed as a system printer) or any AirPrint-enabled printer both just show up as
-  // ordinary printer choices; no special-casing needed here for either.
-  function printTag() {
-    if (!currentItem || !currentItem.sku || printingTag) return;
-    printingTag = true;
-    var btn = document.getElementById('print-tag-btn');
-    if (btn) { btn.disabled = true; btn.textContent = 'Preparing tag…'; }
-    fetch(BACKEND_URL + '/api/tag', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ sku: currentItem.sku, title: currentItem.title, passcode: passcode }),
+function printTag() {
+  if (!currentItem || !currentItem.sku || printingTag) return;
+  printingTag = true;
+  var btn = document.getElementById('print-tag-btn');
+  if (btn) { btn.disabled = true; btn.textContent = 'Preparing tag…'; }
+  fetch(BACKEND_URL + '/api/tag', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ sku: currentItem.sku, title: currentItem.title, passcode: passcode }),
+  })
+    .then(function (r) {
+      if (!r.ok) {
+        return r.json().then(function (data) { throw new Error((data && data.error) || 'Tag generation failed'); });
+      }
+      return r.blob();
     })
-      .then(function (r) {
-        if (!r.ok) {
-          return r.json().then(function (data) { throw new Error((data && data.error) || 'Tag generation failed'); });
-        }
-        return r.blob();
-      })
-      .then(function (blob) {
-        var url = URL.createObjectURL(blob);
-        window.open(url, '_blank');
-      })
-      .catch(function (err) {
-        alert(err.message);
-      })
-      .then(function () {
-        printingTag = false;
-        var btn2 = document.getElementById('print-tag-btn');
-        if (btn2) { btn2.disabled = false; btn2.textContent = '🖨 Print tag'; }
-      });
+    .then(function (blob) {
+      var url = URL.createObjectURL(blob);
+      window.open(url, '_blank');
+    })
+    .catch(function (err) {
+      alert(err.message);
+    })
+    .then(function () {
+      printingTag = false;
+      var btn2 = document.getElementById('print-tag-btn');
+      if (btn2) { btn2.disabled = false; btn2.textContent = '🖨 Print tag'; }
+    });
+}
+
+function renderResultBody() {
+  var item = currentItem;
+  if (!item) return;
+  currentTitle = item.title || '';
+  currentScript = composeReadout(item, currentLength);
+
+  var hasScripts = item.scripts && (item.scripts.sec20 || item.scripts.min1 || item.scripts.min2 || item.scripts.min4);
+
+  var lengthButtons = LENGTH_ORDER.map(function (key) {
+    var active = key === currentLength;
+    return '<button type="button" class="length-btn" data-length="' + key + '" style="flex:1;padding:8px 4px;font-size:13px;font-weight:600;border-radius:6px;border:1px solid ' +
+      (active ? 'var(--accent)' : 'var(--border)') + ';background:' + (active ? 'var(--accent)' : 'var(--surface)') + ';color:' + (active ? 'var(--accent-text)' : 'var(--text)') + ';">' + LENGTH_LABELS[key] + '</button>';
+  }).join('');
+
+  result.innerHTML =
+    (item.image
+      ? '<img src="' + escapeHtml(item.image) + '" alt="" style="width:100%;max-height:280px;object-fit:cover;border-radius:10px;margin-bottom:14px;" />'
+      : '') +
+    (item.vendor
+      ? '<div style="font-size:12px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--accent);margin-bottom:2px;">' + escapeHtml(item.vendor) +
+        (item.brandPronunciation
+          ? ' <span style="font-weight:600;letter-spacing:normal;text-transform:none;color:var(--text-dim);">(' + escapeHtml(item.brandPronunciation) + ')</span>'
+          : '') +
+        '</div>'
+      : '') +
+    '<h3 style="margin-bottom:4px;">' + escapeHtml(item.title) + '</h3>' +
+    (item.sku
+      ? '<p style="color:var(--text-dim);font-size:13px;margin:0 0 6px;letter-spacing:0.02em;">SKU/Inventory #: <span style="color:var(--text);font-weight:600;">' + escapeHtml(item.sku) + '</span></p>' +
+        '<button type="button" id="print-tag-btn" style="padding:8px 14px;font-size:13px;font-weight:600;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--text);margin-bottom:10px;">🖨 Print tag</button>'
+      : '') +
+    (item.pronunciation && item.pronunciation !== 'None needed.'
+      ? '<p style="color:var(--text-dim);font-style:italic;margin-top:0;">' + escapeHtml(item.pronunciation) + '</p>'
+      : '') +
+    '<div style="display:flex;gap:12px;margin:16px 0;flex-wrap:wrap;">' +
+    priceBox('Flash sale', item.flashPrice) +
+    priceBox('Asking', item.askingPrice) +
+    priceBox('Red zone (no-go)', item.redZonePrice, true) +
+    '</div>' +
+    (item.staffCommission != null ? commissionBanner(item.staffCommission) : '') +
+    (item.salesPoints
+      ? '<div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:12px 16px;margin-bottom:14px;white-space:pre-wrap;font-size:14px;line-height:1.6;">' +
+        escapeHtml(item.salesPoints) +
+        '</div>'
+      : '') +
+    (hasScripts
+      ? '<div style="display:flex;gap:6px;margin-bottom:6px;">' + lengthButtons + '</div>' +
+        (item.extendedPending
+          ? '<div style="font-size:12px;color:var(--text-dim);margin-bottom:10px;">⏳ Preparing the 20 sec / 1 min / 4 min versions…</div>'
+          : '<div style="margin-bottom:10px;"></div>') +
+        '<button type="button" id="tp-open" style="width:100%;padding:12px;margin-bottom:10px;font-size:15px;font-weight:600;background:var(--accent);color:var(--accent-text);border:none;border-radius:8px;">🎤 Read this length (teleprompter)</button>'
+      : '') +
+    '<pre style="white-space:pre-wrap;font-family:inherit;font-size:15px;line-height:1.5;background:var(--surface);padding:16px;border-radius:8px;">' +
+    escapeHtml(currentScript) +
+    '</pre>';
+
+  var tpOpen = document.getElementById('tp-open');
+  if (tpOpen) tpOpen.addEventListener('click', openTeleprompter);
+
+  var printTagBtn = document.getElementById('print-tag-btn');
+  if (printTagBtn) printTagBtn.addEventListener('click', printTag);
+
+  var lengthBtns = result.querySelectorAll('.length-btn');
+  for (var i = 0; i < lengthBtns.length; i++) {
+    lengthBtns[i].addEventListener('click', function (e) {
+      currentLength = e.currentTarget.getAttribute('data-length');
+      renderResultBody();
+    });
   }
+}
 
-  function renderResultBody() {
-    var item = currentItem;
-    if (!item) return;
-    currentTitle = item.title || '';
-    currentScript = composeReadout(item, currentLength);
+function renderPairsWith(item) {
+  var p = item.pairsWithProduct;
+  if (!p) {
+    pairsWith.style.display = 'none';
+    return;
+  }
+  pairsWith.style.display = 'block';
+  pairsWith.innerHTML =
+    '<div style="font-size:12px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:var(--accent);margin-bottom:6px;">✨ Pairs well with</div>' +
+    '<div id="pairs-with-card" style="display:flex;gap:12px;align-items:center;padding:10px;border:1px solid var(--border);border-radius:10px;cursor:pointer;background:var(--surface);">' +
+    (p.image
+      ? '<img src="' + escapeHtml(p.image) + '" alt="" style="width:52px;height:52px;object-fit:cover;border-radius:8px;flex:none;" />'
+      : '<div style="width:52px;height:52px;background:var(--surface-alt);border-radius:8px;flex:none;"></div>') +
+    '<div style="min-width:0;flex:1;">' +
+    '<div style="font-size:14px;font-weight:600;line-height:1.35;">' + escapeHtml(p.title) + '</div>' +
+    '<div style="font-size:12px;color:var(--text-dim);margin-top:3px;">' +
+    'Flash $' + (p.flashPrice != null ? p.flashPrice : '--') +
+    ' | Asking $' + (p.askingPrice != null ? p.askingPrice : '--') +
+    '</div>' +
+    '</div>' +
+    '<div style="flex:none;color:var(--text-dim);font-size:20px;">›</div>' +
+    '</div>';
 
-    var hasScripts = item.scripts && (item.scripts.sec20 || item.scripts.min1 || item.scripts.min2 || item.scripts.min4);
+  var card = document.getElementById('pairs-with-card');
+  if (card) {
+    card.addEventListener('click', function () {
+      browseQueue = [p];
+      browseIndex = 0;
+      lookupById(p.id, p.title);
+    });
+  }
+}
 
-    var lengthButtons = LENGTH_ORDER.map(function (key) {
-      var active = key === currentLength;
-      return '<button type="button" class="length-btn" data-length="' + key + '" style="flex:1;padding:8px 4px;font-size:13px;font-weight:600;border-radius:6px;border:1px solid ' +
-        (active ? 'var(--accent)' : 'var(--border)') + ';background:' + (active ? 'var(--accent)' : 'var(--surface)') + ';color:' + (active ? 'var(--accent-text)' : 'var(--text)') + ';">' + LENGTH_LABELS[key] + '</button>';
+function renderMoreLikeThis() {
+  moreLikeThis.style.display = 'block';
+  moreLikeThis.innerHTML =
+    '<div style="font-size:12px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:var(--text-dim);margin-bottom:8px;">See more</div>' +
+    '<div style="display:flex;gap:8px;flex-wrap:wrap;">' +
+    QUICK_CATEGORIES.map(function (qc, idx) {
+      return '<button type="button" class="quick-category-btn" data-idx="' + idx + '" style="padding:8px 14px;font-size:13px;border-radius:20px;border:1px solid var(--border);background:var(--surface);color:var(--text);">' + escapeHtml(qc.label) + '</button>';
+    }).join('') +
+    '</div>';
+
+  var btns = moreLikeThis.querySelectorAll('.quick-category-btn');
+  for (var i = 0; i < btns.length; i++) {
+    btns[i].addEventListener('click', function (e) {
+      var qc = QUICK_CATEGORIES[Number(e.currentTarget.getAttribute('data-idx'))];
+      endShow();
+      hideItemView();
+      showSearchTab();
+      searchInput.value = qc.query;
+      searchCategory.value = qc.category;
+      runSearch();
+    });
+  }
+}
+
+var teleprompter = document.getElementById('teleprompter');
+var tpText = document.getElementById('tp-text');
+var tpPlay = document.getElementById('tp-play');
+var tpSpeed = document.getElementById('tp-speed');
+var tpClose = document.getElementById('tp-close');
+var tpFontMinus = document.getElementById('tp-font-minus');
+var tpFontPlus = document.getElementById('tp-font-plus');
+var tpFontSize = 32;
+var tpScrollTimer = null;
+var tpPlaying = false;
+
+function openTeleprompter() {
+  tpText.textContent = (currentTitle ? currentTitle + '\n\n' : '') + currentScript;
+  tpText.scrollTop = 0;
+  tpFontSize = 32;
+  tpText.style.fontSize = tpFontSize + 'px';
+  teleprompter.style.display = 'flex';
+  stopScrolling();
+}
+
+function closeTeleprompter() {
+  teleprompter.style.display = 'none';
+  stopScrolling();
+}
+
+function startScrolling() {
+  stopScrolling();
+  tpPlaying = true;
+  tpPlay.textContent = '⏸ Pause';
+  tpScrollTimer = setInterval(function () {
+    tpText.scrollTop += Number(tpSpeed.value) * 0.6;
+  }, 30);
+}
+
+function stopScrolling() {
+  tpPlaying = false;
+  tpPlay.textContent = '▶ Play';
+  if (tpScrollTimer) {
+    clearInterval(tpScrollTimer);
+    tpScrollTimer = null;
+  }
+}
+
+tpClose.addEventListener('click', closeTeleprompter);
+tpPlay.addEventListener('click', function () {
+  if (tpPlaying) stopScrolling(); else startScrolling();
+});
+tpFontMinus.addEventListener('click', function () {
+  tpFontSize = Math.max(18, tpFontSize - 4);
+  tpText.style.fontSize = tpFontSize + 'px';
+});
+tpFontPlus.addEventListener('click', function () {
+  tpFontSize = Math.min(64, tpFontSize + 4);
+  tpText.style.fontSize = tpFontSize + 'px';
+});
+tpText.addEventListener('click', function () {
+  if (tpPlaying) stopScrolling(); else startScrolling();
+});
+
+function commissionBanner(value) {
+  return '<div style="margin:-6px 0 16px;padding:10px 14px;border-radius:8px;background:var(--success-bg);display:flex;align-items:center;justify-content:space-between;">' +
+    '<span style="font-size:13px;color:var(--success);font-weight:600;">💰 Your commission on this item</span>' +
+    '<span style="font-size:18px;color:var(--success);font-weight:700;">$' + value + '</span>' +
+    '</div>';
+}
+
+function priceBox(label, value, warn) {
+  return '<div style="flex:1;min-width:110px;padding:10px;border-radius:8px;background:' +
+    (warn ? 'var(--danger-bg)' : 'var(--surface-alt)') + ';text-align:center;">' +
+    '<div style="font-size:12px;color:var(--text-dim);">' + label + '</div>' +
+    '<div style="font-size:18px;font-weight:600;">' + (value != null ? '$' + value : '—') + '</div>' +
+    '</div>';
+}
+
+function escapeHtml(s) {
+  return String(s == null ? '' : s)
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
+// ---------------------------------------------------------------------------
+// Hub navigation -- the passcode gate now lands here (see tryEnter above) instead of going
+// straight into the scanner, same idea as the Picker/Packer role choice: pick what you need
+// right now. "Sell live" is the exact scan/search flow that already existed. "Messages" is an
+// interim link straight to LeveLux Chat (levelux-chat.vercel.app) in a new tab -- that's a
+// separate app/backend (Convex), so a real in-app popup-when-a-message-arrives integration is
+// follow-up work, not done here.
+// ---------------------------------------------------------------------------
+document.getElementById('hub-sell').addEventListener('click', function () {
+  hub.style.display = 'none';
+  scanner.style.display = 'block';
+  showSearchTab();
+  runSearch();
+});
+document.getElementById('hub-training').addEventListener('click', function () {
+  hub.style.display = 'none';
+  training.style.display = 'block';
+  showTrainingTab('day1');
+});
+document.getElementById('hub-messages').addEventListener('click', function () {
+  window.open('https://levelux-chat.vercel.app', '_blank');
+});
+document.getElementById('scanner-to-hub').addEventListener('click', function () {
+  endShow();
+  hideItemView();
+  scanner.style.display = 'none';
+  lineupView.style.display = 'none';
+  hub.style.display = 'flex';
+});
+document.getElementById('training-to-hub').addEventListener('click', function () {
+  training.style.display = 'none';
+  hub.style.display = 'flex';
+});
+
+// ---------------------------------------------------------------------------
+// Training -- Day 1 checklist + an evergreen Brands/Sunglasses reference. Everything here is
+// static/client-side (no backend calls, no new env vars) so it can't affect the live
+// scan/search/scripts flow above. Brand names come straight from the real "Shop by brand"
+// collections on leveluxbag.com; pronunciations follow the exact same hyphen + ALL-CAPS-stress
+// format the AI-generated per-item pronunciation guides already use in Scan/Search, so it reads
+// consistently whichever screen a seller is on.
+// ---------------------------------------------------------------------------
+// NOTE for whoever updates this list: to add a new brand, add one line to this array --
+// { name: 'Brand Name', pron: 'how to say it (or "" if said as spelled)', tidbit: 'one sentence worth knowing' } --
+// then add it to the "Shop by brand" collection on leveluxbag.com so it also shows up correctly
+// in Scan/Search. Nothing else in this file needs to change.
+var BRANDS = [
+  { name: 'Balenciaga', pron: 'bah-len-see-AH-gah', tidbit: 'Founded in Spain in 1917 by Cristóbal Balenciaga; known today for bold, sculptural shapes like the City bag and Le Cagole.' },
+  { name: 'Bottega Veneta', pron: 'boh-TEH-gah VEH-neh-tah', tidbit: 'Italian house (Vicenza, 1966) built around "intrecciato" -- the signature woven-leather technique. Historically logo-free on purpose: the craftsmanship was meant to speak for itself.' },
+  { name: 'Bulgari', pron: 'BUL-gah-ree', tidbit: 'Roman jeweler founded in 1884. Big, bold Italian glamour -- look for the Serpenti (snake) motif.' },
+  { name: 'Burberry', pron: '', tidbit: 'British house founded 1856; invented the trench coat. The tan/black/red/white check is one of the most recognized patterns in fashion.' },
+  { name: 'Carrera', pron: 'kuh-RARE-uh', tidbit: 'Austrian eyewear brand (1956) named after the Carrera Panamericana road race -- sporty, motorsport-inspired frames.' },
+  { name: 'Celine', pron: 'seh-LEEN', tidbit: 'Paris house founded 1945; known for clean, minimalist luxury -- think structured totes and understated hardware.' },
+  { name: 'Chanel', pron: 'shuh-NEL', tidbit: 'Founded in Paris in 1910 by Gabrielle "Coco" Chanel. Signature: the quilted flap bag on a chain strap and the interlocking CC logo.' },
+  { name: 'Chloe', pron: 'KLOH-ay', tidbit: 'Paris house (1952) known for a romantic, bohemian take on femininity.' },
+  { name: 'Chopard', pron: 'shoh-PAR', tidbit: 'Swiss luxury house (1860), best known for fine watches and jewelry.' },
+  { name: 'Christian Dior', pron: 'KRIS-chun dee-OR', tidbit: 'Paris house founded 1946 by Christian Dior. Look for the Lady Dior and Saddle bags, and the "CD" logo.' },
+  { name: 'Christian Louboutin', pron: 'KRIS-chun loo-boo-TAN (rhymes with "on")', tidbit: 'Paris house (1991), famous worldwide for red-lacquered shoe soles -- always flip the shoe to show it.' },
+  { name: 'Coach', pron: '', tidbit: 'American leather goods house founded in New York in 1941.' },
+  { name: 'Dolce & Gabbana', pron: 'DOHL-chay ay gah-BAH-nah', tidbit: 'Milan house (1985), founded by Domenico Dolce and Stefano Gabbana. Bold, Sicilian-inspired glamour.' },
+  { name: 'Fendi', pron: 'FEN-dee', tidbit: 'Rome house founded 1925. Known for the Baguette bag and the double-F "Zucca" logo, designed by Karl Lagerfeld.' },
+  { name: 'Furla', pron: 'FUR-lah', tidbit: 'Bologna, Italy leather goods house (1927) -- accessible Italian craftsmanship.' },
+  { name: 'Givenchy', pron: 'zhee-VAHN-shee', tidbit: 'Paris house founded 1952 by Hubert de Givenchy, who famously dressed Audrey Hepburn.' },
+  { name: 'Good American', pron: '', tidbit: 'Los Angeles brand launched 2016 by Khloé Kardashian and Emma Grede; known for size-inclusive denim.' },
+  { name: 'Goyard', pron: 'gwah-YAR', tidbit: 'Paris house dating to 1853, known for the hand-painted chevron canvas. Historically never advertised.' },
+  { name: 'Gucci', pron: 'GOO-chee', tidbit: 'Founded in Florence, Italy in 1921. Look for the interlocking GG logo and the green-red-green web stripe.' },
+  { name: 'Hermes', pron: 'air-MEZ', tidbit: 'Paris house founded 1837, originally a harness and saddlery workshop -- that heritage is why leather craftsmanship is central. Home of the Birkin and Kelly.' },
+  { name: 'Kate Spade', pron: '', tidbit: 'New York brand founded 1993; playful, colorful American design.' },
+  { name: 'Loewe', pron: 'LOH-eh-vay', tidbit: 'Madrid house dating to 1846. Known for the Puzzle bag and exceptional leather quality.' },
+  { name: 'Longchamp', pron: 'LAWN-shahn', tidbit: 'Paris house (1948), best known for the foldable nylon "Le Pliage" tote.' },
+  { name: 'Louis Vuitton', pron: 'loo-EE vee-TAWN (rhymes with "prawn")', tidbit: 'Founded in Paris in 1854 as a trunk maker. The LV monogram canvas debuted in 1896. Natural "vachetta" leather trim is a signature -- see the Bags & Leather tab for how it ages.' },
+  { name: 'Marc Jacobs', pron: '', tidbit: 'New York brand (1984); the Tote bag and eclectic, playful American style.' },
+  { name: 'MCM', pron: 'say each letter: "M-C-M"', tidbit: 'Munich brand founded 1976 -- the name stands for "Modern Creation Munich." Signature Visetos monogram canvas.' },
+  { name: 'Miu Miu', pron: 'MEW-mew', tidbit: 'Milan house founded 1993 by Miuccia Prada as Prada’s younger, more playful sister line.' },
+  { name: 'Philipp Plein', pron: 'FIL-ip PLINE (rhymes with "line")', tidbit: 'German brand (1998) known for bold, maximalist, rock-and-roll style -- skulls and studs are signature.' },
+  { name: 'Prada', pron: 'PRAH-dah', tidbit: 'Milan house founded 1913. Known for the triangular logo plaque and Re-Nylon bags -- minimalist luxury.' },
+  { name: 'Saint Laurent', pron: 'san loh-RAHN', tidbit: 'Founded in Paris in 1961 by Yves Saint Laurent; renamed from "YSL" to "Saint Laurent" in 2012. Look for the Kate and LouLou bags.' },
+  { name: 'Stella McCartney', pron: '', tidbit: 'London brand (2001), fully vegetarian -- no leather or fur is ever used, by design.' },
+  { name: 'Tiffany & Co.', pron: '', tidbit: 'New York jeweler founded 1837. "Tiffany Blue" is a trademarked color.' },
+  { name: 'Tod’s', pron: '', tidbit: 'Italian house best known for the pebbled-sole "Gommino" driving loafer.' },
+  { name: 'Tom Ford', pron: '', tidbit: 'American designer Tom Ford launched his own house in 2005 after leading Gucci and Yves Saint Laurent. Glamorous, sexy tailoring.' },
+  { name: 'Tory Burch', pron: '', tidbit: 'New York brand founded 2004. Look for the double-T logo medallion.' },
+  { name: 'Valentino Garavani', pron: 'vah-len-TEE-noh gah-rah-VAH-nee', tidbit: 'Rome house founded 1960 by Valentino Garavani. Known for "Valentino Red" and the studded Rockstud line.' },
+  { name: 'Versace', pron: 'vur-SAH-chee', tidbit: 'Milan house founded 1978 by Gianni Versace. Look for the Medusa head logo and bold prints.' },
+];
+
+// Bag silhouettes -- the vocabulary sellers need to describe fit and how a bag is carried.
+// Add a new shape the same way as BRANDS: one object, no other code changes needed.
+var BAG_TYPES = [
+  { name: 'Shoulder bag', desc: 'Strap is long enough to sit on the shoulder; the bag hangs at your side, hands mostly free.' },
+  { name: 'Crossbody', desc: 'A longer strap worn diagonally across the body so the bag rests near the hip -- fully hands-free. Great for "wear it while you shop" scripts.' },
+  { name: 'Top-handle / satchel', desc: 'Short handle(s) meant to be carried by hand or looped over the forearm, in the crook of the elbow -- the classic "arm candy" carry. Think Chanel flap with top handle, or Hermès Kelly.' },
+  { name: 'Hobo', desc: 'Soft, crescent-moon-shaped silhouette that slouches when worn on the shoulder.' },
+  { name: 'Tote', desc: 'Large, open-top bag with two handles, built to carry a lot -- work, travel, everyday.' },
+  { name: 'Bucket bag', desc: 'Cylindrical shape with a drawstring closure at the top; worn on the shoulder or crossbody.' },
+  { name: 'Clutch', desc: 'No strap, or a thin optional chain -- carried in the hand or tucked under the arm. Evening/formal.' },
+  { name: 'Wristlet', desc: 'Small bag with a loop strap that goes around the wrist.' },
+];
+
+// Louis Vuitton vachetta leather -- called out on its own because it comes up on almost every LV item.
+var VACHETTA_FACTS = [
+  'Vachetta is the natural, untreated cowhide leather LV uses for trim -- handles, piping, luggage tags -- on canvas bags like the Speedy and Neverfull.',
+  'It starts out pale, cream/honey colored, and darkens over time. That darkening ("patina") comes from light, air, and the natural oils from your hands -- it deepens into a rich caramel/amber/brown with use.',
+  'A darker patina is normal and desirable, not damage -- it’s part of the leather’s character and one reason true vintage LV pieces look the way they do.',
+  'Because it’s untreated, vachetta stains easily -- water and rain leave dark spots, so keep it dry and out of direct sun for long stretches.',
+];
+
+var DAY1_ITEMS = [
+  { id: 'clockin', label: 'Get set up on the clock-in sheet', hint: 'Sasha or your manager will walk you through this in person on day one.' },
+  { id: 'i9', label: 'Complete your I-9', hint: 'Bring your ID documents -- your manager will have the paperwork ready.' },
+  { id: 'handbook', label: 'Read and sign the employee handbook', hint: 'Ask your manager for the current handbook if you haven’t been given a copy yet.' },
+  { id: 'brands', label: 'Learn the brands we carry', hint: 'Know all ' + BRANDS.length + ' brand names on sight -- see the Brands tab.' },
+  { id: 'pronunciation', label: 'Know your pronunciation list', hint: 'Practice saying every brand name out loud until it’s automatic -- use Practice mode in the Brands tab.' },
+  { id: 'bagtypes', label: 'Learn the bag types', hint: 'Shoulder bag, crossbody, top-handle, hobo, tote and more -- see the Bags & Leather tab.' },
+  { id: 'vachetta', label: 'Understand Louis Vuitton vachetta leather', hint: 'Know why it starts light and darkens over time -- see the Bags & Leather tab.' },
+  { id: 'arm', label: 'Learn to read a sunglasses arm', hint: 'Know where the model, color and size code are printed -- see Sunglasses 101.' },
+  { id: 'sizes', label: 'Know how to read the size code', hint: 'Be able to read lens-bridge-temple (e.g. 55□18-140) off any pair -- see Sunglasses 101.' },
+];
+
+var trainingTabs = document.querySelectorAll('.training-tab');
+var trainingPanels = {
+  day1: document.getElementById('training-day1'),
+  brands: document.getElementById('training-brands'),
+  bags: document.getElementById('training-bags'),
+  sunglasses: document.getElementById('training-sunglasses'),
+  care: document.getElementById('training-care'),
+  selling: document.getElementById('training-selling'),
+};
+var trainingRendered = { day1: false, brands: false, bags: false, sunglasses: false, care: false, selling: false };
+
+function showTrainingTab(name) {
+  for (var i = 0; i < trainingTabs.length; i++) {
+    var btn = trainingTabs[i];
+    var active = btn.getAttribute('data-tab') === name;
+    btn.style.background = active ? 'var(--accent)' : 'var(--surface)';
+    btn.style.color = active ? 'var(--accent-text)' : 'var(--text)';
+    btn.style.borderColor = active ? 'var(--accent)' : 'var(--border)';
+  }
+  for (var key in trainingPanels) {
+    trainingPanels[key].style.display = key === name ? 'block' : 'none';
+  }
+  if (!trainingRendered[name]) {
+    trainingRendered[name] = true;
+    if (name === 'day1') renderDay1();
+    if (name === 'brands') renderBrands();
+    if (name === 'bags') renderBagsAndLeather();
+    if (name === 'sunglasses') renderSunglasses();
+    if (name === 'care') renderCare();
+    if (name === 'selling') renderSelling();
+  } else if (name === 'day1') {
+    renderDay1(); // cheap to re-render; keeps the progress bar honest if it changed elsewhere
+  }
+}
+for (var ti = 0; ti < trainingTabs.length; ti++) {
+  trainingTabs[ti].addEventListener('click', function (e) {
+    showTrainingTab(e.currentTarget.getAttribute('data-tab'));
+  });
+}
+
+// ---- Day 1 checklist ----
+function loadDay1Progress() {
+  try { return JSON.parse(localStorage.getItem('trainingDay1Progress') || '{}'); } catch (e) { return {}; }
+}
+function saveDay1Progress(progress) {
+  try { localStorage.setItem('trainingDay1Progress', JSON.stringify(progress)); } catch (e) { /* ignore */ }
+}
+
+function renderDay1() {
+  var panel = trainingPanels.day1;
+  var progress = loadDay1Progress();
+  var doneCount = DAY1_ITEMS.filter(function (it) { return progress[it.id]; }).length;
+  panel.innerHTML =
+    '<div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px 16px;margin-bottom:14px;">' +
+    '<div style="font-size:13px;color:var(--text-dim);margin-bottom:6px;">Day 1 progress</div>' +
+    '<div style="height:8px;border-radius:4px;background:var(--surface-alt);overflow:hidden;">' +
+    '<div style="height:100%;width:' + Math.round((doneCount / DAY1_ITEMS.length) * 100) + '%;background:var(--accent);"></div>' +
+    '</div>' +
+    '<div style="font-size:12px;color:var(--text-dim);margin-top:6px;">' + doneCount + ' of ' + DAY1_ITEMS.length + ' complete</div>' +
+    '</div>' +
+    DAY1_ITEMS.map(function (it) {
+      var checked = !!progress[it.id];
+      return '<label style="display:flex;gap:12px;align-items:flex-start;padding:14px;border:1px solid var(--border);border-radius:10px;margin-bottom:10px;cursor:pointer;">' +
+        '<input type="checkbox" class="day1-check" data-id="' + it.id + '" ' + (checked ? 'checked' : '') + ' style="margin-top:3px;width:18px;height:18px;flex:none;" />' +
+        '<span><div style="font-size:15px;font-weight:600;' + (checked ? 'text-decoration:line-through;color:var(--text-dim);' : '') + '">' + escapeHtml(it.label) + '</div>' +
+        '<div style="font-size:13px;color:var(--text-dim);margin-top:2px;">' + escapeHtml(it.hint) + '</div></span>' +
+        '</label>';
     }).join('');
 
-    result.innerHTML =
-      (item.image
-        ? '<img src="' + escapeHtml(item.image) + '" alt="" style="width:100%;max-height:280px;object-fit:cover;border-radius:10px;margin-bottom:14px;" />'
-        : '') +
-      (item.vendor
-        ? '<div style="font-size:12px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--accent);margin-bottom:2px;">' + escapeHtml(item.vendor) +
-            (item.brandPronunciation
-              ? ' <span style="font-weight:600;letter-spacing:normal;text-transform:none;color:var(--text-dim);">(' + escapeHtml(item.brandPronunciation) + ')</span>'
-              : '') +
-          '</div>'
-        : '') +
-      '<h3 style="margin-bottom:4px;">' + escapeHtml(item.title) + '</h3>' +
-      (item.sku
-        ? '<p style="color:var(--text-dim);font-size:13px;margin:0 0 6px;letter-spacing:0.02em;">SKU/Inventory #: <span style="color:var(--text);font-weight:600;">' + escapeHtml(item.sku) + '</span></p>' +
-          '<button type="button" id="print-tag-btn" style="padding:8px 14px;font-size:13px;font-weight:600;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--text);margin-bottom:10px;">🖨 Print tag</button>'
-        : '') +
-      (item.pronunciation && item.pronunciation !== 'None needed.'
-        ? '<p style="color:var(--text-dim);font-style:italic;margin-top:0;">' + escapeHtml(item.pronunciation) + '</p>'
-        : '') +
-      '<div style="display:flex;gap:12px;margin:16px 0;flex-wrap:wrap;">' +
-        priceBox('Flash sale', item.flashPrice) +
-        priceBox('Asking', item.askingPrice) +
-        priceBox('Red zone (no-go)', item.redZonePrice, true) +
-      '</div>' +
-      (item.staffCommission != null ? commissionBanner(item.staffCommission) : '') +
-      (item.salesPoints
-        ? '<div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:12px 16px;margin-bottom:14px;white-space:pre-wrap;font-size:14px;line-height:1.6;">' +
-            escapeHtml(item.salesPoints) +
-          '</div>'
-        : '') +
-      (hasScripts
-        ? '<div style="display:flex;gap:6px;margin-bottom:6px;">' + lengthButtons + '</div>' +
-          (item.extendedPending
-            ? '<div style="font-size:12px;color:var(--text-dim);margin-bottom:10px;">⏳ Preparing the 20 sec / 1 min / 4 min versions…</div>'
-            : '<div style="margin-bottom:10px;"></div>') +
-          '<button type="button" id="tp-open" style="width:100%;padding:12px;margin-bottom:10px;font-size:15px;font-weight:600;background:var(--accent);color:var(--accent-text);border:none;border-radius:8px;">🎤 Read this length (teleprompter)</button>'
-        : '') +
-      '<pre style="white-space:pre-wrap;font-family:inherit;font-size:15px;line-height:1.5;background:var(--surface);padding:16px;border-radius:8px;">' +
-        escapeHtml(currentScript) +
-      '</pre>';
+  var checks = panel.querySelectorAll('.day1-check');
+  for (var i = 0; i < checks.length; i++) {
+    checks[i].addEventListener('change', function (e) {
+      var p = loadDay1Progress();
+      p[e.currentTarget.getAttribute('data-id')] = e.currentTarget.checked;
+      saveDay1Progress(p);
+      renderDay1();
+    });
+  }
+}
 
-    var tpOpen = document.getElementById('tp-open');
-    if (tpOpen) tpOpen.addEventListener('click', openTeleprompter);
+// ---- Brands: Study list / Practice flashcards ----
+var brandsMode = 'study';
+var practiceOrder = [];
+var practiceIndex = 0;
+var practiceRevealed = false;
 
-    var printTagBtn = document.getElementById('print-tag-btn');
-    if (printTagBtn) printTagBtn.addEventListener('click', printTag);
+function loadMastered() {
+  try { return JSON.parse(localStorage.getItem('brandPracticeMastered') || '[]'); } catch (e) { return []; }
+}
+function saveMastered(list) {
+  try { localStorage.setItem('brandPracticeMastered', JSON.stringify(list)); } catch (e) { /* ignore */ }
+}
+function shuffledIndexes(n) {
+  var arr = [];
+  for (var i = 0; i < n; i++) arr.push(i);
+  for (var j = arr.length - 1; j > 0; j--) {
+    var k = Math.floor(Math.random() * (j + 1));
+    var tmp = arr[j]; arr[j] = arr[k]; arr[k] = tmp;
+  }
+  return arr;
+}
 
-    var lengthBtns = result.querySelectorAll('.length-btn');
-    for (var i = 0; i < lengthBtns.length; i++) {
-      lengthBtns[i].addEventListener('click', function (e) {
-        currentLength = e.currentTarget.getAttribute('data-length');
-        renderResultBody();
-      });
-    }
+function renderBrands() {
+  var panel = trainingPanels.brands;
+  panel.innerHTML =
+    '<div style="display:flex;gap:8px;margin-bottom:14px;">' +
+    '<button type="button" id="brands-mode-study" style="flex:1;padding:8px;font-size:13px;font-weight:600;border-radius:8px;border:1px solid ' + (brandsMode === 'study' ? 'var(--accent)' : 'var(--border)') + ';background:' + (brandsMode === 'study' ? 'var(--accent)' : 'var(--surface)') + ';color:' + (brandsMode === 'study' ? 'var(--accent-text)' : 'var(--text)') + ';">Study list</button>' +
+    '<button type="button" id="brands-mode-practice" style="flex:1;padding:8px;font-size:13px;font-weight:600;border-radius:8px;border:1px solid ' + (brandsMode === 'practice' ? 'var(--accent)' : 'var(--border)') + ';background:' + (brandsMode === 'practice' ? 'var(--accent)' : 'var(--surface)') + ';color:' + (brandsMode === 'practice' ? 'var(--accent-text)' : 'var(--text)') + ';">Practice</button>' +
+    '</div>' +
+    '<div id="brands-content"></div>';
+
+  document.getElementById('brands-mode-study').addEventListener('click', function () { brandsMode = 'study'; renderBrands(); });
+  document.getElementById('brands-mode-practice').addEventListener('click', function () {
+    brandsMode = 'practice';
+    practiceOrder = shuffledIndexes(BRANDS.length);
+    practiceIndex = 0;
+    practiceRevealed = false;
+    renderBrands();
+  });
+
+  var content = document.getElementById('brands-content');
+  if (brandsMode === 'study') {
+    var sorted = BRANDS.slice().sort(function (a, b) { return a.name.localeCompare(b.name); });
+    content.innerHTML =
+      '<p style="color:var(--text-dim);font-size:13px;margin-top:0;">Every brand we currently carry (' + BRANDS.length + '). Tap Practice to quiz yourself.</p>' +
+      sorted.map(function (b) {
+        return '<div style="padding:12px 14px;border:1px solid var(--border);border-radius:10px;margin-bottom:8px;">' +
+          '<div style="font-size:15px;font-weight:700;">' + escapeHtml(b.name) + '</div>' +
+          (b.pron
+            ? '<div style="font-size:13px;color:var(--accent);margin-top:2px;">' + escapeHtml(b.pron) + '</div>'
+            : '<div style="font-size:13px;color:var(--text-dim);margin-top:2px;font-style:italic;">Said as spelled -- no special pronunciation.</div>') +
+          (b.tidbit ? '<div style="font-size:13px;color:var(--text);margin-top:6px;line-height:1.5;">' + escapeHtml(b.tidbit) + '</div>' : '') +
+          '</div>';
+      }).join('');
+    return;
   }
 
-  // "Pairs well with" -- a REAL, currently-in-stock item from this store's own inventory
-  // (resolved server-side from an AI search hint -- see findPairsWithProduct in api/scan.js),
-  // shown as a clickable card a host can tap to pull up that item's own script mid-show.
-  function renderPairsWith(item) {
-    var p = item.pairsWithProduct;
-    if (!p) {
-      pairsWith.style.display = 'none';
-      return;
-    }
-    pairsWith.style.display = 'block';
-    pairsWith.innerHTML =
-      '<div style="font-size:12px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:var(--accent);margin-bottom:6px;">✨ Pairs well with</div>' +
-      '<div id="pairs-with-card" style="display:flex;gap:12px;align-items:center;padding:10px;border:1px solid var(--border);border-radius:10px;cursor:pointer;background:var(--surface);">' +
-        (p.image
-          ? '<img src="' + escapeHtml(p.image) + '" alt="" style="width:52px;height:52px;object-fit:cover;border-radius:8px;flex:none;" />'
-          : '<div style="width:52px;height:52px;background:var(--surface-alt);border-radius:8px;flex:none;"></div>') +
-        '<div style="min-width:0;flex:1;">' +
-          '<div style="font-size:14px;font-weight:600;line-height:1.35;">' + escapeHtml(p.title) + '</div>' +
-          '<div style="font-size:12px;color:var(--text-dim);margin-top:3px;">' +
-            'Flash $' + (p.flashPrice != null ? p.flashPrice : '--') +
-            ' | Asking $' + (p.askingPrice != null ? p.askingPrice : '--') +
-          '</div>' +
-        '</div>' +
-        '<div style="flex:none;color:var(--text-dim);font-size:20px;">›</div>' +
-      '</div>';
-
-    var card = document.getElementById('pairs-with-card');
-    if (card) {
-      card.addEventListener('click', function () {
-        // This is a detour outside whatever list the host was browsing -- treat it as its own
-        // single-item queue rather than pretending it belongs to the current Search/Browse list.
-        browseQueue = [p];
-        browseIndex = 0;
-        lookupById(p.id, p.title);
-      });
-    }
+  if (!practiceOrder.length) {
+    practiceOrder = shuffledIndexes(BRANDS.length);
+    practiceIndex = 0;
+    practiceRevealed = false;
   }
+  var mastered = loadMastered();
+  var brand = BRANDS[practiceOrder[practiceIndex]];
+  var isMastered = mastered.indexOf(brand.name) !== -1;
 
-  // Quick category shortcuts -- jump to Browse pre-filtered, without needing to go back and
-  // retype a search.
-  function renderMoreLikeThis() {
-    moreLikeThis.style.display = 'block';
-    moreLikeThis.innerHTML =
-      '<div style="font-size:12px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:var(--text-dim);margin-bottom:8px;">See more</div>' +
-      '<div style="display:flex;gap:8px;flex-wrap:wrap;">' +
-        QUICK_CATEGORIES.map(function (qc, idx) {
-          return '<button type="button" class="quick-category-btn" data-idx="' + idx + '" style="padding:8px 14px;font-size:13px;border-radius:20px;border:1px solid var(--border);background:var(--surface);color:var(--text);">' + escapeHtml(qc.label) + '</button>';
+  content.innerHTML =
+    '<div style="font-size:12px;color:var(--text-dim);margin-bottom:10px;">Mastered ' + mastered.length + ' of ' + BRANDS.length + ' &middot; card ' + (practiceIndex + 1) + ' of ' + BRANDS.length + '</div>' +
+    '<div id="practice-card" style="border:1px solid var(--border);border-radius:14px;padding:32px 20px;text-align:center;margin-bottom:14px;min-height:120px;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;background:var(--surface);">' +
+    '<div style="font-size:22px;font-weight:800;">' + escapeHtml(brand.name) + (isMastered ? ' ✓' : '') + '</div>' +
+    (practiceRevealed
+      ? '<div style="font-size:16px;color:var(--accent);margin-top:12px;">' + escapeHtml(brand.pron || 'Said as spelled -- no special pronunciation.') + '</div>' +
+        (brand.tidbit ? '<div style="font-size:13px;color:var(--text-dim);margin-top:10px;line-height:1.5;">' + escapeHtml(brand.tidbit) + '</div>' : '')
+      : '<div style="font-size:13px;color:var(--text-dim);margin-top:12px;">Tap to reveal pronunciation</div>') +
+    '</div>' +
+    (practiceRevealed
+      ? '<div style="display:flex;gap:8px;">' +
+        '<button type="button" id="practice-again" style="flex:1;padding:12px;font-size:14px;font-weight:600;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--text);">Still practicing</button>' +
+        '<button type="button" id="practice-got-it" style="flex:1;padding:12px;font-size:14px;font-weight:600;border-radius:8px;border:none;background:var(--success);color:#0a1f10;">Got it ✓</button>' +
+        '</div>'
+      : '') +
+    '<button type="button" id="practice-reset" style="width:100%;padding:10px;margin-top:16px;font-size:12px;color:var(--text-dim);background:none;border:none;">Reset practice progress</button>';
+
+  document.getElementById('practice-card').addEventListener('click', function () {
+    practiceRevealed = true;
+    renderBrands();
+  });
+  var again = document.getElementById('practice-again');
+  var gotIt = document.getElementById('practice-got-it');
+  if (again) again.addEventListener('click', function (e) {
+    e.stopPropagation();
+    advancePractice();
+  });
+  if (gotIt) gotIt.addEventListener('click', function (e) {
+    e.stopPropagation();
+    var m = loadMastered();
+    if (m.indexOf(brand.name) === -1) m.push(brand.name);
+    saveMastered(m);
+    advancePractice();
+  });
+  document.getElementById('practice-reset').addEventListener('click', function (e) {
+    e.stopPropagation();
+    saveMastered([]);
+    practiceOrder = shuffledIndexes(BRANDS.length);
+    practiceIndex = 0;
+    practiceRevealed = false;
+    renderBrands();
+  });
+}
+
+function advancePractice() {
+  practiceRevealed = false;
+  practiceIndex = (practiceIndex + 1) % practiceOrder.length;
+  if (practiceIndex === 0) practiceOrder = shuffledIndexes(BRANDS.length);
+  renderBrands();
+}
+
+// ---- Sunglasses 101: how to read the arm (temple) code ----
+function renderSunglasses() {
+  var panel = trainingPanels.sunglasses;
+  panel.innerHTML =
+    '<p style="color:var(--text-dim);font-size:13px;margin-top:0;">Every pair carries a code printed on the inside of one arm (temple). Learn to read it and you can confirm the model and size in seconds -- no listing lookup needed.</p>' +
+    '<div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;margin:14px 0;">' +
+    sunglassesSVG() +
+    '</div>' +
+    '<div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px 16px;margin-bottom:14px;">' +
+    '<div style="font-size:13px;font-weight:700;color:var(--accent);margin-bottom:8px;text-transform:uppercase;letter-spacing:0.04em;">Where to look</div>' +
+    '<div style="font-size:14px;line-height:1.6;">Open the arm and look at the flat inside surface near the hinge. It’s small print, so tilt it toward the light.</div>' +
+    '</div>' +
+    '<div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px 16px;margin-bottom:14px;">' +
+    '<div style="font-size:13px;font-weight:700;color:var(--accent);margin-bottom:8px;text-transform:uppercase;letter-spacing:0.04em;">How to read the code</div>' +
+    '<div style="font-size:14px;line-height:1.7;">' +
+    'A code like <b>55□18-140</b> breaks into three numbers:<br>' +
+    '&bull; <b>55</b> -- lens width in mm (straight across one lens)<br>' +
+    '&bull; <b>18</b> -- bridge width in mm (the gap over the nose, between the lenses)<br>' +
+    '&bull; <b>140</b> -- temple length in mm (arm length from hinge to tip)<br><br>' +
+    'Smaller lens + bridge numbers = a smaller, narrower frame (better for petite faces). You’ll usually also see the brand name, a model number (letters + numbers) and a 3-digit color code on the same arm.' +
+    '</div>' +
+    '</div>' +
+    '<div id="sunglasses-quiz"></div>';
+  renderSunglassesQuiz();
+}
+
+function sunglassesSVG() {
+  return '<svg viewBox="0 0 320 140" style="width:100%;height:auto;" aria-hidden="true">' +
+    '<circle cx="90" cy="70" r="34" fill="none" stroke="var(--text-dim)" stroke-width="4"/>' +
+    '<circle cx="190" cy="70" r="34" fill="none" stroke="var(--text-dim)" stroke-width="4"/>' +
+    '<line x1="124" y1="66" x2="156" y2="66" stroke="var(--text-dim)" stroke-width="4"/>' +
+    '<line x1="224" y1="60" x2="300" y2="40" stroke="var(--accent)" stroke-width="5"/>' +
+    '<text x="120" y="30" fill="var(--text-dim)" font-size="10" text-anchor="middle">bridge</text>' +
+    '<text x="90" y="118" fill="var(--text-dim)" font-size="10" text-anchor="middle">lens width</text>' +
+    '<text x="270" y="30" fill="var(--accent)" font-size="10" text-anchor="middle">arm (temple)</text>' +
+    '<rect x="196" y="90" width="110" height="34" rx="6" fill="var(--surface-alt)" stroke="var(--border)"/>' +
+    '<text x="251" y="111" fill="var(--text)" font-size="12" text-anchor="middle" font-family="monospace">GG0061S 001 55□18-140</text>' +
+    '</svg>';
+}
+
+var SUNGLASSES_QUIZ = [
+  { q: 'In the code "55□18-140", what does the 18 tell you?', options: ['Lens width', 'Bridge width', 'Temple length'], correct: 1 },
+  { q: 'Where is this code usually printed?', options: ['On the outside of the lens', 'Inside the arm, near the hinge', 'Only on the box'], correct: 1 },
+  { q: 'A pair reads "52□16-140". Compared to "58□18-140", this pair is…', options: ['A larger frame', 'A smaller, narrower frame', 'Exactly the same size'], correct: 1 },
+];
+
+function renderSunglassesQuiz() {
+  var el = document.getElementById('sunglasses-quiz');
+  el.innerHTML = '<div style="font-size:13px;font-weight:700;color:var(--accent);margin-bottom:10px;text-transform:uppercase;letter-spacing:0.04em;">Quick check</div>' +
+    SUNGLASSES_QUIZ.map(function (item, qi) {
+      return '<div style="margin-bottom:16px;">' +
+        '<div style="font-size:14px;font-weight:600;margin-bottom:8px;">' + (qi + 1) + '. ' + escapeHtml(item.q) + '</div>' +
+        item.options.map(function (opt, oi) {
+          return '<button type="button" class="sg-quiz-opt" data-q="' + qi + '" data-o="' + oi + '" style="display:block;width:100%;text-align:left;padding:10px 12px;margin-bottom:6px;font-size:13px;border-radius:8px;border:1px solid var(--border);background:var(--surface-alt);color:var(--text);">' + escapeHtml(opt) + '</button>';
         }).join('') +
-      '</div>';
+        '<div id="sg-quiz-feedback-' + qi + '" style="font-size:13px;margin-top:4px;"></div>' +
+        '</div>';
+    }).join('');
 
-    var btns = moreLikeThis.querySelectorAll('.quick-category-btn');
-    for (var i = 0; i < btns.length; i++) {
-      btns[i].addEventListener('click', function (e) {
-        var qc = QUICK_CATEGORIES[Number(e.currentTarget.getAttribute('data-idx'))];
-        endShow();
-        hideItemView();
-        showSearchTab();
-        searchInput.value = qc.query;
-        searchCategory.value = qc.category;
-        runSearch();
-      });
-    }
+  var opts = el.querySelectorAll('.sg-quiz-opt');
+  for (var i = 0; i < opts.length; i++) {
+    opts[i].addEventListener('click', function (e) {
+      var qi = Number(e.currentTarget.getAttribute('data-q'));
+      var oi = Number(e.currentTarget.getAttribute('data-o'));
+      var item = SUNGLASSES_QUIZ[qi];
+      var fb = document.getElementById('sg-quiz-feedback-' + qi);
+      if (oi === item.correct) {
+        fb.style.color = 'var(--success)';
+        fb.textContent = 'Correct.';
+      } else {
+        fb.style.color = 'var(--danger)';
+        fb.textContent = 'Not quite -- it’s "' + item.options[item.correct] + '".';
+      }
+    });
   }
+}
 
-  // ---- Teleprompter ----
-  var teleprompter = document.getElementById('teleprompter');
-  var tpText = document.getElementById('tp-text');
-  var tpPlay = document.getElementById('tp-play');
-  var tpSpeed = document.getElementById('tp-speed');
-  var tpClose = document.getElementById('tp-close');
-  var tpFontMinus = document.getElementById('tp-font-minus');
-  var tpFontPlus = document.getElementById('tp-font-plus');
-  var tpFontSize = 32;
-  var tpScrollTimer = null;
-  var tpPlaying = false;
-
-  function openTeleprompter() {
-    tpText.textContent = (currentTitle ? currentTitle + '\n\n' : '') + currentScript;
-    tpText.scrollTop = 0;
-    tpFontSize = 32;
-    tpText.style.fontSize = tpFontSize + 'px';
-    teleprompter.style.display = 'flex';
-    stopScrolling();
-  }
-
-  function closeTeleprompter() {
-    teleprompter.style.display = 'none';
-    stopScrolling();
-  }
-
-  function startScrolling() {
-    stopScrolling();
-    tpPlaying = true;
-    tpPlay.textContent = '⏸ Pause';
-    tpScrollTimer = setInterval(function () {
-      tpText.scrollTop += Number(tpSpeed.value) * 0.6;
-    }, 30);
-  }
-
-  function stopScrolling() {
-    tpPlaying = false;
-    tpPlay.textContent = '▶ Play';
-    if (tpScrollTimer) {
-      clearInterval(tpScrollTimer);
-      tpScrollTimer = null;
-    }
-  }
-
-  tpClose.addEventListener('click', closeTeleprompter);
-  tpPlay.addEventListener('click', function () {
-    if (tpPlaying) stopScrolling(); else startScrolling();
-  });
-  tpFontMinus.addEventListener('click', function () {
-    tpFontSize = Math.max(18, tpFontSize - 4);
-    tpText.style.fontSize = tpFontSize + 'px';
-  });
-  tpFontPlus.addEventListener('click', function () {
-    tpFontSize = Math.min(64, tpFontSize + 4);
-    tpText.style.fontSize = tpFontSize + 'px';
-  });
-  // Tap the script itself to pause/resume without hunting for the button.
-  tpText.addEventListener('click', function () {
-    if (tpPlaying) stopScrolling(); else startScrolling();
-  });
-
-  // Staff-facing only -- what the seller personally earns on this item (1% of red zone price).
-  // Deliberately a full-width banner, separate from the price row above, so it reads clearly as
-  // "your commission" rather than blending in with the customer-facing prices.
-  function commissionBanner(value) {
-    return '<div style="margin:-6px 0 16px;padding:10px 14px;border-radius:8px;background:var(--success-bg);display:flex;align-items:center;justify-content:space-between;">' +
-      '<span style="font-size:13px;color:var(--success);font-weight:600;">💰 Your commission on this item</span>' +
-      '<span style="font-size:18px;color:var(--success);font-weight:700;">$' + value + '</span>' +
+// ---- Bags & Leather: bag-type glossary + LV vachetta education ----
+function renderBagsAndLeather() {
+  var panel = trainingPanels.bags;
+  panel.innerHTML =
+    '<div style="font-size:13px;font-weight:700;color:var(--accent);margin-bottom:10px;text-transform:uppercase;letter-spacing:0.04em;">Bag types</div>' +
+    '<p style="color:var(--text-dim);font-size:13px;margin-top:0;">Know these on sight so you can describe fit and how a bag is carried without fumbling for the word.</p>' +
+    BAG_TYPES.map(function (t) {
+      return '<div style="padding:12px 14px;border:1px solid var(--border);border-radius:10px;margin-bottom:8px;">' +
+        '<div style="font-size:15px;font-weight:700;">' + escapeHtml(t.name) + '</div>' +
+        '<div style="font-size:13px;color:var(--text);margin-top:4px;line-height:1.5;">' + escapeHtml(t.desc) + '</div>' +
+        '</div>';
+    }).join('') +
+    '<div style="font-size:13px;font-weight:700;color:var(--accent);margin:20px 0 10px;text-transform:uppercase;letter-spacing:0.04em;">Louis Vuitton vachetta leather</div>' +
+    '<div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px 16px;">' +
+    VACHETTA_FACTS.map(function (f) {
+      return '<div style="font-size:14px;line-height:1.6;margin-bottom:10px;">&bull; ' + escapeHtml(f) + '</div>';
+    }).join('') +
     '</div>';
-  }
+}
 
-  function priceBox(label, value, warn) {
-    return '<div style="flex:1;min-width:110px;padding:10px;border-radius:8px;background:' +
-      (warn ? 'var(--danger-bg)' : 'var(--surface-alt)') + ';text-align:center;">' +
-      '<div style="font-size:12px;color:var(--text-dim);">' + label + '</div>' +
-      '<div style="font-size:18px;font-weight:600;">' + (value != null ? '$' + value : '—') + '</div>' +
+// ---- Day 2: Sunglasses care do's and don'ts ----
+var CARE_DONT = [
+  'Don’t bang or drop them -- hinges and lenses are the first things to fail.',
+  'Don’t lay them face-down -- that’s what scratches the lenses. Fold the arms and set them down on the arms/case instead.',
+  'Don’t put on lotion, sunscreen or perfume right before handling a pair -- it smudges the lenses and can cloud any coating.',
+  'Don’t leave them in a hot car or in direct sun for long stretches -- heat warps frames and can degrade lens coatings.',
+];
+var CARE_DO = [
+  'Do use both hands when putting them on or taking them off -- one-handed removal is what warps the arms over time.',
+  'Do put them back in a case when you’re not modeling them.',
+  'Do wipe the lenses and nose pads with a clean microfiber cloth after wearing -- oils and makeup residue build up fast.',
+  'Do check the arm code before listing or selling a pair -- see Sunglasses 101 if you need a refresher.',
+];
+function renderCare() {
+  var panel = trainingPanels.care;
+  panel.innerHTML =
+    '<p style="color:var(--text-dim);font-size:13px;margin-top:0;">Every pair that comes through here needs to look and feel brand-new. That comes down to a handful of habits.</p>' +
+    '<div style="font-size:13px;font-weight:700;color:var(--danger);margin:16px 0 10px;text-transform:uppercase;letter-spacing:0.04em;">Don’t</div>' +
+    CARE_DONT.map(function (l) {
+      return '<div style="padding:12px 14px;border:1px solid var(--border);border-left:4px solid var(--danger);border-radius:8px;margin-bottom:8px;font-size:14px;line-height:1.5;">' + escapeHtml(l) + '</div>';
+    }).join('') +
+    '<div style="font-size:13px;font-weight:700;color:var(--success);margin:20px 0 10px;text-transform:uppercase;letter-spacing:0.04em;">Do</div>' +
+    CARE_DO.map(function (l) {
+      return '<div style="padding:12px 14px;border:1px solid var(--border);border-left:4px solid var(--success);border-radius:8px;margin-bottom:8px;font-size:14px;line-height:1.5;">' + escapeHtml(l) + '</div>';
+    }).join('');
+}
+
+// ---- Selling Guide: live-selling coaching, built around one rule repeated on purpose --
+// statements sell, questions don't. Every section below reinforces it at least once,
+// because it's the single most important habit a new seller has to build.
+var SELLING_RULE = 'Speak in statements, not questions. "This is Saint Laurent" sells. "Isn’t this gorgeous?" does not.';
+var STATEMENT_EXAMPLES = [
+  { bad: 'Isn’t this gorgeous?', good: 'This is gorgeous.' },
+  { bad: 'Do you see how buttery this leather is?', good: 'Feel how buttery this leather is.' },
+  { bad: 'Would you believe this is genuine Saint Laurent?', good: 'This is genuine Saint Laurent.' },
+  { bad: 'Isn’t this so rare?', good: 'This is the only one we have in this color.' },
+  { bad: 'Don’t you think this would go with a little black dress?', good: 'This pairs perfectly with your little black dress.' },
+];
+var SELLING_POINTS = [
+  { title: 'Lead with brand + item, said with confidence', body: 'Open every item the same way: "This is a Louis Vuitton Neverfull." Not a question, not a hedge -- a flat statement of fact.' },
+  { title: 'Sell with your senses, not just your eyes', body: 'Describe how it feels, not only how it looks -- the weight of the hardware, the smell and texture of the leather, the sound the zipper makes. "Feel how buttery this leather is" beats "doesn’t this leather look nice?" every time.' },
+  { title: 'Show, don’t just tell', body: 'Model the bag on your shoulder or arm. Put the sunglasses on. Walk the piece across camera. People buy what they can picture themselves wearing.' },
+  { title: 'State what it pairs with', body: 'Say the outfit, don’t ask about it: "This pairs perfectly with your little black dress" -- not "don’t you think this could pair with a dress?"' },
+  { title: 'Create urgency with facts, not hype-questions', body: '"This is the only one we have in this color" is a statement that creates real urgency. "Isn’t this so rare?" just invites doubt.' },
+  { title: 'Keep your tone warm and certain', body: 'Talk the way you would to a friend you’re genuinely excited for -- energetic, warm, and sure of what you’re saying. Certainty is what makes a viewer trust the item is what you say it is.' },
+  { title: 'Repeat brand + price naturally throughout', body: 'Viewers join mid-show. Restate the brand and price every couple of minutes as a statement, not a recap-question ("just a reminder, this is...", never "did everyone catch that this is...?").' },
+];
+function renderSelling() {
+  var panel = trainingPanels.selling;
+  panel.innerHTML =
+    '<div style="background:var(--accent);color:var(--accent-text);border-radius:12px;padding:16px;margin-bottom:16px;">' +
+    '<div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;opacity:0.85;">The #1 rule</div>' +
+    '<div style="font-size:17px;font-weight:800;margin-top:6px;line-height:1.4;">' + escapeHtml(SELLING_RULE) + '</div>' +
+    '</div>' +
+    '<p style="color:var(--text-dim);font-size:13px;margin-top:0;">Questions make a live viewer hesitate. Statements make them believe you -- and belief is what sells. Practice turning every question below into a statement.</p>' +
+    STATEMENT_EXAMPLES.map(function (ex) {
+      return '<div style="border:1px solid var(--border);border-radius:10px;padding:12px 14px;margin-bottom:8px;">' +
+        '<div style="font-size:13px;color:var(--danger);"><s>' + escapeHtml(ex.bad) + '</s></div>' +
+        '<div style="font-size:14px;color:var(--success);font-weight:600;margin-top:4px;">→ ' + escapeHtml(ex.good) + '</div>' +
+        '</div>';
+    }).join('') +
+    '<div style="font-size:13px;font-weight:700;color:var(--accent);margin:20px 0 10px;text-transform:uppercase;letter-spacing:0.04em;">How to run a live show</div>' +
+    SELLING_POINTS.map(function (p) {
+      return '<div style="padding:12px 14px;border:1px solid var(--border);border-radius:10px;margin-bottom:8px;">' +
+        '<div style="font-size:15px;font-weight:700;">' + escapeHtml(p.title) + '</div>' +
+        '<div style="font-size:14px;color:var(--text);margin-top:4px;line-height:1.5;">' + escapeHtml(p.body) + '</div>' +
+        '</div>';
+    }).join('') +
+    '<div style="background:var(--surface);border:1px solid var(--accent);border-radius:10px;padding:14px 16px;margin-top:16px;">' +
+    '<div style="font-size:14px;font-weight:700;">One more time, because it’s the whole game:</div>' +
+    '<div style="font-size:15px;margin-top:4px;">' + escapeHtml(SELLING_RULE) + '</div>' +
     '</div>';
-  }
-
-  function escapeHtml(s) {
-    return String(s == null ? '' : s)
-      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-  }
+}
 })();
 </script>
 
