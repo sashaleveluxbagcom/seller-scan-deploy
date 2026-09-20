@@ -1,5 +1,8 @@
-// test5.js — Playwright test for: (1) expanded BRANDS array, (2) Live Trial
-// Start+countdown gate, (3) embedded Chat panel in Sell Live scanner screen.
+// test5.js — Playwright test for: (1) expanded BRANDS array, (2) the shared live-practice
+// engine's Start+countdown gate (exercised via Sunglasses Sim -- the "🔴 Live Trial" tab this
+// was originally written against has since been removed; the countdown-gate mechanics it
+// tested are shared engine code, still exercised the same way through Sunglasses Sim's
+// go-live button), (3) embedded Chat panel in Sell Live scanner screen.
 // DOM-only assertions throughout (app state lives in a top-level IIFE, not
 // reachable via page.evaluate closures).
 const { chromium } = require('playwright');
@@ -55,10 +58,10 @@ async function bypassGate(page) {
   const html = await page.content();
   ok('Page loaded without fatal script error (has BRANDS-related content)', bodyText.length > 100);
 
-  // ---------- 2. Live Trial Start + countdown ----------
-  console.log('\n--- Live Trial start/countdown ---');
+  // ---------- 2. Live-practice engine Start + countdown (via Sunglasses Sim) ----------
+  console.log('\n--- Sunglasses Sim start/countdown ---');
   // still inside training panel from step 1; just switch tabs
-  await page.click('.training-tab[data-tab="trial"]');
+  await page.click('.training-tab[data-tab="sunsim"]');
   await page.waitForTimeout(300);
 
   // pick first platform
@@ -78,17 +81,17 @@ async function bypassGate(page) {
   ok('An item selection control was found and clicked', !!itemCard);
 
   // should now be on the 'ready' screen with a Go Live button, NOT already in session
-  const goLiveBtn = await page.$('#trial-go-live');
-  ok('"ready" screen rendered with #trial-go-live button (session did not start immediately)', !!goLiveBtn);
+  const goLiveBtn = await page.$('#sunsim-go-live');
+  ok('"ready" screen rendered with #sunsim-go-live button (session did not start immediately)', !!goLiveBtn);
 
-  const chatFeedBeforeGo = await page.$('#trial-chat-feed');
+  const chatFeedBeforeGo = await page.$('#sunsim-chat-feed');
   const chatFeedVisibleBefore = chatFeedBeforeGo ? await chatFeedBeforeGo.isVisible().catch(() => false) : false;
-  ok('Trial session chat feed NOT visible before Go Live is pressed', !chatFeedVisibleBefore);
+  ok('Session chat feed NOT visible before Go Live is pressed', !chatFeedVisibleBefore);
 
   if (goLiveBtn) {
     await goLiveBtn.click();
     await page.waitForTimeout(150);
-    const countdownEl = await page.$('#trial-countdown-display');
+    const countdownEl = await page.$('#sunsim-countdown-display');
     const countdownText1 = countdownEl ? await countdownEl.textContent() : null;
     ok('Countdown display shows a value shortly after Go Live click', !!countdownText1 && countdownText1.trim().length > 0);
     console.log('  countdown tick 1:', JSON.stringify(countdownText1));
@@ -100,9 +103,9 @@ async function bypassGate(page) {
 
     // wait out the rest of the countdown (3-2-1-GO, 800ms/tick + 400ms buffer)
     await page.waitForTimeout(2200);
-    const sessionStarted = await page.$('#trial-chat-feed');
+    const sessionStarted = await page.$('#sunsim-chat-feed');
     const sessionVisible = sessionStarted ? await sessionStarted.isVisible().catch(() => false) : false;
-    ok('Live session (#trial-chat-feed) visible after countdown completes', sessionVisible);
+    ok('Live session (#sunsim-chat-feed) visible after countdown completes', sessionVisible);
   }
 
   // ---------- 3. Chat panel embedded in Sell Live ----------
