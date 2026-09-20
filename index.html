@@ -174,8 +174,8 @@ h2, h3 { color: var(--text); }
 <div id="more-like-this" style="display:none;margin-top:18px;"></div>
 </div>
 
-<!-- Training: Day 1 checklist + an evergreen reference (brands/pronunciation/sunglasses code),
-     reachable from the hub any time, not just on day one. -->
+<!-- Training: the day-by-day roadmap plus an evergreen reference (brands/pronunciation/sunglasses
+     code), reachable from the hub any time, not just on day one. -->
 <div id="training" style="display:none;">
 <button type="button" id="training-to-hub" style="background:none;border:none;padding:8px 0;margin-bottom:6px;font-size:14px;color:var(--text-dim);">☰ Menu</button>
 <h2 style="margin-bottom:2px;">🎓 Seller Training</h2>
@@ -185,13 +185,11 @@ h2, h3 { color: var(--text); }
 <button type="button" class="training-tab" data-tab="roadmap" style="flex:1;min-width:90px;padding:10px 6px;font-size:13px;font-weight:600;border-radius:8px;border:1px solid var(--accent);background:var(--accent);color:var(--accent-text);">Day 1&ndash;30 Plan</button>
 <button type="button" class="training-tab" data-tab="roadmap60" style="flex:1;min-width:90px;padding:10px 6px;font-size:13px;font-weight:600;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--text);">Day 31&ndash;60 Plan</button>
 <button type="button" class="training-tab" data-tab="roadmap90" style="flex:1;min-width:90px;padding:10px 6px;font-size:13px;font-weight:600;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--text);">Day 61&ndash;90 Plan</button>
-<button type="button" class="training-tab" data-tab="day1" style="flex:1;min-width:90px;padding:10px 6px;font-size:13px;font-weight:600;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--text);">Day 1</button>
 <button type="button" class="training-tab" data-tab="brands" style="flex:1;min-width:90px;padding:10px 6px;font-size:13px;font-weight:600;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--text);">Brands</button>
 <button type="button" class="training-tab" data-tab="bags" style="flex:1;min-width:90px;padding:10px 6px;font-size:13px;font-weight:600;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--text);">Bags &amp; Leather</button>
 <button type="button" class="training-tab" data-tab="sunglasses" style="flex:1;min-width:90px;padding:10px 6px;font-size:13px;font-weight:600;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--text);">Sunglasses 101</button>
 <button type="button" class="training-tab" data-tab="describe" style="flex:1;min-width:90px;padding:10px 6px;font-size:13px;font-weight:600;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--text);">Describe It</button>
 <button type="button" class="training-tab" data-tab="selling" style="flex:1;min-width:90px;padding:10px 6px;font-size:13px;font-weight:600;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--text);">Selling Guide</button>
-<button type="button" class="training-tab" data-tab="trial" style="flex:1;min-width:90px;padding:10px 6px;font-size:13px;font-weight:600;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--text);">🔴 Live Trial</button>
 <button type="button" class="training-tab" data-tab="sunsim" style="flex:1;min-width:90px;padding:10px 6px;font-size:13px;font-weight:600;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--text);">😎 Sunglasses Sim</button>
 <button type="button" class="training-tab" data-tab="bagsim" style="flex:1;min-width:90px;padding:10px 6px;font-size:13px;font-weight:600;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--text);">👜 Bag Sim</button>
 </div>
@@ -199,13 +197,11 @@ h2, h3 { color: var(--text); }
 <div id="training-roadmap"></div>
 <div id="training-roadmap60" style="display:none;"></div>
 <div id="training-roadmap90" style="display:none;"></div>
-<div id="training-day1" style="display:none;"></div>
 <div id="training-brands" style="display:none;"></div>
 <div id="training-bags" style="display:none;"></div>
 <div id="training-sunglasses" style="display:none;"></div>
 <div id="training-describe" style="display:none;"></div>
 <div id="training-selling" style="display:none;"></div>
-<div id="training-trial" style="display:none;"></div>
 <div id="training-sunsim" style="display:none;"></div>
 <div id="training-bagsim" style="display:none;"></div>
 </div>
@@ -1067,7 +1063,7 @@ document.getElementById('training-to-hub').addEventListener('click', function ()
 });
 
 // ---------------------------------------------------------------------------
-// Training -- Day 1 checklist + an evergreen Brands/Sunglasses reference. Everything here is
+// Training -- the day-by-day roadmap plus an evergreen Brands/Sunglasses reference. Everything here is
 // static/client-side (no backend calls, no new env vars) so it can't affect the live
 // scan/search/scripts flow above. Brand names come straight from the real "Shop by brand"
 // collections on leveluxbag.com; pronunciations follow the exact same hyphen + ALL-CAPS-stress
@@ -1492,37 +1488,23 @@ var CARE_DO = [
   'Do check the arm code before listing or selling a pair -- see Sunglasses 101 if you need a refresher.',
 ];
 
-var DAY1_ITEMS = [
-  { id: 'clockin', label: 'Get set up on the clock-in sheet', hint: 'Sasha or your manager will walk you through this in person on day one.' },
-  { id: 'i9', label: 'Complete your I-9', hint: 'Bring your ID documents -- your manager will have the paperwork ready.' },
-  { id: 'handbook', label: 'Read and sign the employee handbook', hint: 'Ask your manager for the current handbook if you haven’t been given a copy yet.' },
-  { id: 'brands', label: 'Learn the brands we carry', hint: 'Know all ' + BRANDS.length + ' brand names on sight -- see the Brands tab.' },
-  { id: 'pronunciation', label: 'Know your pronunciation list', hint: 'Practice saying every brand name out loud until it’s automatic -- use Practice mode in the Brands tab.' },
-  { id: 'bagtypes', label: 'Learn the bag types', hint: 'Shoulder bag, crossbody, top-handle, hobo, tote and more -- see the Bags & Leather tab.' },
-  { id: 'vachetta', label: 'Understand Louis Vuitton vachetta leather', hint: 'Know why it starts light and darkens over time -- see the Bags & Leather tab.' },
-  { id: 'arm', label: 'Learn to read a sunglasses arm', hint: 'Know where the model, color and size code are printed -- see Sunglasses 101.' },
-  { id: 'sizes', label: 'Know how to read the size code', hint: 'Be able to read lens-bridge-temple (e.g. 55□18-140) off any pair -- see Sunglasses 101.' },
-];
-
 var trainingTabs = document.querySelectorAll('.training-tab');
 var trainingPanels = {
   roadmap: document.getElementById('training-roadmap'),
   roadmap60: document.getElementById('training-roadmap60'),
   roadmap90: document.getElementById('training-roadmap90'),
-  day1: document.getElementById('training-day1'),
   brands: document.getElementById('training-brands'),
   bags: document.getElementById('training-bags'),
   sunglasses: document.getElementById('training-sunglasses'),
   describe: document.getElementById('training-describe'),
   selling: document.getElementById('training-selling'),
-  trial: document.getElementById('training-trial'),
   sunsim: document.getElementById('training-sunsim'),
   bagsim: document.getElementById('training-bagsim'),
 };
-var trainingRendered = { roadmap: false, roadmap60: false, roadmap90: false, day1: false, brands: false, bags: false, sunglasses: false, describe: false, selling: false, trial: false, sunsim: false, bagsim: false };
+var trainingRendered = { roadmap: false, roadmap60: false, roadmap90: false, brands: false, bags: false, sunglasses: false, describe: false, selling: false, sunsim: false, bagsim: false };
 
 function showTrainingTab(name) {
-  // Every live-sim engine (Live Trial + the two category sims) shares the same kind of
+  // Every live-sim engine (the two category sims) shares the same kind of
   // countdown/chat timers; stop any engine's timers whenever its tab isn't the one being shown.
   for (var e = 0; e < LIVE_SIM_ENGINES.length; e++) {
     if (LIVE_SIM_ENGINES[e].panelKey !== name) LIVE_SIM_ENGINES[e].stopTimers();
@@ -1546,19 +1528,15 @@ function showTrainingTab(name) {
     if (name === 'roadmap') renderRoadmap();
     if (name === 'roadmap60') renderRoadmap60();
     if (name === 'roadmap90') renderRoadmap90();
-    if (name === 'day1') renderDay1();
     if (name === 'brands') renderBrands();
     if (name === 'bags') renderBagsAndLeather();
     if (name === 'sunglasses') renderSunglasses();
     if (name === 'describe') renderDescribeIt();
     if (name === 'selling') renderSelling();
-    if (name === 'trial') liveTrialEngine.render();
     if (name === 'sunsim') sunSimEngine.render();
     if (name === 'bagsim') bagSimEngine.render();
-  } else if (name === 'day1') {
-    renderDay1(); // cheap to re-render; keeps the progress bar honest if it changed elsewhere
   } else if (name === 'roadmap') {
-    renderRoadmap(); // re-render so certification status reflects the latest Live Trial results
+    renderRoadmap(); // re-render so checked-off progress stays in sync
   }
 }
 for (var ti = 0; ti < trainingTabs.length; ti++) {
@@ -1567,49 +1545,10 @@ for (var ti = 0; ti < trainingTabs.length; ti++) {
   });
 }
 
-// ---- Day 1 checklist ----
-function loadDay1Progress() {
-  try { return JSON.parse(localStorage.getItem('trainingDay1Progress') || '{}'); } catch (e) { return {}; }
-}
-function saveDay1Progress(progress) {
-  try { localStorage.setItem('trainingDay1Progress', JSON.stringify(progress)); } catch (e) { /* ignore */ }
-}
-
-function renderDay1() {
-  var panel = trainingPanels.day1;
-  var progress = loadDay1Progress();
-  var doneCount = DAY1_ITEMS.filter(function (it) { return progress[it.id]; }).length;
-  panel.innerHTML =
-    '<div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px 16px;margin-bottom:14px;">' +
-    '<div style="font-size:13px;color:var(--text-dim);margin-bottom:6px;">Day 1 progress</div>' +
-    '<div style="height:8px;border-radius:4px;background:var(--surface-alt);overflow:hidden;">' +
-    '<div style="height:100%;width:' + Math.round((doneCount / DAY1_ITEMS.length) * 100) + '%;background:var(--accent);"></div>' +
-    '</div>' +
-    '<div style="font-size:12px;color:var(--text-dim);margin-top:6px;">' + doneCount + ' of ' + DAY1_ITEMS.length + ' complete</div>' +
-    '</div>' +
-    DAY1_ITEMS.map(function (it) {
-      var checked = !!progress[it.id];
-      return '<label style="display:flex;gap:12px;align-items:flex-start;padding:14px;border:1px solid var(--border);border-radius:10px;margin-bottom:10px;cursor:pointer;">' +
-        '<input type="checkbox" class="day1-check" data-id="' + it.id + '" ' + (checked ? 'checked' : '') + ' style="margin-top:3px;width:18px;height:18px;flex:none;" />' +
-        '<span><div style="font-size:15px;font-weight:600;' + (checked ? 'text-decoration:line-through;color:var(--text-dim);' : '') + '">' + escapeHtml(it.label) + '</div>' +
-        '<div style="font-size:13px;color:var(--text-dim);margin-top:2px;">' + escapeHtml(it.hint) + '</div></span>' +
-        '</label>';
-    }).join('');
-
-  var checks = panel.querySelectorAll('.day1-check');
-  for (var i = 0; i < checks.length; i++) {
-    checks[i].addEventListener('change', function (e) {
-      var p = loadDay1Progress();
-      p[e.currentTarget.getAttribute('data-id')] = e.currentTarget.checked;
-      saveDay1Progress(p);
-      renderDay1();
-    });
-  }
-}
-
 // ---- Day 1-30 Plan: the full onboarding roadmap, day by day. Grouped into phases so it's
 // scannable instead of one long list of 30 rows. Day 7 is the hard gate -- nobody goes live
-// solo before clearing it (see CERT_THRESHOLD below, checked against real Live Trial grades).
+// solo before their manager watches a run-through and signs off in person (no app-tracked
+// grade -- see the Day 7 entry below).
 // 6 days of hands-on/in-person training (days 1-6), then certify and go live solo on day 7 --
 // everything before day 7 is compressed on purpose so a new hire is selling on their own within
 // their first week, not their third.
@@ -1620,7 +1559,7 @@ var CURRICULUM_PHASES = [
     id: 'week1', label: 'Week 1 · Foundations', range: 'Days 1–6',
     days: [
       { day: 1, title: 'Onboarding & full vocabulary intro', bullets: [
-        'Complete HR paperwork: clock-in setup, I-9, employee handbook (see the Day 1 tab for the checklist)',
+        'Complete HR paperwork: clock-in setup, I-9, employee handbook — your manager walks you through this in person',
         'Meet the team and get a tour of the space',
         'Go through the Brands tab once — every brand + pronunciation',
         'Go through Bags & Leather once — bag types, materials & hardware, plus Louis Vuitton vachetta leather',
@@ -1632,45 +1571,43 @@ var CURRICULUM_PHASES = [
         'Bags & Leather — go back through bag types, materials, and vachetta leather, out loud this time',
         'Shadow one full live show start to finish — just watch and take notes',
       ], expect: 'By tonight: brands and bag types are starting to stick without looking them up.' },
-      { day: 3, title: 'Jewelry, sunglasses & your first Live Trial', bullets: [
+      { day: 3, title: 'Jewelry, sunglasses & your first live practice run', bullets: [
         'Describe It — jewelry condition language again: tarnish, scratches, hairline scratches, plating wear',
         'Sunglasses 101 — practice reading the arm code on 5 real pairs',
         'Brands tab Practice mode — keep pushing past 15 brands',
-        'Run your first Live Trial on the Whatnot tab — no grade pressure, this one’s just to get comfortable',
-      ], expect: 'By tonight: you can read any arm code cold, no lookup needed, and you’ve been live-tested once with zero pressure.' },
-      { day: 4, title: 'Describing bags & Live Trial: eBay Live', bullets: [
+        'Run your first Sunglasses Sim on the Whatnot tab — no pressure, this one’s just to get comfortable',
+      ], expect: 'By tonight: you can read any arm code cold, no lookup needed, and you’ve run a live practice session once with zero pressure.' },
+      { day: 4, title: 'Describing bags & your first Bag Sim run', bullets: [
         'Describe It — learn the 6 angles to show on every bag',
         'Practice describing 5 real bags out loud, hitting every angle',
         'Finish the Brands tab — every brand, name + pronunciation',
-        'Run a Live Trial on the eBay Live tab, focused on keeping the item on screen every time someone asks',
-      ], expect: 'By tonight: you can name every brand we carry on sight, show a bag through all 6 angles unprompted, and you’ve run two of the three Live Trial platforms.' },
-      { day: 5, title: 'Describing jewelry & Live Trial: TikTok Shop', bullets: [
+        'Run a Bag Sim on the eBay Live tab, focused on keeping the item on screen every time someone asks',
+      ], expect: 'By tonight: you can name every brand we carry on sight, show a bag through all 6 angles unprompted, and you’ve run both Sunglasses Sim and Bag Sim at least once.' },
+      { day: 5, title: 'Describing jewelry & full-mix practice', bullets: [
         'Practice describing 5 real jewelry pieces out loud, calling out condition unprompted',
-        'Run a Live Trial on the TikTok Shop tab, focused on statements, not questions — check your grade’s tone score',
-        'Review all three of your Live Trial grades with your manager and pick your weakest one to attack tomorrow',
-      ], expect: 'By tonight: you can call out a flaw by its correct name every time, and you’ve run all three Live Trial platforms at least once.' },
+        'Run Sunglasses Sim and Bag Sim on the TikTok Shop tab, focused on statements, not questions',
+        'Have your manager watch one full run-through today and give live feedback on pronunciation and screen presence',
+      ], expect: 'By tonight: you can call out a flaw by its correct name every time, and your manager has watched at least one full run-through.' },
       { day: 6, title: 'Selling Guide, retries & full mock show', bullets: [
         'Work through the Selling Guide, start to finish, and do the statement drills',
-        'Run Sunglasses Sim and Bag Sim a few times, closing each one out on the clock, until the countdown script feels natural',
-        'Retry yesterday’s weakest Live Trial platform, aiming for a B or better',
-        'Retry the other two platforms, targeting a B or better on all three',
-        'Run all three platforms back-to-back in one sitting, like a real shift — your manager watches at least one segment live and gives written feedback',
-      ], expect: 'Tonight is the last practice night. Statements, not questions, and a B or better on all three platforms — that’s the whole bar for tomorrow.' },
+        'Run Sunglasses Sim and Bag Sim a few times each, closing each one out on the clock, until the countdown script feels natural',
+        'Retry whichever platform skin (Whatnot, eBay Live, TikTok Shop) felt weakest yesterday',
+        'Run through all three platform skins back-to-back in one sitting, like a real shift — your manager watches the whole thing live and gives written feedback',
+      ], expect: 'Tonight is the last practice night. Statements, not questions, and a run your manager is comfortable signing off on tomorrow — that’s the whole bar.' },
     ],
   },
   {
     id: 'cert', label: '🎓 Day 7 · Certification & first solo show', range: 'Day 7', milestone: true,
     days: [
       { day: 7, title: 'Certification — go live solo', bullets: [
-        'Score B or better on all three Live Trial platforms (Whatnot, eBay Live, TikTok Shop)',
-        'Get manager sign-off on the pronunciation & screen-presence rubric (see Live Trial tab)',
+        'Get your manager’s sign-off: they watch a full run-through live and confirm you’re ready — pronunciation, screen presence, and handling questions smoothly, no app grade required',
         'Final sunglasses care review — read every line below out loud with your manager before your first show:',
       ].concat(CARE_DONT).concat(CARE_DO).concat([
         'If you’re not there yet, that’s OK — take one extra coaching day and re-attempt. Going live is delayed, never skipped.',
         'Go live for your first real solo show today',
         'A manager or senior seller stays reachable in Messages the whole time',
         'Keep your name in "Selling as" on every item so your commission tracks correctly',
-      ]), expect: 'This is the gate. Six days of hands-on training, then certify and go live solo, today. Nobody goes live before clearing it.' },
+      ]), expect: 'This is the gate. Six days of hands-on training, then your manager signs off and you go live solo, today. Nobody goes live before clearing it.' },
     ],
   },
   {
@@ -2034,10 +1971,9 @@ function renderRoadmapPanel(panel, phases, opts) {
 function renderRoadmap() {
   renderRoadmapPanel(trainingPanels.roadmap, CURRICULUM_PHASES, {
     storageKey: 'roadmapProgress',
-    intro: 'Your full onboarding, day by day. The goal: ready to run a show completely on your own by <b style="color:var(--text);">day 7</b>.',
+    intro: 'Your full onboarding, day by day. The goal: ready to run a show completely on your own by <b style="color:var(--text);">day 7</b>, once your manager signs off.',
     totalDays: CURRICULUM_TOTAL_DAYS,
-    showCert: true,
-    certLabel: 'Day 7 certification',
+    showCert: false,
   });
 }
 function renderRoadmap60() {
@@ -2439,7 +2375,7 @@ function renderBagsAndLeather() {
 
 // ---- Describe It: how to actually present an item on screen -- every angle for bags, and the
 // exact condition vocabulary for jewelry. This is what a "good show" looks like, mechanically,
-// before the Live Trial tab asks anyone to practice it under pressure.
+// before Sunglasses Sim or Bag Sim asks anyone to practice it under pressure.
 var BAG_ANGLES = [
   { name: '1. Front', how: 'Full front view, held straight on, centered in frame -- this is the first thing every viewer needs to see.' },
   { name: '2. Back', how: 'Flip it and hold the back panel to the camera just as steadily as the front.' },
@@ -2560,17 +2496,20 @@ function renderSelling() {
 }
 
 // ---------------------------------------------------------------------------
-// Live Trial: an interactive mock-live simulation so a seller can practice handling real buyer
-// comments -- one skin per platform (Whatnot, eBay Live, TikTok Shop) sharing one engine --
-// before ever going live for real. A viewer feed fires scripted comments at a sample item;
-// the seller types back exactly what they'd say out loud, and can toggle "Showing on screen"
-// (auto-expires after 15s, same as real life -- you have to keep affirming it). If a viewer
-// asks to see the item while that's expired, a nudge banner fires immediately.
+// Live practice engine: an interactive mock-live simulation so a seller can practice handling
+// real buyer comments -- one skin per platform (Whatnot, eBay Live, TikTok Shop) sharing one
+// engine -- before ever going live for real. A viewer feed fires scripted comments at a sample
+// item, and the seller can toggle "Showing on screen" (auto-expires after 15s, same as real
+// life -- you have to keep affirming it). If a viewer asks to see the item while that's
+// expired, a nudge banner fires immediately.
 //
-// Auto-grading is deliberately simple and transparent -- keyword/heuristic matching, not real
-// speech or video analysis -- so it's a strong first pass, not a replacement for a human. The
-// Manager Rubric beneath the platform picker is where pronunciation and true screen presence
-// (things this code genuinely cannot verify) get judged by someone watching and listening.
+// Sunglasses Sim and Bag Sim both run this engine in verbal-practice mode (cfg.verbalPractice):
+// no typing, no auto-grading, no manager rubric -- just untimed reps for pace and confidence,
+// with certification handled entirely by a manager watching and signing off in person (see the
+// Day 7 entry in CURRICULUM_PHASES). The engine also still supports a typed, auto-graded mode
+// (keyword/heuristic matching -- resultsHtml/scoreToGrade below) plus a Manager Rubric screen
+// for judging pronunciation and true screen presence; nothing currently instantiates it, but
+// it's left in place in case a future graded practice mode wants it.
 // ---------------------------------------------------------------------------
 var TRIAL_PLATFORMS = [
   { id: 'whatnot', label: 'Whatnot', icon: '🟣', headerBg: '#5b21b6', headerText: '#ffffff', bubbleBg: '#3b0764', accent: '#c4b5fd' },
@@ -2747,13 +2686,11 @@ function managerRubricHtml() {
     }).join('') : '');
 }
 
-// ---- Engine factory: one implementation, three instances (Live Trial, Sunglasses Sim, Bag
-// Sim). Each instance gets its own closed-over state and DOM-id prefix (cfg.idPrefix), so the
-// three never collide -- including in localStorage, where each writes to its own cfg.storageKey.
-// Live Trial keeps using the pre-existing loadLiveTrialResults/saveLiveTrialResult (the exact
-// functions certificationStatus()/renderRoadmap() already depend on) so Day-7 certification
-// tracking is completely untouched by this refactor. The two category sims get their own,
-// separate results storage and are never read by certification logic.
+// ---- Engine factory: one implementation, two instances (Sunglasses Sim, Bag Sim). Each
+// instance gets its own closed-over state and DOM-id prefix (cfg.idPrefix), so the two never
+// collide -- including in localStorage, where each writes to its own cfg.storageKey. Day 7
+// certification is a manager sign-off, not an app-tracked grade, so neither instance's results
+// feed into it.
 function makeLiveSimEngine(cfg) {
   var state = {
     view: 'platforms', // 'platforms' | 'items' | 'ready' | 'session' | 'closeout' | 'results'
@@ -3324,11 +3261,6 @@ function makeLiveSimEngine(cfg) {
   return { render: render, stopTimers: stopTimers, panelKey: cfg.panelKey };
 }
 
-var liveTrialEngine = makeLiveSimEngine({
-  idPrefix: 'trial', panelKey: 'trial', storageKey: 'liveTrialResults', categoryFilter: null,
-  showManagerRubric: true, doneLabel: 'Back to Live Trial',
-  intro1: 'Practice a full mock live show before you’re ever live for real. Pick a platform -- a viewer feed acts like a real show, right down to buyers asking to see the item.',
-});
 var sunSimEngine = makeLiveSimEngine({
   idPrefix: 'sunsim', panelKey: 'sunsim', storageKey: 'sunglassesSimResults', categoryFilter: 'sunglasses',
   showManagerRubric: false, doneLabel: 'Back to Sunglasses Sim', verbalPractice: true,
@@ -3339,7 +3271,7 @@ var bagSimEngine = makeLiveSimEngine({
   showManagerRubric: false, doneLabel: 'Back to Bag Sim', verbalPractice: true,
   intro1: 'Practice a mock live show with bags only -- material, hardware, and condition details a buyer will ask about. Pick a platform to start.',
 });
-var LIVE_SIM_ENGINES = [liveTrialEngine, sunSimEngine, bagSimEngine];
+var LIVE_SIM_ENGINES = [sunSimEngine, bagSimEngine];
 
 function scoreToGrade(score) {
   if (score >= 97) return 'A+';
@@ -3585,7 +3517,7 @@ function updateAuctionLiveDynamic() {
 }
 
 // ---- Ambient chat overlay -- cosmetic only, reuses the same viewer names / chatter lines as
-// the Live Trial tab so there's only one place to edit that data. Never touches grading. ----
+// Sunglasses Sim / Bag Sim so there's only one place to edit that data. Never touches grading. ----
 function postAuctionChatLine() {
   var feed = document.getElementById('auction-chat-feed');
   if (!feed) return;
