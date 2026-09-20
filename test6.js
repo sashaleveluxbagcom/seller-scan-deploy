@@ -25,7 +25,13 @@
 // (not results, not platforms), matching the old standalone tab's End-early behavior, now wired
 // through the generic auctionDoneCallback/auctionEndEarlyCallback mechanism. Playwright's clock
 // fast-forwards the 3-2-1-GO, 30s practice, and closing-drill countdowns instead of waiting on
-// them in real time.
+// them in real time. (13): the new "Brand Guide" flashcard mode in the Brands tab (BRAND_DEEP_DIVES
+// + deepDiveCards()/renderBrandDeepDive()) -- picking a house shows its name+pronunciation card
+// first, Next advances through house snapshot / materials / icons / authentication cues / talking
+// points in order, Back steps backward without losing place, finishing the deck marks that brand
+// "Done" (persisted to localStorage) on the picker screen, and exiting early via "Back to brand
+// list" before the last card does NOT mark it done.
+
 const { chromium } = require('playwright');
 
 const BASE = 'http://localhost:8795/index.html';
@@ -433,6 +439,73 @@ async function goToTrainingTab(page, tab) {
   ok('Overlay is dismissed after "End early"', !(await page.isVisible('#auction-live')));
   ok('"End early" returns to the closing-drill setup screen (Go Live button back), not to results', !!(await page.$('#sunsim-closeout-go-live')));
   ok('"End early" during the closing drill does NOT drop her on the completion screen', !(await page.$('#sunsim-done')));
+
+  // ---- (13) Brand Guide flashcards: pick a house, Next through every card in order, Back steps
+  // backward, finishing marks it "Done" on the picker (persisted), exiting early does not. ----------
+  console.log('\n--- Brand Guide flashcards (deep-dive cards, sourced from Sasha\'s brand guide) ---');
+  await page.evaluate(() => localStorage.clear());
+  await page.reload();
+  await bypassGate(page);
+  await goToTrainingTab(page, 'brands');
+  await page.click('#brands-mode-deepdive');
+  await page.waitForTimeout(50);
+  let deepDiveText = await page.textContent('#brands-content');
+  ok('Brand Guide picker lists Louis Vuitton', deepDiveText.includes('Louis Vuitton'));
+  ok('Brand Guide picker lists Chanel', deepDiveText.includes('Chanel'));
+  ok('Louis Vuitton is not marked Done yet (fresh localStorage)', !/Louis Vuitton[\s\S]{0,40}Done/.test(deepDiveText));
+
+  await page.click('.deepdive-pick:has-text("Louis Vuitton")');
+  await page.waitForTimeout(50);
+  let cardText = await page.textContent('#brands-content');
+  ok('First card is the "Say the name out loud" card', cardText.includes('Say the name out loud'));
+  ok('First card shows the brand name (Louis Vuitton)', cardText.includes('Louis Vuitton'));
+  ok('First card shows the pronunciation', cardText.includes('vwee-TAHN'));
+  ok('Card counter reads "card 1 of 6"', cardText.includes('card 1 of 6'));
+  ok('No Back button on the very first card', !(await page.$('#deepdive-prev')));
+
+  await page.click('#deepdive-next');
+  await page.waitForTimeout(50);
+  cardText = await page.textContent('#brands-content');
+  ok('Second card is the house snapshot, mentioning 1854/Paris', cardText.includes('1854') && cardText.includes('Paris'));
+  ok('Card counter advanced to "card 2 of 6"', cardText.includes('card 2 of 6'));
+  ok('Back button appears once past the first card', !!(await page.$('#deepdive-prev')));
+
+  await page.click('#deepdive-prev');
+  await page.waitForTimeout(50);
+  cardText = await page.textContent('#brands-content');
+  ok('Back returns to "card 1 of 6"', cardText.includes('card 1 of 6'));
+
+  // Step back forward through the rest of the deck (cards 2-6: snapshot, materials, icons,
+  // authentication cues, talking points) to reach the completion screen.
+  for (let i = 0; i < 5; i++) {
+    await page.click('#deepdive-next');
+    await page.waitForTimeout(50);
+  }
+  cardText = await page.textContent('#brands-content');
+  ok('Reached "card 6 of 6" (Customer talking points)', cardText.includes('card 6 of 6') && cardText.includes('Customer talking points'));
+
+  await page.click('#deepdive-next');
+  await page.waitForTimeout(50);
+  let doneScreenText = await page.textContent('#brands-content');
+  ok('Finishing the deck shows the "Nice work" completion screen', doneScreenText.includes('Nice work'));
+  ok('Completion screen names the brand just finished (Louis Vuitton)', doneScreenText.includes('Louis Vuitton'));
+
+  await page.click('#deepdive-back');
+  await page.waitForTimeout(50);
+  deepDiveText = await page.textContent('#brands-content');
+  ok('Back on the picker screen, Louis Vuitton is now marked Done', /Louis Vuitton[\s\S]{0,40}Done/.test(deepDiveText));
+  ok('Done count reads "1 of' + '' /* keep grep-friendly */, deepDiveText.includes('1 of'));
+
+  // Exiting a different brand's deck early (before the last card) should NOT mark it done.
+  await page.click('.deepdive-pick:has-text("Chanel")');
+  await page.waitForTimeout(50);
+  await page.click('#deepdive-next'); // card 1 -> 2, still mid-deck
+  await page.waitForTimeout(50);
+  await page.click('#deepdive-exit');
+  await page.waitForTimeout(50);
+  deepDiveText = await page.textContent('#brands-content');
+  ok('Exiting Chanel\'s deck early leaves it NOT marked Done', !/Chanel[\s\S]{0,40}Done/.test(deepDiveText));
+  ok('Louis Vuitton is still marked Done after visiting Chanel', /Louis Vuitton[\s\S]{0,40}Done/.test(deepDiveText));
 
   console.log(`\n${failures === 0 ? 'ALL PASS' : failures + ' FAILURE(S)'}`);
   await browser.close();
