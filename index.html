@@ -1150,6 +1150,270 @@ var BRANDS = [
   { name: 'Zeiss', pron: 'ZYSE (rhymes with "nice")', tidbit: 'Carl Zeiss is a German optics company -- on eyewear this usually refers to the lenses, not the frame brand.' },
 ];
 
+// Brand Guide flashcards -- deep-dive content for our highest-volume houses, sourced directly
+// from Sasha's "LeveLux Brand Training Guide" (sent to the team in Slack, July 2026). This is
+// richer than the one-line BRANDS tidbits above: house history, materials/hardware, icons we
+// actually stock, authentication cues, and customer talking points -- read one card at a time,
+// out loud, in the "Brand Guide" mode of the Brands tab (see deepDiveCards() / renderBrandDeepDive()).
+// To add a house: one object here, same shape as the others -- authCues/talking are arrays of
+// one bullet per line. Not every brand in BRANDS has a deep-dive yet (only the ones the guide
+// covers in full) -- that's expected, not a bug.
+var BRAND_DEEP_DIVES = [
+  { name: 'Louis Vuitton', pron: 'LOO-ee vwee-TAHN',
+    founded: 'Founded 1854, Paris, by trunk-maker Louis Vuitton. Flagship of the LVMH group and the world\'s most valuable luxury brand.',
+    materials: 'Monogram coated canvas (LV + florals), Damier Ebène and Damier Azur checkerboard canvas, Epi leather (ribbed, dyed-through), Taiga leather (grained, masculine), Vernis (patent), Mahina (perforated monogram calfskin), and vachetta leather trim that darkens to a honey patina with age. Brass gold-tone hardware.',
+    icons: 'Neverfull totes, Speedy, Alma, Pochette Accessoires, Zippy and Sarah wallets, card holders, the Lockme line, and limited editions like Murakami and Vernis Rayures.',
+    authCues: [
+      'Date codes (pre-2021): two letters (factory) + four numbers for week/month and year. Post-March 2021 pieces use an embedded microchip instead -- no visible code is correct for new items.',
+      'LV never wraps hardware in plastic on authentic vintage, and monogram symmetry matters -- the pattern is never cut off mid-logo on the front panel.',
+      'Honey patina on vachetta handles/trim is a good sign of genuine aging; plasticky pale "vachetta" that never darkens is a red flag.',
+      'Stitching is even, slightly angled, and mustard-yellow on monogram pieces; heat stamps read "LOUIS VUITTON ® PARIS made in France" in crisp, thin lettering.',
+    ],
+    talking: [
+      'Canvas pieces are famously durable -- a great "first luxury bag" recommendation.',
+      'Monogram and Damier hold value exceptionally well; Epi colors are a way to stand out.',
+      'Vintage LV with patina is a look customers pay for -- frame patina as character, not damage.',
+    ] },
+  { name: 'Chanel', pron: 'shuh-NEL',
+    founded: 'Founded 1910, Paris, by Gabrielle "Coco" Chanel. Still privately owned by the Wertheimer family -- the most coveted resale brand after Hermès.',
+    materials: 'Lambskin (buttery, delicate), caviar leather (pebbled, durable), patent leather, and tweed. Diamond quilting, the interlocking CC turn-lock, and chain-and-leather woven straps. Gold, silver, or gunmetal ("ruthenium") hardware.',
+    icons: 'Classic Flap and reissue 2.55, the Boy Bag, Wallet on Chain (WOC), vanity cases, shopper/chain totes, O-Case pouches, and CC costume jewelry.',
+    authCues: [
+      'Serial stickers (1986-2021): a foil sticker inside with 6-8 digits (7 digits ≈ mid-80s to 2005, 8 digits ≈ 2005-2021). From April 2021, Chanel switched to metal plates with microchips.',
+      'Quilting alignment: the diamond pattern lines up across pockets and flaps on authentic bags.',
+      'CC lock: the right C overlaps the left at the top; hardware screws are flat-head or star-shaped depending on era -- Phillips screws are a red flag on classics.',
+      'Chain weight: authentic hardware feels heavy and cold; stitching count is high, roughly 10+ stitches per inch on classics.',
+    ],
+    talking: [
+      'Chanel raises boutique prices nearly every year -- pre-owned classics are the smart buy and historically appreciate.',
+      'Caviar leather is the durable everyday choice; lambskin is dressier but needs care.',
+      'The Classic Flap is our definition of an "investment bag" -- lead with that.',
+    ] },
+  { name: 'Gucci', pron: 'GOO-chee',
+    founded: 'Founded 1921, Florence, by Guccio Gucci. Owned by French group Kering. Known for equestrian roots and bold reinventions.',
+    materials: 'GG Supreme coated canvas, GG Marmont matelassé chevron quilting, Guccissima embossed leather, the red-and-green Web stripe (also blue-red "Sherry line"), bamboo handles, the tiger-head Dionysus closure, horsebit hardware, and crystal bee details.',
+    icons: 'Marmont bags and wallets, Dionysus, Soho Disco and the Soho line, Ophidia, Sylvie, Bamboo top-handles, Boston bags, Flora prints, Gucci x Adidas collaborations, loafers and sneakers.',
+    authCues: [
+      'Serial tag: a leather tab inside reading "GUCCI made in italy" on one side and two rows of 10-13 numbers on the reverse; the font is thin and evenly spaced.',
+      'GG canvas pattern is crisp, symmetrical, and aligned at seams; blurry or squashed Gs are a red flag.',
+      'Hardware is engraved (not stamped shallowly) and has real weight; Web stripe colors are saturated, not washed out.',
+      'QR code tags appear inside newer pieces alongside the serial tab.',
+    ],
+    talking: [
+      'Gucci offers the widest style range we carry -- from quiet Guccissima leather to statement Dionysus.',
+      'Vintage Sherry line and Ophidia are trending with younger buyers.',
+      'Collabs like Gucci x Adidas are limited production -- scarcity is the selling point.',
+    ] },
+  { name: 'Hermès', pron: 'air-MEZ',
+    founded: 'Founded 1837, Paris, as a harness workshop. Independent and family-controlled -- the apex of luxury; nothing outranks it.',
+    materials: 'Togo, Clemence, Epsom, and Box calf leathers; exotic skins; silk twill scarves; enamel bangles; palladium and gold-plated hardware. Saddle stitching done by hand.',
+    icons: 'Twilly silk scarves (our frequent stock), silk carrés, enamel and leather bracelets (Kelly Dog, Medor, Clic H), and occasionally bags -- Birkin and Kelly are the grails.',
+    authCues: [
+      'Blind stamp: a letter (often in a square, circle, or alone) indicates the production year; craftsman stamps appear near it.',
+      'Hermès never uses serial numbers on bags -- a "serial number" on a Birkin is a fake tell.',
+      'Silk: hand-rolled hems on scarves, 100% silk labels, crisp screen-printed colors, and precise care-tag fonts.',
+      'Hardware engraving is deep and clean; stitching is slightly slanted (hand saddle stitch).',
+    ],
+    talking: [
+      'Even small Hermès pieces (Twillys, bangles) let customers into the brand at accessible prices -- great add-on sales.',
+      'Twillys are styled on bag handles -- demo this on a bag in store; it often sells both items.',
+      'Hermès pieces only get harder to buy at retail; pre-owned is often the only realistic access.',
+    ] },
+  { name: 'Fendi', pron: 'FEN-dee',
+    founded: 'Founded 1925, Rome, by Adele and Edoardo Fendi. Part of LVMH. Karl Lagerfeld designed the double-F "Zucca" logo in 1965.',
+    materials: 'Zucca (FF) canvas and its smaller Zucchino version, Pequin stripes, Vitello calf leather, nappa, and sequin/PVC limited editions. Gold-tone FF hardware.',
+    icons: 'Peekaboo satchels (our recurring high-value piece), the Baguette, Fendigraphy hobo, vintage Zucchino shoulder bags and clutches, Zucca wallets, and pearl straps.',
+    authCues: [
+      'A hologram or serial tag appears inside post-2004 pieces; vintage pieces may show a fabric tag reading "FENDI Made in Italy".',
+      'FF pattern alignment at seams -- the Fs interlock in a specific top-and-bottom orientation.',
+      'Peekaboo: the twist-lock mechanism is smooth and substantial; interior partitions are structured.',
+      'RFID chips appear inside newer bags (a small rectangular tab sewn into the lining).',
+    ],
+    talking: [
+      'Vintage Fendi (Zucchino, Pequin) is a hot trend at entry prices -- great for first-time luxury buyers.',
+      'The Peekaboo is a connoisseur\'s bag -- quiet luxury with serious craftsmanship.',
+    ] },
+  { name: 'Christian Dior', pron: 'krees-TYAHN dee-OR',
+    founded: 'Founded 1946, Paris. Part of the LVMH orbit. Ladylike codes: cannage quilting, "CD" hardware, and toile de Jouy.',
+    materials: 'Cannage (caning-pattern) quilting, Oblique monogram canvas, and smooth calfskin box bags. Gold "D.I.O.R." charm letters on the Lady Dior.',
+    icons: '30 Montaigne box bags, Book Totes (including Mini D-Stripes), the Lady Dior, Saddle bags, and vintage crossbodies.',
+    authCues: [
+      'A date code is stamped on an interior leather tab (format like "12-MA-0192"); the font is thin and precise.',
+      'Oblique canvas is woven jacquard, not printed -- you can feel the texture.',
+      'The "Christian Dior PARIS Made in Italy" heat stamp is evenly spaced and centered.',
+    ],
+    talking: [
+      'The Book Tote is a personalization icon; the 30 Montaigne is the modern classic.',
+      'Dior rarely discounts and raises prices steadily -- our pricing is the value story.',
+    ] },
+  { name: 'Saint Laurent', pron: 'sahn loh-RAHN (Yves is "EEV")',
+    founded: 'Founded 1961, Paris, by Yves Saint Laurent. Owned by Kering. Rock-and-roll Parisian chic -- the cassandre "YSL" monogram is the code.',
+    materials: 'Grain de poudre and smooth calfskin, matelassé chevron quilting, and suede. Interlocking YSL cassandre hardware in gold or aged silver.',
+    icons: 'Sunset and Kate shoulder bags, Envelope clutches/crossbodies (including metallics), Cabas Chyc totes, and quiet-luxury totes.',
+    authCues: [
+      'An interior leather tab reads "SAINT LAURENT PARIS made in italy" with a serial number on the reverse (letters + numbers).',
+      'The YSL logo overlap order is specific (Y over S over L); hardware edges are polished, never sharp.',
+      'Chevron quilting is puffy and symmetrical, aligned at edges.',
+    ],
+    talking: [
+      'YSL is the go-to for a versatile going-out bag -- the Sunset and Envelope work day to night.',
+      'Metallic YSL pieces photograph beautifully -- mention them for event shoppers.',
+    ] },
+  { name: 'Celine', pron: 'seh-LEEN',
+    founded: 'Founded 1945, Paris. LVMH-owned. Two eras matter for us: vintage Celine (Macadam "C" canvas, Triomphe chain) and the Phoebe Philo-era minimalism.',
+    materials: 'Macadam coated canvas (vintage), Triomphe canvas and hardware (interlocked Cs inspired by the Arc de Triomphe chain link), and grained calfskin.',
+    icons: 'Vintage Macadam crossbodies and clutches, Belt Bags, Triomphe pieces, and card cases.',
+    authCues: [
+      'Vintage pieces carry "CELINE PARIS" stamps with accent styling matching the era -- the accent on the E was dropped in the 2018 rebrand, so new pieces read CELINE and vintage often reads Céline.',
+      'Serial/date tabs appear inside newer pieces; vintage pieces may just have simple "Made in Italy" stamps.',
+      'Triomphe hardware is a single sculpted piece with smooth edges.',
+    ],
+    talking: [
+      'Vintage Celine is one of the best value-per-quality buys in the store.',
+      'Quiet-luxury customers love Celine -- no loud logos, all structure.',
+    ] },
+  { name: 'Bottega Veneta', pron: 'boh-TAY-gah VEH-neh-tah',
+    founded: 'Founded 1966, Vicenza, Italy. Kering-owned. Motto: "When your own initials are enough" -- no visible logos, just the Intrecciato weave.',
+    materials: 'Intrecciato hand-woven leather (the signature), soft nappa, and The Chain hardware era (Daniel Lee, 2019-2021). Minimal branding.',
+    icons: 'The Chain Pouch, the Jodie (knotted hobo), Intrecciato wallets and vintage crossbodies, sunglasses, and sandals.',
+    authCues: [
+      'An authenticity tag -- a small leather tab inside with a serial number; older pieces have a white fabric tag.',
+      'The weave: strips are uniform width, tightly woven, with no glue visible at the edges.',
+      'Hardware on Lee-era pieces (The Chain) is chunky, seamless, and heavy.',
+    ],
+    talking: [
+      'BV is the ultimate quiet-luxury brand -- pitch it to customers who dislike logos.',
+      'The Jodie and Chain Pouch were era-defining and both hold strong resale demand.',
+    ] },
+  { name: 'Prada & Miu Miu', pron: 'PRAH-dah / MEW-mew',
+    founded: 'Prada: founded 1913, Milan. Miu Miu (1993) is Prada\'s playful younger sister, named for Miuccia Prada. Both under the Prada Group.',
+    materials: 'Saffiano cross-hatched leather (scratch-resistant -- Prada invented it), Re-Nylon/tessuto nylon, and matelassé leather (Miu Miu). Triangle logo plaque (Prada); lettering logo (Miu Miu).',
+    icons: 'Prada nylon bags, Saffiano wallets and totes; Miu Miu matelassé wallets and shoulder bags.',
+    authCues: [
+      'A white fabric interior tag carries a number (like "146" -- a factory code, not a serial); authenticity cards often accompany the piece.',
+      'Triangle plaque: the enamel is smooth, corners crisp; "PRADA MILANO" lettering has the correct serif R with a notch.',
+      'Saffiano texture is fine and uniform; fake saffiano looks stamped and plasticky.',
+    ],
+    talking: [
+      'Saffiano is the most durable designer leather we sell -- perfect for work bags.',
+      'Miu Miu is having a major moment with Gen Z -- lean into it for younger shoppers.',
+    ] },
+  { name: 'Goyard', pron: 'gwah-YAR',
+    founded: 'Founded 1853, Paris -- even older than Louis Vuitton. Fiercely private, no e-commerce, very few boutiques. The Goyardine chevron canvas is hand-painted heritage.',
+    materials: 'Goyardine coated canvas: an interlocking chevron/Y pattern of tiny painted dots. Lightweight construction with leather trim.',
+    icons: 'Hobo and shoulder bags, St. Louis totes, and card holders.',
+    authCues: [
+      'The Goyardine pattern is made of three-color dot clusters -- up close, the "chevrons" resolve into dots; prints that look flat are fakes.',
+      'Hand-painted personalization (stripes/initials) is a Goyard tradition and adds provenance.',
+      'Interior branding is minimal; heat stamps are small and precise.',
+    ],
+    talking: [
+      'Scarcity story: Goyard is nearly impossible to buy online at retail -- we make it accessible.',
+      'The feather-light canvas is a genuine functional advantage over comparable totes.',
+    ] },
+  { name: 'Bvlgari', pron: 'BUHL-gah-ree (the V is a classical-Latin U)',
+    founded: 'Founded 1884, Rome, as a jeweler. LVMH-owned. In bags, the Serpenti snake head is everything.',
+    materials: 'Smooth calf leather and enamel-and-crystal Serpenti snake-head closures with green eyes, on chain straps.',
+    icons: 'Serpenti Forever crossbody and shoulder bags.',
+    authCues: [
+      'The snake-head closure: enamel scales are individually defined; the eyes are malachite-green stones on authentic pieces.',
+      'An interior leather tab reads "BVLGARI • Made in Italy" -- the brand spells itself with a V (classical Latin).',
+    ],
+    talking: [
+      'Serpenti is jewelry you carry -- pitch it as a statement evening piece.',
+      'Explain the "BVLGARI" spelling -- customers love the detail and it signals expertise.',
+    ] },
+  { name: 'Loewe', pron: 'loh-EH-vay (three syllables, not "low" or "lowe")',
+    founded: 'Founded 1846, Madrid -- the oldest house we carry alongside Goyard. LVMH-owned; Jonathan Anderson\'s era made it a craft-fashion darling.',
+    materials: 'Exceptional calfskin (the house began as a leather collective), Anagram embossing, and sculptural minimal hardware.',
+    icons: 'The Gate crossbody (knotted belt detail), the Puzzle, and Anagram accessories.',
+    authCues: [
+      'Anagram embossing is deep and symmetrical; interior stamps read "LOEWE MADRID 1846".',
+      'On the Gate bag, the leather knot construction is hand-finished, with edges painted cleanly.',
+    ],
+    talking: [
+      'Loewe is the fashion-insider pick -- customers who know, know.',
+      'Leather quality rivals houses at twice the price.',
+    ] },
+  { name: 'Burberry', pron: 'As written',
+    founded: 'Founded 1856, England. Inventor of gabardine; the check pattern and trench coat are the codes.',
+    materials: 'House check (Haymarket, Nova, Vintage check), grained and pebbled leather, and TB monogram hardware.',
+    icons: 'Horseferry totes, Orchard bowling bags, and check accessories.',
+    authCues: [
+      'Check alignment at the seams; "BURBERRY • LONDON • ENGLAND" stamps appear on newer pieces (post-2018 rebrand).',
+      'Interior fabric tags carry model/serial info on woven labels.',
+    ],
+    talking: [
+      'The British heritage story sells well -- checks are instantly recognizable.',
+    ] },
+  { name: 'Chloé', pron: 'KLOH-ay',
+    founded: 'Founded 1952, Paris. Bohemian femininity: soft leathers, ring and bow hardware, warm neutrals.',
+    materials: 'Soft/distressed calfskin and suede, oversized gold-tone rings, scalloped details, and bow accents.',
+    icons: 'Ethel satchels, bow chain wallets, and boho crossbodies.',
+    authCues: [
+      'An interior stamp reads "CHLOÉ MADE IN …" with the accent on the E; the serial is on a small interior tab.',
+      'Hardware is warm brushed gold and substantial in hand.',
+    ],
+    talking: [
+      'Chloé is the romantic, effortless option -- style it with the boho-revival trend.',
+    ] },
+  { name: 'Christian Louboutin', pron: 'loo-boo-TAHN',
+    founded: 'Founded 1991, Paris. Famous for red-lacquered soles; bags carry the same rebellious DNA with spikes and studs.',
+    materials: 'Calf leather with signature spikes/studs, red interiors or soles, and "Loubinthesky" motifs.',
+    icons: 'Panettone wallets and studded crossbodies, Cabata totes, Kypipouch messengers, Explorafunk backpacks, heels, and sandals.',
+    authCues: [
+      'On shoes: the red sole lacquer is glossy and even; size/style stamps inside are crisp.',
+      'On bags: stud placement is perfectly symmetrical; interior tags read "Christian Louboutin PARIS".',
+    ],
+    talking: [
+      'The red sole is the most recognizable status marker in footwear -- an easy gift sell.',
+      'Studded pieces suit customers who want edge, not tradition.',
+    ] },
+  { name: 'Dolce & Gabbana', pron: 'DOHL-chay ay gah-BAH-nah',
+    founded: 'Founded 1985, Milan. Sicilian glamour: baroque prints, leopard, and embossed logos.',
+    materials: 'Embossed logo leathers (Sicily line), printed canvas, and DG logo buckles.',
+    icons: 'Logo-embossed totes, zip wallets, and DG belts.',
+    authCues: [
+      'An interior tag reads "DOLCE & GABBANA Made in Italy"; belts carry engraved (not printed) buckle logos.',
+      'Stitching is dense and even on structured totes.',
+    ],
+    talking: [
+      'D&G suits maximalist customers; the Sicily-style totes are polished work bags.',
+    ] },
+  { name: 'Valentino', pron: 'vah-len-TEE-noh gah-rah-VAH-nee',
+    founded: 'Founded 1960, Rome. Roman couture heritage; Rockstud hardware and "Valentino Garavani" branding appear on accessories.',
+    materials: 'Smooth and grained calfskin, pyramid Rockstuds, VLogo hardware, and printed silks.',
+    icons: 'Garavani silk scarves and accessories.',
+    authCues: [
+      '"Valentino Garavani" is the accessories line marking -- that name on a bag or scarf is correct, not a knockoff of "Valentino".',
+      'Silk scarves have hand-rolled edges, composition tags, and saturated prints.',
+    ],
+    talking: [
+      'A great entry point into Roman couture at accessory prices.',
+    ] },
+  { name: 'Tiffany & Co.', pron: 'As written',
+    founded: 'Founded 1837, New York. The great American luxury jeweler (now LVMH); leather goods use the trademarked Tiffany Blue.',
+    materials: 'Reversible metallic leathers with Tiffany Blue interiors/accents.',
+    icons: 'Reversible metallic totes.',
+    authCues: [
+      '"TIFFANY & CO." embossing is deep and evenly kerned; Tiffany Blue is a precise trademarked shade (comparable to Pantone 1837).',
+    ],
+    talking: [
+      'The blue is the story -- instantly giftable, instantly recognizable.',
+    ] },
+  { name: 'Coach & Furla', pron: 'As written -- FUR-lah for Furla',
+    founded: 'Coach: founded 1941, New York -- American heritage leather. Furla: founded 1927, Bologna -- Italian accessible luxury.',
+    materials: 'Coach: glovetanned and pebbled leather, brass hardware, signature C canvas. Furla: smooth calf, raffia, arch logo.',
+    icons: 'Coach Mollie totes, camera bags, wristlets, and straw totes; Furla raffia and leather bags.',
+    authCues: [
+      'Coach: a creed patch inside carries a style number (varies by era); hardware is stamped "COACH".',
+      'Furla: an interior fabric tag shows the brand and "Made in Italy" origin marking.',
+    ],
+    talking: [
+      'These are our entry-price heroes ($25-$300) -- a perfect first purchase or gift, and a gateway to bigger brands.',
+    ] },
+];
+
 // Bag silhouettes -- the vocabulary sellers need to describe fit and how a bag is carried.
 // Add a new shape the same way as BRANDS: one object, no other code changes needed.
 var BAG_TYPES = [
@@ -1571,17 +1835,29 @@ function renderRoadmap() {
   if (openBody) { openBody.style.display = 'block'; openCaret.textContent = '▴'; }
 }
 
-// ---- Brands: Study list / Practice flashcards ----
+// ---- Brands: Study list / Practice flashcards / Brand Guide deep-dive ----
 var brandsMode = 'study';
 var practiceOrder = [];
 var practiceIndex = 0;
 var practiceRevealed = false;
+// Brand Guide mode: null = brand-picker list; otherwise an index into BRAND_DEEP_DIVES and the
+// current card within that brand's deck. Deliberately NOT reset when switching brandsMode away
+// and back (e.g. Study -> Brand Guide -> Practice -> Brand Guide) so mid-deck progress survives
+// tab-hopping, same as practiceIndex does for Practice mode.
+var brandsDeepDiveBrand = null;
+var brandsDeepDiveCard = 0;
 
 function loadMastered() {
   try { return JSON.parse(localStorage.getItem('brandPracticeMastered') || '[]'); } catch (e) { return []; }
 }
 function saveMastered(list) {
   try { localStorage.setItem('brandPracticeMastered', JSON.stringify(list)); } catch (e) { /* ignore */ }
+}
+function loadDeepDiveDone() {
+  try { return JSON.parse(localStorage.getItem('brandDeepDiveDone') || '[]'); } catch (e) { return []; }
+}
+function saveDeepDiveDone(list) {
+  try { localStorage.setItem('brandDeepDiveDone', JSON.stringify(list)); } catch (e) { /* ignore */ }
 }
 function shuffledIndexes(n) {
   var arr = [];
@@ -1593,12 +1869,102 @@ function shuffledIndexes(n) {
   return arr;
 }
 
+// Builds the ordered flashcard deck for one BRAND_DEEP_DIVES entry: name/pronunciation first
+// (the "read the name out loud" card), then house snapshot, materials, icons, authentication
+// cues, and customer talking points -- in that order, matching the guide's own structure.
+function deepDiveCards(b) {
+  return [
+    { title: 'Say the name out loud', kind: 'name', text: b.pron },
+    { title: 'House snapshot', kind: 'text', text: b.founded },
+    { title: 'Signature materials & hardware', kind: 'text', text: b.materials },
+    { title: 'Icons in our inventory', kind: 'text', text: b.icons },
+    { title: 'Authentication cues', kind: 'list', list: b.authCues },
+    { title: 'Customer talking points', kind: 'list', list: b.talking },
+  ];
+}
+
+function renderBrandDeepDive(content) {
+  var done = loadDeepDiveDone();
+
+  if (brandsDeepDiveBrand === null) {
+    content.innerHTML =
+      '<p style="color:var(--text-dim);font-size:13px;margin-top:0;">Straight from Sasha\'s brand guide. Pick a house below, then hit Next through each card -- read every card out loud before you move on. (' + done.length + ' of ' + BRAND_DEEP_DIVES.length + ' completed)</p>' +
+      BRAND_DEEP_DIVES.map(function (b, i) {
+        var isDone = done.indexOf(b.name) !== -1;
+        return '<button type="button" class="deepdive-pick" data-idx="' + i + '" style="display:flex;justify-content:space-between;align-items:center;width:100%;text-align:left;padding:14px;border:1px solid var(--border);border-radius:10px;margin-bottom:8px;background:var(--surface);color:var(--text);font-size:15px;font-weight:700;">' +
+          '<span>' + escapeHtml(b.name) + '</span>' +
+          (isDone ? '<span style="color:var(--success);font-size:13px;font-weight:700;">&#10003; Done</span>' : '<span style="color:var(--text-dim);font-size:12px;font-weight:600;">Start &rarr;</span>') +
+          '</button>';
+      }).join('');
+    var picks = content.querySelectorAll('.deepdive-pick');
+    for (var p = 0; p < picks.length; p++) {
+      picks[p].addEventListener('click', function (e) {
+        brandsDeepDiveBrand = parseInt(e.currentTarget.getAttribute('data-idx'), 10);
+        brandsDeepDiveCard = 0;
+        renderBrands();
+      });
+    }
+    return;
+  }
+
+  var brand = BRAND_DEEP_DIVES[brandsDeepDiveBrand];
+  var cards = deepDiveCards(brand);
+
+  if (brandsDeepDiveCard >= cards.length) {
+    var doneList = loadDeepDiveDone();
+    if (doneList.indexOf(brand.name) === -1) { doneList.push(brand.name); saveDeepDiveDone(doneList); }
+    content.innerHTML =
+      '<div style="border:1px solid var(--border);border-radius:14px;padding:32px 20px;text-align:center;">' +
+      '<div style="font-size:20px;font-weight:800;color:var(--success);">&#10003; Nice work</div>' +
+      '<div style="font-size:15px;margin-top:10px;">You read through every card on <b>' + escapeHtml(brand.name) + '</b>.</div>' +
+      '<div style="display:flex;gap:8px;margin-top:20px;">' +
+      '<button type="button" id="deepdive-again" style="flex:1;padding:12px;font-size:14px;font-weight:600;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--text);">Do it again</button>' +
+      '<button type="button" id="deepdive-back" style="flex:1;padding:12px;font-size:14px;font-weight:600;border-radius:8px;border:none;background:var(--accent);color:var(--accent-text);">Pick another brand</button>' +
+      '</div></div>';
+    document.getElementById('deepdive-again').addEventListener('click', function () { brandsDeepDiveCard = 0; renderBrands(); });
+    document.getElementById('deepdive-back').addEventListener('click', function () { brandsDeepDiveBrand = null; brandsDeepDiveCard = 0; renderBrands(); });
+    return;
+  }
+
+  var card = cards[brandsDeepDiveCard];
+  var bodyHtml;
+  if (card.kind === 'name') {
+    bodyHtml = '<div style="font-size:26px;font-weight:800;text-align:center;">' + escapeHtml(brand.name) + '</div>' +
+      '<div style="font-size:16px;color:var(--accent);margin-top:10px;text-align:center;">' + escapeHtml(card.text) + '</div>';
+  } else if (card.kind === 'list') {
+    bodyHtml = '<ul style="text-align:left;padding-left:20px;margin:0;font-size:14px;line-height:1.7;">' +
+      card.list.map(function (line) { return '<li style="margin-bottom:8px;">' + escapeHtml(line) + '</li>'; }).join('') +
+      '</ul>';
+  } else {
+    bodyHtml = '<div style="text-align:left;font-size:15px;line-height:1.7;">' + escapeHtml(card.text) + '</div>';
+  }
+
+  content.innerHTML =
+    '<div style="font-size:12px;color:var(--text-dim);margin-bottom:10px;">' + escapeHtml(brand.name) + ' &middot; card ' + (brandsDeepDiveCard + 1) + ' of ' + cards.length + '</div>' +
+    '<div id="deepdive-card" style="border:1px solid var(--border);border-radius:14px;padding:24px 20px;margin-bottom:14px;background:var(--surface);min-height:160px;">' +
+    '<div style="font-size:13px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:0.04em;margin-bottom:12px;">' + escapeHtml(card.title) + '</div>' +
+    bodyHtml +
+    '</div>' +
+    '<div style="font-size:13px;color:var(--text-dim);text-align:center;margin-bottom:14px;">Read this card out loud, then hit Next.</div>' +
+    '<div style="display:flex;gap:8px;">' +
+    (brandsDeepDiveCard > 0 ? '<button type="button" id="deepdive-prev" style="flex:1;padding:12px;font-size:14px;font-weight:600;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--text);">Back</button>' : '') +
+    '<button type="button" id="deepdive-next" style="flex:2;padding:12px;font-size:14px;font-weight:600;border-radius:8px;border:none;background:var(--accent);color:var(--accent-text);">Next</button>' +
+    '</div>' +
+    '<button type="button" id="deepdive-exit" style="width:100%;padding:10px;margin-top:12px;font-size:12px;color:var(--text-dim);background:none;border:none;">&larr; Back to brand list</button>';
+
+  document.getElementById('deepdive-next').addEventListener('click', function () { brandsDeepDiveCard++; renderBrands(); });
+  var prevBtn = document.getElementById('deepdive-prev');
+  if (prevBtn) prevBtn.addEventListener('click', function () { brandsDeepDiveCard--; renderBrands(); });
+  document.getElementById('deepdive-exit').addEventListener('click', function () { brandsDeepDiveBrand = null; brandsDeepDiveCard = 0; renderBrands(); });
+}
+
 function renderBrands() {
   var panel = trainingPanels.brands;
   panel.innerHTML =
     '<div style="display:flex;gap:8px;margin-bottom:14px;">' +
     '<button type="button" id="brands-mode-study" style="flex:1;padding:8px;font-size:13px;font-weight:600;border-radius:8px;border:1px solid ' + (brandsMode === 'study' ? 'var(--accent)' : 'var(--border)') + ';background:' + (brandsMode === 'study' ? 'var(--accent)' : 'var(--surface)') + ';color:' + (brandsMode === 'study' ? 'var(--accent-text)' : 'var(--text)') + ';">Study list</button>' +
     '<button type="button" id="brands-mode-practice" style="flex:1;padding:8px;font-size:13px;font-weight:600;border-radius:8px;border:1px solid ' + (brandsMode === 'practice' ? 'var(--accent)' : 'var(--border)') + ';background:' + (brandsMode === 'practice' ? 'var(--accent)' : 'var(--surface)') + ';color:' + (brandsMode === 'practice' ? 'var(--accent-text)' : 'var(--text)') + ';">Practice</button>' +
+    '<button type="button" id="brands-mode-deepdive" style="flex:1;padding:8px;font-size:13px;font-weight:600;border-radius:8px;border:1px solid ' + (brandsMode === 'deepdive' ? 'var(--accent)' : 'var(--border)') + ';background:' + (brandsMode === 'deepdive' ? 'var(--accent)' : 'var(--surface)') + ';color:' + (brandsMode === 'deepdive' ? 'var(--accent-text)' : 'var(--text)') + ';">Brand Guide</button>' +
     '</div>' +
     '<div id="brands-content"></div>';
 
@@ -1610,8 +1976,13 @@ function renderBrands() {
     practiceRevealed = false;
     renderBrands();
   });
+  document.getElementById('brands-mode-deepdive').addEventListener('click', function () { brandsMode = 'deepdive'; renderBrands(); });
 
   var content = document.getElementById('brands-content');
+  if (brandsMode === 'deepdive') {
+    renderBrandDeepDive(content);
+    return;
+  }
   if (brandsMode === 'study') {
     var sorted = BRANDS.slice().sort(function (a, b) { return a.name.localeCompare(b.name); });
     content.innerHTML =
