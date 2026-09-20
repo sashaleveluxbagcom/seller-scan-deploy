@@ -2007,11 +2007,11 @@ var TRIAL_INVENTORY = [
   { id: 'gucci-marmont', category: 'bag', brand: 'Gucci', name: 'GG Marmont shoulder bag', price: 1350, keywords: ['matelasse', 'leather', 'antique gold hardware'] },
   { id: 'tiffany-bracelet', category: 'jewelry', brand: 'Tiffany & Co.', name: 'Return to Tiffany bracelet', price: 220, keywords: ['sterling silver', 'tarnish', 'hallmark', 'clasp'] },
   { id: 'cartier-love', category: 'jewelry', brand: 'Cartier', name: 'Love bracelet', price: 6800, keywords: ['18k gold', 'screw motif', 'hallmark', 'plating'] },
-  { id: 'rayban-aviator', category: 'sunglasses', brand: 'Ray-Ban', name: 'Aviator Classic', price: 95, keywords: ['arm code', 'lens', 'hinge', 'gold frame'] },
-  { id: 'versace-medusa', category: 'sunglasses', brand: 'Versace', name: 'Medusa aviator sunglasses', price: 180, keywords: ['acetate', 'metal frame', 'gold hardware', 'case', 'lens'] },
-  { id: 'carrera-champion', category: 'sunglasses', brand: 'Carrera', name: 'Champion sunglasses', price: 65, keywords: ['acetate', 'lens', 'hinge', 'arm code'] },
-  { id: 'tomford-aviator', category: 'sunglasses', brand: 'Tom Ford', name: 'Aviator sunglasses', price: 220, keywords: ['acetate', 'metal frame', 'gradient lens', 'case'] },
-  { id: 'diff-bella', category: 'sunglasses', brand: 'Diff (Diff Eyewear)', name: 'Bella cat-eye sunglasses', price: 45, keywords: ['acetate', 'polarized', 'case', 'lens'] },
+  { id: 'rayban-aviator', category: 'sunglasses', brand: 'Ray-Ban', name: 'Aviator Classic', price: 95, keywords: ['arm code', 'lens', 'hinge', 'gold frame'], listingTitle: 'Brand New Sunglasses / Rx Frames 1' },
+  { id: 'versace-medusa', category: 'sunglasses', brand: 'Versace', name: 'Medusa aviator sunglasses', price: 180, keywords: ['acetate', 'metal frame', 'gold hardware', 'case', 'lens'], listingTitle: 'Brand New Sunglasses / Rx Frames 2' },
+  { id: 'carrera-champion', category: 'sunglasses', brand: 'Carrera', name: 'Champion sunglasses', price: 65, keywords: ['acetate', 'lens', 'hinge', 'arm code'], listingTitle: 'Brand New Sunglasses / Rx Frames 3' },
+  { id: 'tomford-aviator', category: 'sunglasses', brand: 'Tom Ford', name: 'Aviator sunglasses', price: 220, keywords: ['acetate', 'metal frame', 'gradient lens', 'case'], listingTitle: 'Brand New Sunglasses / Rx Frames 4' },
+  { id: 'diff-bella', category: 'sunglasses', brand: 'Diff (Diff Eyewear)', name: 'Bella cat-eye sunglasses', price: 45, keywords: ['acetate', 'polarized', 'case', 'lens'], listingTitle: 'Brand New Sunglasses / Rx Frames 5' },
   { id: 'prada-renylon', category: 'bag', brand: 'Prada', name: 'Re-Nylon backpack', price: 650, keywords: ['nylon', 'leather trim', 'triangle logo', 'zipper'] },
   { id: 'coach-tabby', category: 'bag', brand: 'Coach', name: 'Tabby shoulder bag', price: 275, keywords: ['leather', 'turnlock', 'suede lining', 'hardware'] },
   { id: 'ysl-loulou', category: 'bag', brand: 'Saint Laurent', name: 'LouLou small bag', price: 950, keywords: ['quilted', 'leather', 'chain strap', 'ysl logo'] },
@@ -2043,6 +2043,10 @@ var TRIAL_AMBIENT_CHATTER = [
   'so pretty', 'yesss', '👀👀', 'here for it', 'love this shop', 'first time watching, hi!', '🙋‍♀️',
   'take my money', 'the lighting is so good', 'can’t wait to see the next item', 'following!', '😭 gorgeous',
   'been waiting for this one', '👏👏👏', 'is there a waitlist for restocks?', 'hi from Ohio!', 'obsessed',
+  // Off-item brand curiosity -- real viewers ask about brands that aren't the current item. Pure
+  // background scroll, same as everything else here: never something she has to stop and answer.
+  'do you have Hurley?', 'do you have Ray-Ban?', 'do you have Oakley?', 'do you have the AI glasses?',
+  'can I see that bag in the corner?',
 ];
 function shuffledCopy(arr) {
   var copy = arr.slice();
@@ -2204,8 +2208,12 @@ function makeLiveSimEngine(cfg) {
     return '<button type="button" id="' + id('back-platforms') + '" style="background:none;border:none;padding:6px 0;margin-bottom:10px;font-size:13px;color:var(--text-dim);">← Choose a different platform</button>' +
       '<div style="font-size:15px;font-weight:700;margin-bottom:10px;">' + platform.icon + ' ' + platform.label + ' -- pick an item to go live with</div>' +
       inventory().map(function (it) {
+        // Sunglasses items list under a generic auction-lot title (e.g. "Brand New Sunglasses /
+        // Rx Frames 1") instead of the real brand -- matches how these actually get pre-listed on
+        // a real show, with the real brand only revealed once she's live with it in hand.
+        var titleLine = it.listingTitle ? escapeHtml(it.listingTitle) : (escapeHtml(it.brand) + ' ' + escapeHtml(it.name));
         return '<button type="button" class="' + id('item-pick') + '" data-item="' + it.id + '" style="display:block;width:100%;text-align:left;padding:14px;margin-bottom:8px;border-radius:10px;border:1px solid var(--border);background:var(--surface);color:var(--text);">' +
-          '<div style="font-size:14px;font-weight:700;">' + TRIAL_CATEGORY_ICON[it.category] + ' ' + escapeHtml(it.brand) + ' ' + escapeHtml(it.name) + '</div>' +
+          '<div style="font-size:14px;font-weight:700;">' + TRIAL_CATEGORY_ICON[it.category] + ' ' + titleLine + '</div>' +
           '<div style="font-size:13px;color:var(--text-dim);margin-top:2px;">$' + it.price + '</div></button>';
       }).join('');
   }
