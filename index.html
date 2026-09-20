@@ -2030,6 +2030,35 @@ var TRIAL_COMMENTS = [
   { text: 'Does the clasp close securely?', category: 'jewelry', wantsScreen: true },
   { text: 'Can you show the size code on the arm?', category: 'sunglasses', wantsScreen: true },
   { text: 'Any scratches on the lenses?', category: 'sunglasses', wantsScreen: true, checkKeywordCategory: true },
+  // "I have a problem with my order" -- real viewers sometimes try to get order support handled
+  // live in chat. The taught response never changes: don't troubleshoot it on air, redirect them
+  // to message through their order. checkOrderRedirect (below, in gradeTrialSession) grades for
+  // that exact redirect regardless of which variant gets picked.
+  { text: '{{orderProblem}}', category: 'any', wantsScreen: false, checkOrderRedirect: true },
+  // Off-item serious inquiry -- a real listing title copied from leveluxbag.com. Teaches the
+  // seller to recognize this as a genuine buyer asking about a DIFFERENT, specific item (not
+  // the one currently on screen), as opposed to the ambient "can I see that bag in the corner?"
+  // chatter, which never names a real item.
+  { text: 'Can I see that bag? {{offItemInquiry}}', category: 'any', wantsScreen: false },
+];
+// Variants for the {{orderProblem}} token above -- picked at random each time that comment is
+// generated, so the wording varies but the taught response (send a message through your order)
+// stays the same.
+var ORDER_PROBLEM_VARIANTS = [
+  'I have a problem with my order',
+  'My order from last week never showed up',
+  'The bag I got wasn’t what I ordered, can you fix it?',
+  'My package says delivered but I never received it',
+  'Can I get a refund on my last order? It came damaged',
+  'I ordered from you last month and still haven’t heard back',
+];
+// Variants for the {{offItemInquiry}} token above -- real, current listing titles copied from
+// leveluxbag.com, so this reads exactly like a serious buyer referencing an actual product.
+var OFF_ITEM_LISTING_TITLES = [
+  'AUTHENTIC CHANEL BLACK CAVIAR LEATHER STRUCTURED TOTE BAG',
+  'AUTHENTIC CHANEL VINTAGE CC SHOPPING TOTE BEIGE QUILTED LAMBSKIN - GOLD HARDWARE',
+  'AUTHENTIC VINTAGE CHANEL CC BLACK LAMBSKIN CHAIN SHOULDER TOTE BAG',
+  'AUTHENTIC CHANEL LAMBSKIN WOC CROSSBODY BAG RED',
 ];
 var TRIAL_VIEWERS = ['@lux_fan22', '@bagqueen91', '@resell_ray', '@vintage_vee', '@thrift2flip', '@dealseeker', '@charmcollector', '@shopwithsam', '@closetcurator', '@preloved_finds'];
 function randomTrialViewer() { return TRIAL_VIEWERS[Math.floor(Math.random() * TRIAL_VIEWERS.length)]; }
@@ -2043,11 +2072,20 @@ var TRIAL_AMBIENT_CHATTER = [
   'so pretty', 'yesss', '👀👀', 'here for it', 'love this shop', 'first time watching, hi!', '🙋‍♀️',
   'take my money', 'the lighting is so good', 'can’t wait to see the next item', 'following!', '😭 gorgeous',
   'been waiting for this one', '👏👏👏', 'is there a waitlist for restocks?', 'hi from Ohio!', 'obsessed',
-  // Off-item brand curiosity -- real viewers ask about brands that aren't the current item. Pure
+  // Off-item curiosity -- a real viewer asking about a bag that isn't the current item. Pure
   // background scroll, same as everything else here: never something she has to stop and answer.
-  'do you have Hurley?', 'do you have Ray-Ban?', 'do you have Oakley?', 'do you have the AI glasses?',
   'can I see that bag in the corner?',
 ];
+// Off-item brand curiosity -- real viewers ask about brands that aren't the current item. Rather
+// than a handful of fixed names, this picks a random entry from the FULL brands list (the same
+// pool used in the Brands training tab) each time, so the line varies across dozens of real
+// brands instead of repeating the same few. Still pure background scroll -- never something she
+// has to stop and answer. Reuses randomBrand() (defined further below, used by Auction Close) so
+// there's only one place that picks a random brand.
+function randomAmbientLine() {
+  if (Math.random() < 0.15) return 'do you have ' + randomBrand().name + '?';
+  return TRIAL_AMBIENT_CHATTER[Math.floor(Math.random() * TRIAL_AMBIENT_CHATTER.length)];
+}
 function shuffledCopy(arr) {
   var copy = arr.slice();
   for (var j = copy.length - 1; j > 0; j--) {
@@ -2059,7 +2097,10 @@ function shuffledCopy(arr) {
 function pickTrialComments(item) {
   var pool = TRIAL_COMMENTS.filter(function (c) { return c.category === 'any' || c.category === item.category; });
   return shuffledCopy(pool).slice(0, Math.min(6, pool.length)).map(function (c) {
-    return { def: c, text: c.text.replace('{{item}}', 'the ' + item.name).replace('{{brand}}', item.brand), user: randomTrialViewer() };
+    var text = c.text.replace('{{item}}', 'the ' + item.name).replace('{{brand}}', item.brand);
+    text = text.replace('{{orderProblem}}', function () { return ORDER_PROBLEM_VARIANTS[Math.floor(Math.random() * ORDER_PROBLEM_VARIANTS.length)]; });
+    text = text.replace('{{offItemInquiry}}', function () { return OFF_ITEM_LISTING_TITLES[Math.floor(Math.random() * OFF_ITEM_LISTING_TITLES.length)]; });
+    return { def: c, text: text, user: randomTrialViewer() };
   });
 }
 
@@ -2298,6 +2339,7 @@ function makeLiveSimEngine(cfg) {
       trialScoreBox('Item accuracy', r.conditionScore) +
       trialScoreBox('Price handling', r.priceScore) +
       trialScoreBox('Screen presence', r.screenScore) +
+      trialScoreBox('Order handling', r.orderScore) +
       '</div>' +
       '<div style="font-size:13px;font-weight:700;color:var(--accent);margin:16px 0 10px;text-transform:uppercase;letter-spacing:0.04em;">Feedback</div>' +
       r.feedback.map(function (f) {
@@ -2471,7 +2513,7 @@ function makeLiveSimEngine(cfg) {
     if (!feed || !state.session) return;
     var platform = trialPlatformById(state.session.platformId);
     var user = randomTrialViewer();
-    var text = TRIAL_AMBIENT_CHATTER[Math.floor(Math.random() * TRIAL_AMBIENT_CHATTER.length)];
+    var text = randomAmbientLine();
     var el = document.createElement('div');
     el.style.marginBottom = '8px';
     el.style.opacity = '0.65';
@@ -2664,6 +2706,10 @@ function gradeTrialSession(session) {
     return item.keywords.some(function (k) { return lower.indexOf(k.toLowerCase()) !== -1; });
   }
   function mentionsPrice(text) { return /\$\s*\d|\b\d{2,}\b/.test(text); }
+  function mentionsOrderRedirect(text) {
+    var lower = text.toLowerCase();
+    return lower.indexOf('message') !== -1 && lower.indexOf('order') !== -1;
+  }
 
   var statementCount = responses.filter(function (r) { return isStatement(r.text); }).length;
   var brandMentioned = responses.some(function (r) { return mentionsBrand(r.text); });
@@ -2677,10 +2723,13 @@ function gradeTrialSession(session) {
   var screenChecks = responses.filter(function (r) { return r.def.wantsScreen; });
   var screenScore = screenChecks.length ? screenChecks.filter(function (r) { return r.wasShowing; }).length / screenChecks.length : 1;
 
+  var orderChecks = responses.filter(function (r) { return r.def.checkOrderRedirect; });
+  var orderScore = orderChecks.length ? orderChecks.filter(function (r) { return mentionsOrderRedirect(r.text); }).length / orderChecks.length : 1;
+
   var statementRatio = statementCount / total;
   var responsivenessScore = responses.length / session.comments.length;
 
-  var score = statementRatio * 30 + (brandMentioned ? 10 : 0) + conditionScore * 20 + priceScore * 15 + screenScore * 20 + responsivenessScore * 5;
+  var score = statementRatio * 30 + (brandMentioned ? 10 : 0) + conditionScore * 20 + priceScore * 15 + screenScore * 15 + orderScore * 5 + responsivenessScore * 5;
   var grade = scoreToGrade(score);
 
   var feedback = [];
@@ -2689,12 +2738,13 @@ function gradeTrialSession(session) {
   if (conditionChecks.length && conditionScore < 1) feedback.push('When asked about material or condition, name the specific detail (see Describe It) instead of a general answer.');
   if (priceChecks.length && priceScore < 1) feedback.push('When asked the price, state it plainly -- don’t dodge or talk around it.');
   if (screenChecks.length && screenScore < 1) feedback.push('You weren’t confirmed on screen when a viewer asked to see the item. Keep "Showing on screen" active while you answer.');
+  if (orderChecks.length && orderScore < 1) feedback.push('When someone brings up a problem with a past order, don’t try to solve it live in chat -- tell them to send a message through their order.');
   if (responsivenessScore < 1) feedback.push('You ended the trial before responding to every comment -- a real show doesn’t get to skip questions.');
   if (!feedback.length) feedback.push('Strong run -- no major gaps this time. Keep this up live.');
 
   return {
     score: Math.round(score), grade: grade, statementRatio: statementRatio, brandMentioned: brandMentioned,
-    conditionScore: conditionScore, priceScore: priceScore, screenScore: screenScore,
+    conditionScore: conditionScore, priceScore: priceScore, screenScore: screenScore, orderScore: orderScore,
     responsivenessScore: responsivenessScore, feedback: feedback, item: item, platformId: session.platformId,
   };
 }
@@ -2983,7 +3033,7 @@ function postAuctionChatLine() {
   var feed = document.getElementById('auction-chat-feed');
   if (!feed) return;
   var user = randomTrialViewer();
-  var text = TRIAL_AMBIENT_CHATTER[Math.floor(Math.random() * TRIAL_AMBIENT_CHATTER.length)];
+  var text = randomAmbientLine();
   var el = document.createElement('div');
   el.style.cssText = 'background:rgba(0,0,0,0.45);border-radius:10px;padding:4px 10px;font-size:12px;align-self:flex-start;max-width:88%;';
   el.innerHTML = '<span style="font-weight:700;color:var(--accent);">' + escapeHtml(user) + '</span> <span style="color:#eee;">' + escapeHtml(text) + '</span>';
