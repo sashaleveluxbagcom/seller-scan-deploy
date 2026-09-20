@@ -1,25 +1,25 @@
 // test6.js — Playwright test for: (1) Sunglasses Sim + Bag Sim training tabs (category-filtered
-// Live-Trial-style engines), (2) tone "why it matters" data points in Selling Guide, (3)
-// sunglasses per-brand retail price/announcement guide in Sunglasses 101, (4) that the original
-// Live Trial tab (all categories, manager rubric, 'trial-*' ids) still works unchanged after the
-// engine-factory refactor, (5) that Sunglasses Sim / Bag Sim's response step is verbal-practice
-// only -- no textarea, a press-to-start 30s countdown, then a self-paced Run Next button, with no
-// auto-grading -- while Live Trial keeps its original typed + auto-graded step, (6) sunglasses
-// items list under a generic "Brand New Sunglasses / Rx Frames N" auction-lot title in every item
-// picker, revealing the real brand only once she's on the ready/session screen, (7) off-item
-// ambient chatter lines (viewers asking about other brands/items), (8)-(9) Sunglasses Sim results
-// storage isolation and Live Trial's unchanged typed/graded step, and (10) new comment types: the
-// ambient "do you have X?" brand-curiosity line is now randomized across the FULL brands pool
-// (not 4 fixed names), an "I have a problem with my order" comment graded on redirecting to
-// "send a message through your order" instead of resolving it live, and an off-item "can I see
-// that bag?" inquiry using a real leveluxbag.com listing title. Most of (10) is checked by
-// injecting a copy of index.html's own script (stripped of its outer IIFE) as a second <script>
-// tag, since app state otherwise lives in a top-level IIFE closure Playwright can't reach; a real
-// DOM flow then confirms both new comment types actually render live. (11)-(12): the former
-// standalone "Auction Close" tab has been removed and its closing-chant/countdown drill folded
-// into the end of every Sunglasses Sim / Bag Sim session (right before the results screen), using
-// the exact item/brand she just practiced verbal responses for -- (11) confirms the closing-drill
-// setup screen and live overlay both show that real session brand/item (Bag Sim's Louis Vuitton
+// live-practice engines), (2) tone "why it matters" data points in Selling Guide, (3)
+// sunglasses per-brand retail price/announcement guide in Sunglasses 101, (4) [removed --
+// see below], (5) that Sunglasses Sim / Bag Sim's response step is verbal-practice only -- no
+// textarea, a press-to-start 30s countdown, then a self-paced Run Next button, with no
+// auto-grading, (6) sunglasses items list under a generic "Brand New Sunglasses / Rx Frames N"
+// auction-lot title in every item picker, revealing the real brand only once she's on the
+// ready/session screen, (7) off-item ambient chatter lines (viewers asking about other
+// brands/items), (8) Sunglasses Sim results storage isolation, and (10) new comment types: the
+// ambient "do you have X?" brand-curiosity line is randomized across the FULL brands pool (not 4
+// fixed names), an "I have a problem with my order" comment graded on redirecting to "send a
+// message through your order" instead of resolving it live, and an off-item "can I see that
+// bag?" inquiry using a real leveluxbag.com listing title. Most of (10) is checked by injecting a
+// copy of index.html's own script (stripped of its outer IIFE) as a second <script> tag, since
+// app state otherwise lives in a top-level IIFE closure Playwright can't reach (this also
+// confirms pickTrialComments/gradeTrialSession -- the shared grading helpers the engine factory
+// still carries, unused by any current instance -- still work); a real DOM flow on Bag Sim then
+// confirms both new comment types actually render live. (11)-(12): the former standalone
+// "Auction Close" tab has been removed and its closing-chant/countdown drill folded into the end
+// of every Sunglasses Sim / Bag Sim session (right before the results screen), using the exact
+// item/brand she just practiced verbal responses for -- (11) confirms the closing-drill setup
+// screen and live overlay both show that real session brand/item (Bag Sim's Louis Vuitton
 // Neverfull MM), not a random pick, and that finishing the drill reaches the completion screen;
 // (12) confirms "End early" inside the live overlay returns to the closing-drill setup screen
 // (not results, not platforms), matching the old standalone tab's End-early behavior, now wired
@@ -36,6 +36,10 @@
 // with its own localStorage progress key -- while the old standalone "Day 2: Care" tab is gone,
 // its do's/don'ts folded into the Day 7 milestone's bullets instead. Also covers the elaborated
 // Bags & Leather tab (new bag types, a materials/leather glossary, a hardware/closures glossary).
+// (15): the standalone "Day 1" checklist tab and the "🔴 Live Trial" tab have both been removed
+// from the hub entirely -- Day 7 certification is now a pure manager sign-off (no app-tracked
+// grade, no Live Trial dependency), and neither tab's button, panel, nor DOM ids (#trial-*,
+// #day1-*) exist anywhere on the page anymore.
 
 const { chromium } = require('playwright');
 
@@ -109,8 +113,9 @@ async function goToTrainingTab(page, tab) {
     ok('Bag Sim item list does NOT include a sunglasses-only brand (Ray-Ban)', !bodyText.includes('Ray-Ban'));
   }
 
-  // ---------- 3. Bag Sim go-live uses its own DOM ids (not colliding with #trial-*) ----------
-  console.log('\n--- Bag Sim go-live flow uses bagsim- prefixed ids ---');
+  // ---------- 3. Bag Sim go-live uses its own DOM ids; the removed Live Trial tab's ids are
+  // gone entirely (not just non-colliding) ----------
+  console.log('\n--- Bag Sim go-live flow uses bagsim- prefixed ids; #trial-* is gone for good ---');
   const bagItem = await page.$('#training-bagsim [data-item]');
   if (bagItem) {
     await bagItem.click();
@@ -118,24 +123,10 @@ async function goToTrainingTab(page, tab) {
     const bagsimGoLive = await page.$('#bagsim-go-live');
     ok('#bagsim-go-live button present on Bag Sim ready screen', !!bagsimGoLive);
     const trialGoLiveAbsent = await page.$('#trial-go-live');
-    ok('#trial-go-live is NOT present while on Bag Sim (no id collision)', !trialGoLiveAbsent);
+    ok('#trial-go-live does NOT exist anywhere (Live Trial tab removed)', !trialGoLiveAbsent);
   }
-
-  // ---------- 4. Original Live Trial still works after the factory refactor ----------
-  console.log('\n--- Live Trial (original) still intact ---');
-  await goToTrainingTab(page, 'trial');
-  const trialHasRubric = await page.$('#rubric-save');
-  ok('Live Trial still shows the manager rubric', !!trialHasRubric);
-  const trialPlatform = await page.$('[data-platform]');
-  ok('Live Trial platform picker still renders', !!trialPlatform);
-  if (trialPlatform) {
-    await trialPlatform.click();
-    await page.waitForTimeout(200);
-    const bodyText = await page.evaluate(() => document.body.innerText);
-    // Sunglasses items show under the generic "Rx Frames" listing title here too (Live Trial
-    // shares the same item picker), so check for that instead of the real sunglasses brand name.
-    ok('Live Trial item list includes a bag brand AND a sunglasses item (all categories)', bodyText.includes('Louis Vuitton') && /rx frames/i.test(bodyText));
-  }
+  ok('"🔴 Live Trial" tab button no longer exists', !(await page.$('.training-tab[data-tab="trial"]')));
+  ok('"Day 1" checklist tab button no longer exists', !(await page.$('.training-tab[data-tab="day1"]')));
 
   // ---------- 5. Selling Guide: tone data points ----------
   console.log('\n--- Selling Guide tone data points ---');
@@ -156,8 +147,8 @@ async function goToTrainingTab(page, tab) {
   ok('Sunglasses 101 flags at least one estimate as needing confirmation', sgText.includes('estimate'));
 
   // ---------- 7. Sunglasses Sim / Bag Sim response step is verbal-practice: no textarea, a
-  // press-to-start 30s countdown, then a Run Next button she clicks herself. Live Trial keeps
-  // the original typed + auto-graded flow (certification depends on it). Playwright's clock is
+  // press-to-start 30s countdown, then a Run Next button she clicks herself, with certification
+  // now a pure manager sign-off rather than anything this screen tracks. Playwright's clock is
   // installed after the reload so the 3-2-1-GO countdown and the 30s practice timer can be
   // fast-forwarded instead of waiting in real time.
   console.log('\n--- Sunglasses Sim: verbal-practice response step (no typing, 30s countdown, Run Next) ---');
@@ -199,8 +190,8 @@ async function goToTrainingTab(page, tab) {
 
   // ---------- 8. Full go-live -> finish flow on Sunglasses Sim (pressing Run Next through every
   // comment, then completing the closing drill that now follows it) writes to its OWN storage
-  // key, never touching 'liveTrialResults' (the key certificationStatus()/Day-14 banner depends
-  // on).
+  // key, never touching 'liveTrialResults' (the now-unused key the old auto-graded cert banner
+  // depended on).
   console.log('\n--- Sunglasses Sim results storage isolation ---');
   for (let i = 0; i < 6; i++) {
     const nextBtn = await page.$('#sunsim-practice-next');
@@ -230,24 +221,6 @@ async function goToTrainingTab(page, tab) {
   }));
   ok('Sunglasses Sim wrote a result to its OWN "sunglassesSimResults" key', !!storageState.sunsim);
   ok('Sunglasses Sim did NOT write to the shared "liveTrialResults" key (cert tracking untouched)', !storageState.liveTrial);
-
-  // ---------- 9. Live Trial keeps its original typed + auto-graded response step (unaffected by
-  // the verbal-practice change above, since only Sunglasses Sim / Bag Sim opted into it). ----------
-  console.log('\n--- Live Trial still uses the typed/graded response step ---');
-  await page.evaluate(() => localStorage.clear());
-  await page.reload();
-  await bypassGate(page);
-  await goToTrainingTab(page, 'trial');
-  await page.click('#training-trial [data-platform]');
-  await page.waitForTimeout(200);
-  await page.click('#training-trial [data-item]');
-  await page.waitForTimeout(200);
-  await page.click('#trial-go-live');
-  await page.waitForTimeout(3300);
-  const trialTextarea = await page.$('#trial-response-input');
-  ok('Live Trial session screen still has the typed-response textarea', !!trialTextarea);
-  const trialPracticeStart = await page.$('#trial-practice-start');
-  ok('Live Trial does NOT show the verbal-practice Start button', !trialPracticeStart);
 
   // ---------- 10. New chat-comment types: brand-pool-randomized ambient curiosity line, an
   // "I have a problem with my order" redirect-graded comment, and an off-item "can I see that
@@ -329,33 +302,37 @@ async function goToTrainingTab(page, tab) {
     ok('Grading: trying to resolve the order problem live in chat scores orderScore 0', t10.badOrderScore === 0);
   }
 
-  // Real DOM check: run a couple of full Live Trial sessions (fresh reload each time, since the
-  // 6-of-7 "any"-pool comments are randomized per session) and confirm the new comment types
+  // Real DOM check: run a couple of full Bag Sim sessions (fresh reload each time, since the
+  // 6-of-8 "any"-pool comments are randomized per session) and confirm the new comment types
   // actually render, fully substituted, in the live chat UI -- not just in the isolated logic
-  // check above.
+  // check above. Bag Sim is verbal-practice (no textarea/send), so each comment is advanced with
+  // Start + a fast-forwarded 30s countdown + Run Next instead of typing a response.
   let domSawOrderProblem = false, domSawOffItemInquiry = false;
   const orderProblemMarkers = ['problem with my order', 'never showed up', "wasn’t what i ordered", 'says delivered but', 'refund on my last order', "still haven’t heard back"];
   for (let attempt = 0; attempt < 3 && !(domSawOrderProblem && domSawOffItemInquiry); attempt++) {
     await page.evaluate(() => localStorage.clear());
     await page.reload();
+    await page.clock.install();
     await bypassGate(page);
-    await goToTrainingTab(page, 'trial');
-    await page.click('#training-trial [data-platform]');
+    await goToTrainingTab(page, 'bagsim');
+    await page.click('#training-bagsim [data-platform]');
     await page.waitForTimeout(150);
-    await page.click('#training-trial [data-item]');
+    await page.click('#training-bagsim [data-item]');
     await page.waitForTimeout(150);
-    await page.click('#trial-go-live');
-    await page.waitForTimeout(3300);
-    await page.click('#trial-showing-toggle');
+    await page.click('#bagsim-go-live');
+    await page.clock.runFor(3300);
+    await page.click('#bagsim-showing-toggle');
     for (let i = 0; i < 6; i++) {
-      const sendBtn = await page.$('#trial-send');
-      if (!sendBtn) break;
+      const startBtn = await page.$('#bagsim-practice-start');
+      if (!startBtn) break; // session's comments are exhausted -- reached the closing-drill setup screen
       const seen = (await page.evaluate(() => document.body.innerText)).toLowerCase();
       if (orderProblemMarkers.some((m) => seen.includes(m))) domSawOrderProblem = true;
       if (seen.includes('authentic chanel')) domSawOffItemInquiry = true;
-      await page.fill('#trial-response-input', 'This is the Chanel bag, it is $500, authentic leather, please send a message through your order if anything is ever wrong.');
-      await page.click('#trial-send');
-      await page.waitForTimeout(80);
+      await startBtn.click();
+      await page.clock.runFor(30000);
+      const nextBtn = await page.$('#bagsim-practice-next');
+      if (nextBtn) await nextBtn.click();
+      await page.waitForTimeout(50);
     }
   }
   ok('A live-rendered session showed the order-problem comment (not just in isolated logic)', domSawOrderProblem);
