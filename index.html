@@ -191,6 +191,8 @@ h2, h3 { color: var(--text); }
 <button type="button" class="training-tab" data-tab="describe" style="flex:1;min-width:90px;padding:10px 6px;font-size:13px;font-weight:600;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--text);">Describe It</button>
 <button type="button" class="training-tab" data-tab="selling" style="flex:1;min-width:90px;padding:10px 6px;font-size:13px;font-weight:600;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--text);">Selling Guide</button>
 <button type="button" class="training-tab" data-tab="trial" style="flex:1;min-width:90px;padding:10px 6px;font-size:13px;font-weight:600;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--text);">🔴 Live Trial</button>
+<button type="button" class="training-tab" data-tab="sunsim" style="flex:1;min-width:90px;padding:10px 6px;font-size:13px;font-weight:600;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--text);">😎 Sunglasses Sim</button>
+<button type="button" class="training-tab" data-tab="bagsim" style="flex:1;min-width:90px;padding:10px 6px;font-size:13px;font-weight:600;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--text);">👜 Bag Sim</button>
 <button type="button" class="training-tab" data-tab="auction" style="flex:1;min-width:90px;padding:10px 6px;font-size:13px;font-weight:600;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--text);">⏱️ Auction Close</button>
 </div>
 
@@ -203,6 +205,8 @@ h2, h3 { color: var(--text); }
 <div id="training-describe" style="display:none;"></div>
 <div id="training-selling" style="display:none;"></div>
 <div id="training-trial" style="display:none;"></div>
+<div id="training-sunsim" style="display:none;"></div>
+<div id="training-bagsim" style="display:none;"></div>
 <div id="training-auction" style="display:none;"></div>
 </div>
 
@@ -1127,6 +1131,7 @@ var BRANDS = [
   { name: 'Philipp Plein', pron: 'FIL-ip PLINE (rhymes with "line")', tidbit: 'German brand (1998) known for bold, maximalist, rock-and-roll style -- skulls and studs are signature.' },
   { name: 'Prada', pron: 'PRAH-dah', tidbit: 'Milan house founded 1913. Known for the triangular logo plaque and Re-Nylon bags -- minimalist luxury.' },
   { name: 'Privè Revaux', pron: 'PREE-vay reh-VOH', tidbit: 'Celebrity-backed American sunglasses brand built around affordable, designer-look frames.' },
+  { name: 'Ray-Ban', pron: 'RAY-ban', tidbit: 'American eyewear brand (1937), originally made for U.S. Army pilots. The Aviator and Wayfarer are the two most recognized sunglasses silhouettes in the world.' },
   { name: 'Razza', pron: 'RAHT-sah', tidbit: 'A fashion eyewear label -- if a customer wants more history than that, it\'s fine to say you\'re not sure.' },
   { name: 'RED Valentino', pron: '', tidbit: 'Valentino\'s younger, more playful diffusion line -- distinct from mainline Valentino Garavani.' },
   { name: 'Roberta di Camerino', pron: 'roh-BEHR-tah dee cah-meh-REE-noh', tidbit: 'Venice fashion house founded 1945 by Giuliana Camerino; credited with creating the "status bag" concept and known for velvet handbags.' },
@@ -1190,12 +1195,18 @@ var trainingPanels = {
   describe: document.getElementById('training-describe'),
   selling: document.getElementById('training-selling'),
   trial: document.getElementById('training-trial'),
+  sunsim: document.getElementById('training-sunsim'),
+  bagsim: document.getElementById('training-bagsim'),
   auction: document.getElementById('training-auction'),
 };
-var trainingRendered = { roadmap: false, day1: false, brands: false, bags: false, sunglasses: false, care: false, describe: false, selling: false, trial: false, auction: false };
+var trainingRendered = { roadmap: false, day1: false, brands: false, bags: false, sunglasses: false, care: false, describe: false, selling: false, trial: false, sunsim: false, bagsim: false, auction: false };
 
 function showTrainingTab(name) {
-  if (name !== 'trial') { stopShowingTicker(); stopAmbientChatter(); }
+  // Every live-sim engine (Live Trial + the two category sims) shares the same kind of
+  // countdown/chat timers; stop any engine's timers whenever its tab isn't the one being shown.
+  for (var e = 0; e < LIVE_SIM_ENGINES.length; e++) {
+    if (LIVE_SIM_ENGINES[e].panelKey !== name) LIVE_SIM_ENGINES[e].stopTimers();
+  }
   if (name !== 'auction') { stopAuctionTimer(); }
   for (var i = 0; i < trainingTabs.length; i++) {
     var btn = trainingTabs[i];
@@ -1217,7 +1228,9 @@ function showTrainingTab(name) {
     if (name === 'care') renderCare();
     if (name === 'describe') renderDescribeIt();
     if (name === 'selling') renderSelling();
-    if (name === 'trial') renderLiveTrial();
+    if (name === 'trial') liveTrialEngine.render();
+    if (name === 'sunsim') sunSimEngine.render();
+    if (name === 'bagsim') bagSimEngine.render();
     if (name === 'auction') renderAuctionClose();
   } else if (name === 'day1') {
     renderDay1(); // cheap to re-render; keeps the progress bar honest if it changed elsewhere
@@ -1676,6 +1689,48 @@ function advancePractice() {
 }
 
 // ---- Sunglasses 101: how to read the arm (temple) code ----
+// Sunglasses retail-price announcement guide -- one typical retail range per brand, plus the
+// exact line a seller should say out loud when announcing the item on a live show. Ranges
+// marked "given" came directly from Sasha; "sourced" ranges were checked against current
+// official-site or major-retailer pricing; "estimate" ranges are our best reasonable call for
+// budget/niche labels with no public pricing -- treat those as a starting point, not gospel,
+// and confirm with Sasha if precision matters. This list is sunglasses-only by design.
+var SUNGLASSES_RETAIL = [
+  { brand: 'Carolina Lemke', range: '150-180', confidence: 'sourced' },
+  { brand: 'Carrera', range: '200-300', confidence: 'given' },
+  { brand: 'Diff (Diff Eyewear)', range: '80-150', confidence: 'sourced' },
+  { brand: 'Giselle', range: '15-40', confidence: 'estimate' },
+  { brand: 'Kate Spade', range: '200-300', confidence: 'given' },
+  { brand: 'Nike', range: '80-230', confidence: 'sourced' },
+  { brand: 'Privè Revaux', range: '30-90', confidence: 'estimate' },
+  { brand: 'Ray-Ban', range: '170-250', confidence: 'sourced' },
+  { brand: 'Razza', range: '20-45', confidence: 'estimate' },
+  { brand: 'Spyder', range: '60-130', confidence: 'estimate' },
+  { brand: 'Tom Ford', range: '600-800', confidence: 'given' },
+  { brand: 'Versace', range: '600-800', confidence: 'given' },
+  { brand: 'Web Eyewear', range: '130-220', confidence: 'estimate' },
+];
+function sunglassesAnnounceLine(brand, range) {
+  return 'This is ' + brand + ' -- these retail for ' + range.replace('-', ' to ') + '.';
+}
+function renderSunglassesRetailGuide() {
+  return '<div style="font-size:13px;font-weight:700;color:var(--accent);margin:20px 0 6px;text-transform:uppercase;letter-spacing:0.04em;">Announcing retail price -- say this exact line</div>' +
+    '<p style="color:var(--text-dim);font-size:13px;margin-top:0;">When you pick up a pair of sunglasses on camera, say the brand and the retail range as a flat statement -- right after you say the brand name. That\'s the whole move: "This is Versace -- these retail for 600 to 800." Say it with the same certainty every time, not as a guess.</p>' +
+    SUNGLASSES_RETAIL.map(function (r) {
+      var tag = r.confidence === 'estimate'
+        ? '<span style="font-size:10px;font-weight:700;color:var(--text-dim);border:1px solid var(--border);border-radius:6px;padding:2px 6px;margin-left:8px;text-transform:uppercase;letter-spacing:0.03em;">Estimate -- confirm w/ Sasha</span>'
+        : '';
+      return '<div style="border:1px solid var(--border);border-radius:10px;padding:12px 14px;margin-bottom:8px;">' +
+        '<div style="display:flex;align-items:center;flex-wrap:wrap;">' +
+        '<span style="font-size:14px;font-weight:700;">' + escapeHtml(r.brand) + '</span>' +
+        '<span style="font-size:13px;color:var(--text-dim);margin-left:8px;">$' + r.range.replace('-', ' - $') + ' retail</span>' +
+        tag +
+        '</div>' +
+        '<div style="font-size:14px;color:var(--success);font-weight:600;margin-top:6px;">“' + escapeHtml(sunglassesAnnounceLine(r.brand, r.range)) + '”</div>' +
+        '</div>';
+    }).join('') +
+    '<div style="font-size:12px;color:var(--text-dim);margin-top:4px;line-height:1.5;">Don\'t see a brand here, or carrying something not listed? Ask Sasha or your manager for the retail range before you announce a number on camera -- never guess a price out loud.</div>';
+}
 function renderSunglasses() {
   var panel = trainingPanels.sunglasses;
   panel.innerHTML =
@@ -1697,7 +1752,8 @@ function renderSunglasses() {
     'Smaller lens + bridge numbers = a smaller, narrower frame (better for petite faces). You’ll usually also see the brand name, a model number (letters + numbers) and a 3-digit color code on the same arm.' +
     '</div>' +
     '</div>' +
-    '<div id="sunglasses-quiz"></div>';
+    '<div id="sunglasses-quiz"></div>' +
+    renderSunglassesRetailGuide();
   renderSunglassesQuiz();
 }
 
@@ -1860,11 +1916,22 @@ function renderDescribeIt() {
 // because it's the single most important habit a new seller has to build.
 var SELLING_RULE = 'Speak in statements, not questions. "This is Saint Laurent" sells. "Isn’t this gorgeous?" does not.';
 var STATEMENT_EXAMPLES = [
+  { bad: 'Here, I have this Marc Jacobs bag?', good: 'Hey, we have this Marc Jacobs -- 300+ retail.' },
   { bad: 'Isn’t this gorgeous?', good: 'This is gorgeous.' },
   { bad: 'Do you see how buttery this leather is?', good: 'Feel how buttery this leather is.' },
   { bad: 'Would you believe this is genuine Saint Laurent?', good: 'This is genuine Saint Laurent.' },
   { bad: 'Isn’t this so rare?', good: 'This is the only one we have in this color.' },
   { bad: 'Don’t you think this would go with a little black dress?', good: 'This pairs perfectly with your little black dress.' },
+];
+// Data points on WHY tone matters -- the mechanism behind the #1 rule, not just the rule
+// itself. Kept qualitative/reasoning-based on purpose: no invented statistics, just how a
+// listener actually reads rising-pitch "uptalk" versus a flat, certain statement.
+var TONE_DATA_POINTS = [
+  { title: 'The words can be identical -- the ending pitch is what changes', body: '"Here, I have this Marc Jacobs bag" and "Here, I have this Marc Jacobs bag?" use the exact same words. The only difference is your pitch rising on the last word or two. That rise is what a listener\'s ear reads as a question -- even when you didn\'t mean to ask one.' },
+  { title: 'Uptalk reads as doubt, whether you feel doubt or not', body: 'A rising tone at the end of a sentence is how people signal "I\'m not sure" or "does that make sense?" in normal speech. Say a fact with that same rising tone and a viewer\'s brain files it as uncertain -- so even a completely true, confident fact gets heard as a guess.' },
+  { title: 'Viewers buy certainty, not the item', body: 'On a live show, people are deciding whether to trust you in a few seconds, not authenticating the bag themselves. A flat, assertive statement ("This is Marc Jacobs, 300+ retail") gives them something solid to trust. A question invites them to answer it in their own head -- and a viewer who starts doubting rarely buys.' },
+  { title: 'Lead with the statement, not a lead-in question', body: 'Compare "Hey, we have this Marc Jacobs -- 300+ retail" to "Here, I have this Marc Jacobs bag?" The good version puts the brand and the number right up front, stated, no opening for hesitation. That\'s the pattern to repeat on every single item: brand, then price, both said flat.' },
+  { title: 'One habit fixes most of it: drop the "right?" and the "?" tone', body: 'Most question-tone comes from a habit, not a lack of confidence in the item -- tacking a soft "right?" or "isn\'t it?" onto the end of a true statement, or letting your voice drift up out of habit. Practice saying your opener out loud and catch yourself the moment your pitch rises at the end.' },
 ];
 var SELLING_POINTS = [
   { title: 'Lead with brand + item, said with confidence', body: 'Open every item the same way: "This is a Louis Vuitton Neverfull." Not a question, not a hedge -- a flat statement of fact.' },
@@ -1883,6 +1950,14 @@ function renderSelling() {
     '<div style="font-size:17px;font-weight:800;margin-top:6px;line-height:1.4;">' + escapeHtml(SELLING_RULE) + '</div>' +
     '</div>' +
     '<p style="color:var(--text-dim);font-size:13px;margin-top:0;">Questions make a live viewer hesitate. Statements make them believe you -- and belief is what sells. Practice turning every question below into a statement.</p>' +
+    '<div style="font-size:13px;font-weight:700;color:var(--accent);margin:18px 0 10px;text-transform:uppercase;letter-spacing:0.04em;">Why tone matters</div>' +
+    TONE_DATA_POINTS.map(function (p) {
+      return '<div style="padding:12px 14px;border:1px solid var(--border);border-radius:10px;margin-bottom:8px;">' +
+        '<div style="font-size:15px;font-weight:700;">' + escapeHtml(p.title) + '</div>' +
+        '<div style="font-size:14px;color:var(--text);margin-top:4px;line-height:1.5;">' + escapeHtml(p.body) + '</div>' +
+        '</div>';
+    }).join('') +
+    '<div style="font-size:13px;font-weight:700;color:var(--accent);margin:20px 0 10px;text-transform:uppercase;letter-spacing:0.04em;">Turn the question into a statement</div>' +
     STATEMENT_EXAMPLES.map(function (ex) {
       return '<div style="border:1px solid var(--border);border-radius:10px;padding:12px 14px;margin-bottom:8px;">' +
         '<div style="font-size:13px;color:var(--danger);"><s>' + escapeHtml(ex.bad) + '</s></div>' +
@@ -1933,6 +2008,13 @@ var TRIAL_INVENTORY = [
   { id: 'tiffany-bracelet', category: 'jewelry', brand: 'Tiffany & Co.', name: 'Return to Tiffany bracelet', price: 220, keywords: ['sterling silver', 'tarnish', 'hallmark', 'clasp'] },
   { id: 'cartier-love', category: 'jewelry', brand: 'Cartier', name: 'Love bracelet', price: 6800, keywords: ['18k gold', 'screw motif', 'hallmark', 'plating'] },
   { id: 'rayban-aviator', category: 'sunglasses', brand: 'Ray-Ban', name: 'Aviator Classic', price: 95, keywords: ['arm code', 'lens', 'hinge', 'gold frame'] },
+  { id: 'versace-medusa', category: 'sunglasses', brand: 'Versace', name: 'Medusa aviator sunglasses', price: 180, keywords: ['acetate', 'metal frame', 'gold hardware', 'case', 'lens'] },
+  { id: 'carrera-champion', category: 'sunglasses', brand: 'Carrera', name: 'Champion sunglasses', price: 65, keywords: ['acetate', 'lens', 'hinge', 'arm code'] },
+  { id: 'tomford-aviator', category: 'sunglasses', brand: 'Tom Ford', name: 'Aviator sunglasses', price: 220, keywords: ['acetate', 'metal frame', 'gradient lens', 'case'] },
+  { id: 'diff-bella', category: 'sunglasses', brand: 'Diff (Diff Eyewear)', name: 'Bella cat-eye sunglasses', price: 45, keywords: ['acetate', 'polarized', 'case', 'lens'] },
+  { id: 'prada-renylon', category: 'bag', brand: 'Prada', name: 'Re-Nylon backpack', price: 650, keywords: ['nylon', 'leather trim', 'triangle logo', 'zipper'] },
+  { id: 'coach-tabby', category: 'bag', brand: 'Coach', name: 'Tabby shoulder bag', price: 275, keywords: ['leather', 'turnlock', 'suede lining', 'hardware'] },
+  { id: 'ysl-loulou', category: 'bag', brand: 'Saint Laurent', name: 'LouLou small bag', price: 950, keywords: ['quilted', 'leather', 'chain strap', 'ysl logo'] },
 ];
 
 // Comment bank -- {{item}}/{{brand}} fill in at runtime. checkPrice/checkKeywordCategory mark
@@ -1988,73 +2070,8 @@ var RUBRIC_ITEMS = [
 function loadManagerRubrics() { try { return JSON.parse(localStorage.getItem('managerRubricEntries') || '[]'); } catch (e) { return []; } }
 function saveManagerRubrics(list) { try { localStorage.setItem('managerRubricEntries', JSON.stringify(list)); } catch (e) { /* ignore */ } }
 
-var trialView = 'platforms'; // 'platforms' | 'items' | 'ready' | 'session' | 'results'
-var trialSelectedPlatform = null;
-var trialSelectedItem = null; // item id chosen on the 'items' screen, held until Go Live is pressed on 'ready'
-var trialSession = null;
-var trialLastResult = null;
-var trialTickerId = null;
-var trialAmbientTimerId = null;
-
-function renderLiveTrial() {
-  trialView = 'platforms';
-  renderTrialPanel();
-}
-
-function renderTrialPanel() {
-  var panel = trainingPanels.trial;
-  if (trialView === 'platforms') panel.innerHTML = trialPlatformsHtml();
-  else if (trialView === 'items') panel.innerHTML = trialItemsHtml();
-  else if (trialView === 'ready') panel.innerHTML = trialReadyHtml();
-  else if (trialView === 'session') panel.innerHTML = trialSessionHtml();
-  else if (trialView === 'results') panel.innerHTML = trialResultsHtml();
-  wireTrialPanel();
-}
-
-function trialPlatformsHtml() {
-  var results = loadLiveTrialResults();
-  return '<p style="color:var(--text-dim);font-size:13px;margin-top:0;">Practice a full mock live show before you’re ever live for real. Pick a platform -- a viewer feed acts like a real show, right down to buyers asking to see the item.</p>' +
-    '<p style="color:var(--text-dim);font-size:13px;margin-top:0;">Once you start, the chat keeps moving on its own -- fast, and it doesn’t wait for you. The question that actually needs an answer stays pinned above your reply box; everything scrolling behind it is just the crowd. That’s what a real live chat feels like.</p>' +
-    '<div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:10px 14px;margin-bottom:16px;font-size:12px;color:var(--text-dim);line-height:1.5;">Auto-graded on statements-vs-questions, item accuracy, and screen presence -- a strong first pass, not a substitute for a manager watching and listening. Use the Manager Rubric below for pronunciation and true screen presence.</div>' +
-    TRIAL_PLATFORMS.map(function (p) {
-      var r = results[p.id];
-      return '<button type="button" class="trial-platform-pick" data-platform="' + p.id + '" style="display:block;width:100%;text-align:left;padding:16px;margin-bottom:10px;border-radius:12px;border:1px solid var(--border);background:var(--surface);color:var(--text);">' +
-        '<div style="display:flex;justify-content:space-between;align-items:center;">' +
-        '<span style="font-size:16px;font-weight:700;">' + p.icon + ' ' + p.label + '</span>' +
-        (r ? '<span style="font-size:14px;font-weight:700;color:' + (gradeMeetsThreshold(r.grade, CERT_THRESHOLD) ? 'var(--success)' : 'var(--danger)') + ';">Last: ' + r.grade + '</span>' : '<span style="font-size:12px;color:var(--text-dim);">Not attempted</span>') +
-        '</div></button>';
-    }).join('') +
-    '<div style="margin-top:24px;">' + managerRubricHtml() + '</div>';
-}
-
-function trialItemsHtml() {
-  var platform = trialPlatformById(trialSelectedPlatform);
-  return '<button type="button" id="trial-back-platforms" style="background:none;border:none;padding:6px 0;margin-bottom:10px;font-size:13px;color:var(--text-dim);">← Choose a different platform</button>' +
-    '<div style="font-size:15px;font-weight:700;margin-bottom:10px;">' + platform.icon + ' ' + platform.label + ' -- pick an item to go live with</div>' +
-    TRIAL_INVENTORY.map(function (it) {
-      return '<button type="button" class="trial-item-pick" data-item="' + it.id + '" style="display:block;width:100%;text-align:left;padding:14px;margin-bottom:8px;border-radius:10px;border:1px solid var(--border);background:var(--surface);color:var(--text);">' +
-        '<div style="font-size:14px;font-weight:700;">' + TRIAL_CATEGORY_ICON[it.category] + ' ' + escapeHtml(it.brand) + ' ' + escapeHtml(it.name) + '</div>' +
-        '<div style="font-size:13px;color:var(--text-dim);margin-top:2px;">$' + it.price + '</div></button>';
-    }).join('');
-}
-
-// ---- 'ready' screen: a deliberate pause between picking an item and going live, with a short
-// on-screen countdown, so the chat/comments never start firing before the seller is actually
-// ready -- mirrors hitting "Go Live" on a real platform. ----
-function trialReadyHtml() {
-  var platform = trialPlatformById(trialSelectedPlatform);
-  var item = TRIAL_INVENTORY.filter(function (i) { return i.id === trialSelectedItem; })[0];
-  return '<button type="button" id="trial-back-items" style="background:none;border:none;padding:6px 0;margin-bottom:10px;font-size:13px;color:var(--text-dim);">← Choose a different item</button>' +
-    '<div style="text-align:center;padding:28px 16px;border-radius:12px;background:var(--surface);border:1px solid var(--border);margin-bottom:16px;">' +
-    '<div style="font-size:12px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:0.04em;">' + platform.icon + ' ' + platform.label + '</div>' +
-    '<div style="font-size:18px;font-weight:700;margin-top:8px;">' + TRIAL_CATEGORY_ICON[item.category] + ' ' + escapeHtml(item.brand) + ' ' + escapeHtml(item.name) + '</div>' +
-    '<div style="font-size:14px;color:var(--text-dim);margin-top:4px;">$' + item.price + '</div>' +
-    '</div>' +
-    '<p style="color:var(--text-dim);font-size:13px;">When you hit Go Live, comments start coming in immediately and won’t wait for you -- same as the real show. Get the item in hand and take a breath first.</p>' +
-    '<div id="trial-countdown-display" style="display:none;text-align:center;font-size:64px;font-weight:800;color:var(--accent);padding:20px 0;"></div>' +
-    '<button type="button" id="trial-go-live" style="width:100%;padding:16px;font-size:16px;font-weight:700;border-radius:10px;border:none;background:var(--accent);color:var(--accent-text);">🔴 Go Live</button>';
-}
-
+// Shared, pure rendering helpers -- used by every engine instance below, never redefined per
+// instance. None of these read or write per-instance state.
 function commentBubbleHtml(platform, user, text) {
   return '<div style="margin-bottom:8px;">' +
     '<span style="font-size:12px;font-weight:700;color:' + platform.accent + ';">' + escapeHtml(user) + '</span> ' +
@@ -2064,73 +2081,14 @@ function responseBubbleHtml(platform, text) {
   return '<div style="margin:4px 0 14px;text-align:right;">' +
     '<span style="display:inline-block;padding:8px 12px;border-radius:12px;background:' + platform.bubbleBg + ';color:#ffffff;font-size:13px;max-width:85%;text-align:left;">' + escapeHtml(text) + '</span></div>';
 }
-
-function trialSessionHtml() {
-  var platform = trialPlatformById(trialSession.platformId);
-  var item = trialSession.item;
-  var current = trialSession.comments[trialSession.currentIndex];
-  var progressPct = Math.round((trialSession.currentIndex / trialSession.comments.length) * 100);
-
-  return '<div style="border-radius:12px;overflow:hidden;border:1px solid var(--border);margin-bottom:14px;">' +
-    '<div style="background:' + platform.headerBg + ';color:' + platform.headerText + ';padding:12px 14px;display:flex;justify-content:space-between;align-items:center;">' +
-    '<div style="font-size:13px;font-weight:700;">' + platform.icon + ' ' + platform.label + ' &middot; 🔴 LIVE</div>' +
-    '<div style="font-size:12px;">Comment ' + (trialSession.currentIndex + 1) + ' of ' + trialSession.comments.length + '</div>' +
-    '</div>' +
-    '<div style="padding:12px 14px;background:var(--surface-alt);display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;">' +
-    '<div style="font-size:13px;font-weight:700;">' + TRIAL_CATEGORY_ICON[item.category] + ' ' + escapeHtml(item.brand) + ' ' + escapeHtml(item.name) + ' &middot; $' + item.price + '</div>' +
-    '<button type="button" id="trial-showing-toggle" style="flex:none;padding:8px 12px;font-size:12px;font-weight:700;border-radius:8px;border:1px solid var(--accent);background:var(--accent);color:var(--accent-text);white-space:nowrap;">📌 Showing on screen</button>' +
-    '</div>' +
-    '<div style="padding:4px 14px;background:var(--surface-alt);"><span id="trial-showing-status" style="font-size:12px;"></span></div>' +
-    '<div style="height:4px;background:var(--border);"><div style="height:100%;width:' + progressPct + '%;background:var(--accent);"></div></div>' +
-    '</div>' +
-    '<div id="trial-nudge" style="display:none;background:var(--danger-bg);color:var(--danger);border-radius:10px;padding:10px 14px;margin-bottom:12px;font-size:13px;font-weight:600;">⚠️ You’re not confirmed on screen -- a viewer just asked to see ' + escapeHtml(item.name) + '. Tap "Showing on screen" and hold it up before you respond.</div>' +
-    '<div id="trial-chat-feed" style="max-height:170px;overflow-y:auto;padding:8px 10px;margin-bottom:10px;border:1px solid var(--border);border-radius:8px;background:var(--surface);">' +
-    trialSession.responses.map(function (r) { return commentBubbleHtml(platform, r.commentUser, r.commentText) + responseBubbleHtml(platform, r.text); }).join('') +
-    '<div style="text-align:center;font-size:11px;color:var(--text-dim);padding:2px 0;">— live chat, moving in real time —</div>' +
-    '</div>' +
-    '<div style="border:1px solid ' + platform.accent + ';border-radius:10px;padding:10px 12px;margin-bottom:12px;background:var(--surface-alt);">' +
-    '<div style="font-size:11px;font-weight:700;color:' + platform.accent + ';text-transform:uppercase;letter-spacing:0.03em;margin-bottom:6px;">❓ Needs your answer</div>' +
-    commentBubbleHtml(platform, current.user, current.text) +
-    '</div>' +
-    '<textarea id="trial-response-input" placeholder="Type exactly what you’d say out loud right now..." rows="3" style="width:100%;padding:12px;font-size:14px;border-radius:10px;resize:vertical;"></textarea>' +
-    '<div style="display:flex;gap:8px;margin-top:8px;">' +
-    '<button type="button" id="trial-end-early" style="padding:12px 14px;font-size:13px;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--text-dim);">End early</button>' +
-    '<button type="button" id="trial-send" style="flex:1;padding:12px;font-size:14px;font-weight:700;border-radius:8px;border:none;background:var(--accent);color:var(--accent-text);">Send response</button>' +
-    '</div>';
-}
-
 function trialScoreBox(label, ratio) {
   var pct = Math.round(ratio * 100);
   return '<div style="flex:1;min-width:110px;text-align:center;padding:10px;border-radius:8px;background:var(--surface-alt);">' +
     '<div style="font-size:11px;color:var(--text-dim);">' + label + '</div>' +
     '<div style="font-size:16px;font-weight:700;color:' + (pct >= 80 ? 'var(--success)' : pct >= 60 ? 'var(--accent)' : 'var(--danger)') + ';">' + pct + '%</div></div>';
 }
-
-function trialResultsHtml() {
-  var r = trialLastResult;
-  var platform = trialPlatformById(r.platformId);
-  var gradeColor = GRADE_VALUE[r.grade] >= GRADE_VALUE[CERT_THRESHOLD] ? 'var(--success)' : GRADE_VALUE[r.grade] >= GRADE_VALUE['C'] ? 'var(--accent)' : 'var(--danger)';
-  return '<div style="text-align:center;padding:24px 16px;border-radius:12px;background:var(--surface);border:1px solid var(--border);margin-bottom:16px;">' +
-    '<div style="font-size:13px;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.04em;">' + platform.icon + ' ' + platform.label + ' &middot; ' + escapeHtml(r.item.brand) + ' ' + escapeHtml(r.item.name) + '</div>' +
-    '<div style="font-size:56px;font-weight:800;color:' + gradeColor + ';margin:8px 0;">' + r.grade + '</div>' +
-    '<div style="font-size:13px;color:var(--text-dim);">Score: ' + r.score + '/100</div>' +
-    '</div>' +
-    '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;">' +
-    trialScoreBox('Statements', r.statementRatio) +
-    trialScoreBox('Item accuracy', r.conditionScore) +
-    trialScoreBox('Price handling', r.priceScore) +
-    trialScoreBox('Screen presence', r.screenScore) +
-    '</div>' +
-    '<div style="font-size:13px;font-weight:700;color:var(--accent);margin:16px 0 10px;text-transform:uppercase;letter-spacing:0.04em;">Feedback</div>' +
-    r.feedback.map(function (f) {
-      return '<div style="padding:12px 14px;border:1px solid var(--border);border-radius:10px;margin-bottom:8px;font-size:13px;line-height:1.5;">' + escapeHtml(f) + '</div>';
-    }).join('') +
-    '<div style="display:flex;gap:8px;margin-top:16px;">' +
-    '<button type="button" id="trial-retry" style="flex:1;padding:14px;font-size:14px;font-weight:700;border-radius:10px;border:1px solid var(--accent);background:var(--surface);color:var(--accent);">Try again</button>' +
-    '<button type="button" id="trial-done" style="flex:1;padding:14px;font-size:14px;font-weight:700;border-radius:10px;border:none;background:var(--accent);color:var(--accent-text);">Back to Live Trial</button>' +
-    '</div>';
-}
-
+// Manager rubric -- shared by every engine that opts in (cfg.showManagerRubric); the two
+// category sims skip it entirely to avoid redundant clutter, per the current design.
 function managerRubricHtml() {
   var entries = loadManagerRubrics();
   return '<div style="font-size:13px;font-weight:700;color:var(--accent);margin-bottom:10px;text-transform:uppercase;letter-spacing:0.04em;">Manager rubric -- pronunciation &amp; screen presence</div>' +
@@ -2162,224 +2120,403 @@ function managerRubricHtml() {
     }).join('') : '');
 }
 
-function wireTrialPanel() {
-  var panel = trainingPanels.trial;
-  if (trialView === 'platforms') {
-    var picks = panel.querySelectorAll('.trial-platform-pick');
-    for (var i = 0; i < picks.length; i++) {
-      picks[i].addEventListener('click', function (e) {
-        trialSelectedPlatform = e.currentTarget.getAttribute('data-platform');
-        trialView = 'items';
-        renderTrialPanel();
-      });
-    }
-    var saveBtn = document.getElementById('rubric-save');
-    if (saveBtn) saveBtn.addEventListener('click', function () {
-      var checks = panel.querySelectorAll('.rubric-check');
-      var checkedItems = [];
-      for (var c = 0; c < checks.length; c++) { if (checks[c].checked) checkedItems.push(RUBRIC_ITEMS[c]); }
-      var entry = {
-        seller: document.getElementById('rubric-seller').value.trim(),
-        platform: document.getElementById('rubric-platform').value,
-        grade: document.getElementById('rubric-grade').value,
-        notes: document.getElementById('rubric-notes').value.trim(),
-        checked: checkedItems,
-        date: new Date().toISOString().slice(0, 10),
-      };
-      var list = loadManagerRubrics();
-      list.push(entry);
-      saveManagerRubrics(list);
-      renderTrialPanel();
-    });
-    var deletes = panel.querySelectorAll('.rubric-delete');
-    for (var d = 0; d < deletes.length; d++) {
-      deletes[d].addEventListener('click', function (e) {
-        var idx = parseInt(e.currentTarget.getAttribute('data-idx'), 10);
-        var list = loadManagerRubrics();
-        list.splice(idx, 1);
-        saveManagerRubrics(list);
-        renderTrialPanel();
-      });
-    }
-  } else if (trialView === 'items') {
-    document.getElementById('trial-back-platforms').addEventListener('click', function () {
-      trialView = 'platforms';
-      renderTrialPanel();
-    });
-    var itemPicks = panel.querySelectorAll('.trial-item-pick');
-    for (var j = 0; j < itemPicks.length; j++) {
-      itemPicks[j].addEventListener('click', function (e) {
-        trialSelectedItem = e.currentTarget.getAttribute('data-item');
-        trialView = 'ready';
-        renderTrialPanel();
-      });
-    }
-  } else if (trialView === 'ready') {
-    document.getElementById('trial-back-items').addEventListener('click', function () {
-      trialView = 'items';
-      renderTrialPanel();
-    });
-    document.getElementById('trial-go-live').addEventListener('click', beginTrialCountdown);
-  } else if (trialView === 'session') {
-    document.getElementById('trial-showing-toggle').addEventListener('click', toggleShowing);
-    document.getElementById('trial-send').addEventListener('click', submitTrialResponse);
-    document.getElementById('trial-end-early').addEventListener('click', function () {
-      if (trialSession.responses.length === 0) {
-        stopShowingTicker();
-        stopAmbientChatter();
-        trialView = 'platforms';
-        trialSession = null;
-        renderTrialPanel();
-      } else {
-        finishTrialSession();
-      }
-    });
-    updateShowingStatusUI();
-  } else if (trialView === 'results') {
-    document.getElementById('trial-retry').addEventListener('click', function () {
-      trialSelectedPlatform = trialLastResult.platformId;
-      trialSelectedItem = trialLastResult.item.id;
-      trialView = 'ready';
-      renderTrialPanel();
-    });
-    document.getElementById('trial-done').addEventListener('click', function () {
-      trialView = 'platforms';
-      trialSession = null;
-      renderTrialPanel();
-    });
-  }
-}
-
-// Runs a short 3-2-1 countdown on the 'ready' screen, then hands off to startTrialSession --
-// comments/ambient chatter never start until the countdown actually finishes.
-function beginTrialCountdown() {
-  var btn = document.getElementById('trial-go-live');
-  var display = document.getElementById('trial-countdown-display');
-  if (!btn || !display) return;
-  btn.disabled = true;
-  btn.style.opacity = '0.5';
-  display.style.display = 'block';
-  var count = 3;
-  display.textContent = count;
-  var timer = setInterval(function () {
-    count--;
-    if (count > 0) {
-      display.textContent = count;
-    } else {
-      clearInterval(timer);
-      display.textContent = 'GO!';
-      setTimeout(function () {
-        startTrialSession(trialSelectedPlatform, trialSelectedItem);
-      }, 400);
-    }
-  }, 800);
-}
-
-function startTrialSession(platformId, itemId) {
-  var item = TRIAL_INVENTORY.filter(function (i) { return i.id === itemId; })[0];
-  trialSession = {
-    platformId: platformId,
-    item: item,
-    comments: pickTrialComments(item),
-    currentIndex: 0,
-    responses: [],
-    showingSince: null,
+// ---- Engine factory: one implementation, three instances (Live Trial, Sunglasses Sim, Bag
+// Sim). Each instance gets its own closed-over state and DOM-id prefix (cfg.idPrefix), so the
+// three never collide -- including in localStorage, where each writes to its own cfg.storageKey.
+// Live Trial keeps using the pre-existing loadLiveTrialResults/saveLiveTrialResult (the exact
+// functions certificationStatus()/renderRoadmap() already depend on) so Day-14 certification
+// tracking is completely untouched by this refactor. The two category sims get their own,
+// separate results storage and are never read by certification logic.
+function makeLiveSimEngine(cfg) {
+  var state = {
+    view: 'platforms', // 'platforms' | 'items' | 'ready' | 'session' | 'results'
+    selectedPlatform: null,
+    selectedItem: null, // item id chosen on the 'items' screen, held until Go Live is pressed on 'ready'
+    session: null,
+    lastResult: null,
+    tickerId: null,
+    ambientTimerId: null,
   };
-  trialView = 'session';
-  renderTrialPanel();
-  startShowingTicker();
-  startAmbientChatter();
-}
 
-// Ambient chat ticker -- posts a random crowd line into #trial-chat-feed on an irregular,
-// fast cadence (~0.6-1.5s) so the feed keeps scrolling on its own, the way a real live chat
-// does. Purely cosmetic: it never touches trialSession.comments/responses or grading.
-function postAmbientComment() {
-  var feed = document.getElementById('trial-chat-feed');
-  if (!feed || !trialSession) return;
-  var platform = trialPlatformById(trialSession.platformId);
-  var user = randomTrialViewer();
-  var text = TRIAL_AMBIENT_CHATTER[Math.floor(Math.random() * TRIAL_AMBIENT_CHATTER.length)];
-  var el = document.createElement('div');
-  el.style.marginBottom = '8px';
-  el.style.opacity = '0.65';
-  el.innerHTML = '<span style="font-size:12px;font-weight:700;color:' + platform.accent + ';">' + escapeHtml(user) + '</span> <span style="font-size:13px;color:var(--text-dim);">' + escapeHtml(text) + '</span>';
-  feed.insertBefore(el, feed.lastChild);
-  while (feed.children.length > 30) feed.removeChild(feed.firstChild);
-  feed.scrollTop = feed.scrollHeight;
-}
-function scheduleNextAmbient() {
-  var delay = 600 + Math.random() * 900;
-  trialAmbientTimerId = setTimeout(function () {
-    postAmbientComment();
+  function id(suffix) { return cfg.idPrefix + '-' + suffix; }
+  function panel() { return trainingPanels[cfg.panelKey]; }
+  function inventory() {
+    return cfg.categoryFilter ? TRIAL_INVENTORY.filter(function (i) { return i.category === cfg.categoryFilter; }) : TRIAL_INVENTORY;
+  }
+  function loadResults() {
+    if (cfg.storageKey === 'liveTrialResults') return loadLiveTrialResults();
+    try { return JSON.parse(localStorage.getItem(cfg.storageKey) || '{}'); } catch (e) { return {}; }
+  }
+  function saveResult(platformId, grade) {
+    if (cfg.storageKey === 'liveTrialResults') { saveLiveTrialResult(platformId, grade); return; }
+    var results = loadResults();
+    results[platformId] = { grade: grade, date: new Date().toISOString().slice(0, 10) };
+    try { localStorage.setItem(cfg.storageKey, JSON.stringify(results)); } catch (e) { /* ignore */ }
+  }
+
+  function render() {
+    state.view = 'platforms';
+    renderPanel();
+  }
+
+  function renderPanel() {
+    var p = panel();
+    if (state.view === 'platforms') p.innerHTML = platformsHtml();
+    else if (state.view === 'items') p.innerHTML = itemsHtml();
+    else if (state.view === 'ready') p.innerHTML = readyHtml();
+    else if (state.view === 'session') p.innerHTML = sessionHtml();
+    else if (state.view === 'results') p.innerHTML = resultsHtml();
+    wirePanel();
+  }
+
+  function platformsHtml() {
+    var results = loadResults();
+    return '<p style="color:var(--text-dim);font-size:13px;margin-top:0;">' + cfg.intro1 + '</p>' +
+      '<p style="color:var(--text-dim);font-size:13px;margin-top:0;">Once you start, the chat keeps moving on its own -- fast, and it doesn’t wait for you. The question that actually needs an answer stays pinned above your reply box; everything scrolling behind it is just the crowd. That’s what a real live chat feels like.</p>' +
+      '<div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:10px 14px;margin-bottom:16px;font-size:12px;color:var(--text-dim);line-height:1.5;">Auto-graded on statements-vs-questions, item accuracy, and screen presence -- a strong first pass, not a substitute for a manager watching and listening.' + (cfg.showManagerRubric ? ' Use the Manager Rubric below for pronunciation and true screen presence.' : '') + '</div>' +
+      TRIAL_PLATFORMS.map(function (p) {
+        var r = results[p.id];
+        return '<button type="button" class="' + id('platform-pick') + '" data-platform="' + p.id + '" style="display:block;width:100%;text-align:left;padding:16px;margin-bottom:10px;border-radius:12px;border:1px solid var(--border);background:var(--surface);color:var(--text);">' +
+          '<div style="display:flex;justify-content:space-between;align-items:center;">' +
+          '<span style="font-size:16px;font-weight:700;">' + p.icon + ' ' + p.label + '</span>' +
+          (r ? '<span style="font-size:14px;font-weight:700;color:' + (gradeMeetsThreshold(r.grade, CERT_THRESHOLD) ? 'var(--success)' : 'var(--danger)') + ';">Last: ' + r.grade + '</span>' : '<span style="font-size:12px;color:var(--text-dim);">Not attempted</span>') +
+          '</div></button>';
+      }).join('') +
+      (cfg.showManagerRubric ? '<div style="margin-top:24px;">' + managerRubricHtml() + '</div>' : '');
+  }
+
+  function itemsHtml() {
+    var platform = trialPlatformById(state.selectedPlatform);
+    return '<button type="button" id="' + id('back-platforms') + '" style="background:none;border:none;padding:6px 0;margin-bottom:10px;font-size:13px;color:var(--text-dim);">← Choose a different platform</button>' +
+      '<div style="font-size:15px;font-weight:700;margin-bottom:10px;">' + platform.icon + ' ' + platform.label + ' -- pick an item to go live with</div>' +
+      inventory().map(function (it) {
+        return '<button type="button" class="' + id('item-pick') + '" data-item="' + it.id + '" style="display:block;width:100%;text-align:left;padding:14px;margin-bottom:8px;border-radius:10px;border:1px solid var(--border);background:var(--surface);color:var(--text);">' +
+          '<div style="font-size:14px;font-weight:700;">' + TRIAL_CATEGORY_ICON[it.category] + ' ' + escapeHtml(it.brand) + ' ' + escapeHtml(it.name) + '</div>' +
+          '<div style="font-size:13px;color:var(--text-dim);margin-top:2px;">$' + it.price + '</div></button>';
+      }).join('');
+  }
+
+  // ---- 'ready' screen: a deliberate pause between picking an item and going live, with a short
+  // on-screen countdown, so the chat/comments never start firing before the seller is actually
+  // ready -- mirrors hitting "Go Live" on a real platform. ----
+  function readyHtml() {
+    var platform = trialPlatformById(state.selectedPlatform);
+    var item = inventory().filter(function (i) { return i.id === state.selectedItem; })[0];
+    return '<button type="button" id="' + id('back-items') + '" style="background:none;border:none;padding:6px 0;margin-bottom:10px;font-size:13px;color:var(--text-dim);">← Choose a different item</button>' +
+      '<div style="text-align:center;padding:28px 16px;border-radius:12px;background:var(--surface);border:1px solid var(--border);margin-bottom:16px;">' +
+      '<div style="font-size:12px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:0.04em;">' + platform.icon + ' ' + platform.label + '</div>' +
+      '<div style="font-size:18px;font-weight:700;margin-top:8px;">' + TRIAL_CATEGORY_ICON[item.category] + ' ' + escapeHtml(item.brand) + ' ' + escapeHtml(item.name) + '</div>' +
+      '<div style="font-size:14px;color:var(--text-dim);margin-top:4px;">$' + item.price + '</div>' +
+      '</div>' +
+      '<p style="color:var(--text-dim);font-size:13px;">When you hit Go Live, comments start coming in immediately and won’t wait for you -- same as the real show. Get the item in hand and take a breath first.</p>' +
+      '<div id="' + id('countdown-display') + '" style="display:none;text-align:center;font-size:64px;font-weight:800;color:var(--accent);padding:20px 0;"></div>' +
+      '<button type="button" id="' + id('go-live') + '" style="width:100%;padding:16px;font-size:16px;font-weight:700;border-radius:10px;border:none;background:var(--accent);color:var(--accent-text);">🔴 Go Live</button>';
+  }
+
+  function sessionHtml() {
+    var platform = trialPlatformById(state.session.platformId);
+    var item = state.session.item;
+    var current = state.session.comments[state.session.currentIndex];
+    var progressPct = Math.round((state.session.currentIndex / state.session.comments.length) * 100);
+
+    return '<div style="border-radius:12px;overflow:hidden;border:1px solid var(--border);margin-bottom:14px;">' +
+      '<div style="background:' + platform.headerBg + ';color:' + platform.headerText + ';padding:12px 14px;display:flex;justify-content:space-between;align-items:center;">' +
+      '<div style="font-size:13px;font-weight:700;">' + platform.icon + ' ' + platform.label + ' &middot; 🔴 LIVE</div>' +
+      '<div style="font-size:12px;">Comment ' + (state.session.currentIndex + 1) + ' of ' + state.session.comments.length + '</div>' +
+      '</div>' +
+      '<div style="padding:12px 14px;background:var(--surface-alt);display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;">' +
+      '<div style="font-size:13px;font-weight:700;">' + TRIAL_CATEGORY_ICON[item.category] + ' ' + escapeHtml(item.brand) + ' ' + escapeHtml(item.name) + ' &middot; $' + item.price + '</div>' +
+      '<button type="button" id="' + id('showing-toggle') + '" style="flex:none;padding:8px 12px;font-size:12px;font-weight:700;border-radius:8px;border:1px solid var(--accent);background:var(--accent);color:var(--accent-text);white-space:nowrap;">📌 Showing on screen</button>' +
+      '</div>' +
+      '<div style="padding:4px 14px;background:var(--surface-alt);"><span id="' + id('showing-status') + '" style="font-size:12px;"></span></div>' +
+      '<div style="height:4px;background:var(--border);"><div style="height:100%;width:' + progressPct + '%;background:var(--accent);"></div></div>' +
+      '</div>' +
+      '<div id="' + id('nudge') + '" style="display:none;background:var(--danger-bg);color:var(--danger);border-radius:10px;padding:10px 14px;margin-bottom:12px;font-size:13px;font-weight:600;">⚠️ You’re not confirmed on screen -- a viewer just asked to see ' + escapeHtml(item.name) + '. Tap "Showing on screen" and hold it up before you respond.</div>' +
+      '<div id="' + id('chat-feed') + '" style="max-height:170px;overflow-y:auto;padding:8px 10px;margin-bottom:10px;border:1px solid var(--border);border-radius:8px;background:var(--surface);">' +
+      state.session.responses.map(function (r) { return commentBubbleHtml(platform, r.commentUser, r.commentText) + responseBubbleHtml(platform, r.text); }).join('') +
+      '<div style="text-align:center;font-size:11px;color:var(--text-dim);padding:2px 0;">— live chat, moving in real time —</div>' +
+      '</div>' +
+      '<div style="border:1px solid ' + platform.accent + ';border-radius:10px;padding:10px 12px;margin-bottom:12px;background:var(--surface-alt);">' +
+      '<div style="font-size:11px;font-weight:700;color:' + platform.accent + ';text-transform:uppercase;letter-spacing:0.03em;margin-bottom:6px;">❓ Needs your answer</div>' +
+      commentBubbleHtml(platform, current.user, current.text) +
+      '</div>' +
+      '<textarea id="' + id('response-input') + '" placeholder="Type exactly what you’d say out loud right now..." rows="3" style="width:100%;padding:12px;font-size:14px;border-radius:10px;resize:vertical;"></textarea>' +
+      '<div style="display:flex;gap:8px;margin-top:8px;">' +
+      '<button type="button" id="' + id('end-early') + '" style="padding:12px 14px;font-size:13px;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--text-dim);">End early</button>' +
+      '<button type="button" id="' + id('send') + '" style="flex:1;padding:12px;font-size:14px;font-weight:700;border-radius:8px;border:none;background:var(--accent);color:var(--accent-text);">Send response</button>' +
+      '</div>';
+  }
+
+  function resultsHtml() {
+    var r = state.lastResult;
+    var platform = trialPlatformById(r.platformId);
+    var gradeColor = GRADE_VALUE[r.grade] >= GRADE_VALUE[CERT_THRESHOLD] ? 'var(--success)' : GRADE_VALUE[r.grade] >= GRADE_VALUE['C'] ? 'var(--accent)' : 'var(--danger)';
+    return '<div style="text-align:center;padding:24px 16px;border-radius:12px;background:var(--surface);border:1px solid var(--border);margin-bottom:16px;">' +
+      '<div style="font-size:13px;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.04em;">' + platform.icon + ' ' + platform.label + ' &middot; ' + escapeHtml(r.item.brand) + ' ' + escapeHtml(r.item.name) + '</div>' +
+      '<div style="font-size:56px;font-weight:800;color:' + gradeColor + ';margin:8px 0;">' + r.grade + '</div>' +
+      '<div style="font-size:13px;color:var(--text-dim);">Score: ' + r.score + '/100</div>' +
+      '</div>' +
+      '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;">' +
+      trialScoreBox('Statements', r.statementRatio) +
+      trialScoreBox('Item accuracy', r.conditionScore) +
+      trialScoreBox('Price handling', r.priceScore) +
+      trialScoreBox('Screen presence', r.screenScore) +
+      '</div>' +
+      '<div style="font-size:13px;font-weight:700;color:var(--accent);margin:16px 0 10px;text-transform:uppercase;letter-spacing:0.04em;">Feedback</div>' +
+      r.feedback.map(function (f) {
+        return '<div style="padding:12px 14px;border:1px solid var(--border);border-radius:10px;margin-bottom:8px;font-size:13px;line-height:1.5;">' + escapeHtml(f) + '</div>';
+      }).join('') +
+      '<div style="display:flex;gap:8px;margin-top:16px;">' +
+      '<button type="button" id="' + id('retry') + '" style="flex:1;padding:14px;font-size:14px;font-weight:700;border-radius:10px;border:1px solid var(--accent);background:var(--surface);color:var(--accent);">Try again</button>' +
+      '<button type="button" id="' + id('done') + '" style="flex:1;padding:14px;font-size:14px;font-weight:700;border-radius:10px;border:none;background:var(--accent);color:var(--accent-text);">' + cfg.doneLabel + '</button>' +
+      '</div>';
+  }
+
+  function wirePanel() {
+    var p = panel();
+    if (state.view === 'platforms') {
+      var picks = p.querySelectorAll('.' + id('platform-pick'));
+      for (var i = 0; i < picks.length; i++) {
+        picks[i].addEventListener('click', function (e) {
+          state.selectedPlatform = e.currentTarget.getAttribute('data-platform');
+          state.view = 'items';
+          renderPanel();
+        });
+      }
+      if (cfg.showManagerRubric) {
+        var saveBtn = document.getElementById('rubric-save');
+        if (saveBtn) saveBtn.addEventListener('click', function () {
+          var checks = p.querySelectorAll('.rubric-check');
+          var checkedItems = [];
+          for (var c = 0; c < checks.length; c++) { if (checks[c].checked) checkedItems.push(RUBRIC_ITEMS[c]); }
+          var entry = {
+            seller: document.getElementById('rubric-seller').value.trim(),
+            platform: document.getElementById('rubric-platform').value,
+            grade: document.getElementById('rubric-grade').value,
+            notes: document.getElementById('rubric-notes').value.trim(),
+            checked: checkedItems,
+            date: new Date().toISOString().slice(0, 10),
+          };
+          var list = loadManagerRubrics();
+          list.push(entry);
+          saveManagerRubrics(list);
+          renderPanel();
+        });
+        var deletes = p.querySelectorAll('.rubric-delete');
+        for (var d = 0; d < deletes.length; d++) {
+          deletes[d].addEventListener('click', function (e) {
+            var idx = parseInt(e.currentTarget.getAttribute('data-idx'), 10);
+            var list = loadManagerRubrics();
+            list.splice(idx, 1);
+            saveManagerRubrics(list);
+            renderPanel();
+          });
+        }
+      }
+    } else if (state.view === 'items') {
+      document.getElementById(id('back-platforms')).addEventListener('click', function () {
+        state.view = 'platforms';
+        renderPanel();
+      });
+      var itemPicks = p.querySelectorAll('.' + id('item-pick'));
+      for (var j = 0; j < itemPicks.length; j++) {
+        itemPicks[j].addEventListener('click', function (e) {
+          state.selectedItem = e.currentTarget.getAttribute('data-item');
+          state.view = 'ready';
+          renderPanel();
+        });
+      }
+    } else if (state.view === 'ready') {
+      document.getElementById(id('back-items')).addEventListener('click', function () {
+        state.view = 'items';
+        renderPanel();
+      });
+      document.getElementById(id('go-live')).addEventListener('click', beginCountdown);
+    } else if (state.view === 'session') {
+      document.getElementById(id('showing-toggle')).addEventListener('click', toggleShowing);
+      document.getElementById(id('send')).addEventListener('click', submitResponse);
+      document.getElementById(id('end-early')).addEventListener('click', function () {
+        if (state.session.responses.length === 0) {
+          stopShowingTicker();
+          stopAmbientChatter();
+          state.view = 'platforms';
+          state.session = null;
+          renderPanel();
+        } else {
+          finishSession();
+        }
+      });
+      updateShowingStatusUI();
+    } else if (state.view === 'results') {
+      document.getElementById(id('retry')).addEventListener('click', function () {
+        state.selectedPlatform = state.lastResult.platformId;
+        state.selectedItem = state.lastResult.item.id;
+        state.view = 'ready';
+        renderPanel();
+      });
+      document.getElementById(id('done')).addEventListener('click', function () {
+        state.view = 'platforms';
+        state.session = null;
+        renderPanel();
+      });
+    }
+  }
+
+  // Runs a short 3-2-1 countdown on the 'ready' screen, then hands off to startSession --
+  // comments/ambient chatter never start until the countdown actually finishes.
+  function beginCountdown() {
+    var btn = document.getElementById(id('go-live'));
+    var display = document.getElementById(id('countdown-display'));
+    if (!btn || !display) return;
+    btn.disabled = true;
+    btn.style.opacity = '0.5';
+    display.style.display = 'block';
+    var count = 3;
+    display.textContent = count;
+    var timer = setInterval(function () {
+      count--;
+      if (count > 0) {
+        display.textContent = count;
+      } else {
+        clearInterval(timer);
+        display.textContent = 'GO!';
+        setTimeout(function () {
+          startSession(state.selectedPlatform, state.selectedItem);
+        }, 400);
+      }
+    }, 800);
+  }
+
+  function startSession(platformId, itemId) {
+    var item = inventory().filter(function (i) { return i.id === itemId; })[0];
+    state.session = {
+      platformId: platformId,
+      item: item,
+      comments: pickTrialComments(item),
+      currentIndex: 0,
+      responses: [],
+      showingSince: null,
+    };
+    state.view = 'session';
+    renderPanel();
+    startShowingTicker();
+    startAmbientChatter();
+  }
+
+  // Ambient chat ticker -- posts a random crowd line into the chat feed on an irregular, fast
+  // cadence (~0.6-1.5s) so it keeps scrolling on its own, the way a real live chat does. Purely
+  // cosmetic: it never touches state.session.comments/responses or grading.
+  function postAmbientComment() {
+    var feed = document.getElementById(id('chat-feed'));
+    if (!feed || !state.session) return;
+    var platform = trialPlatformById(state.session.platformId);
+    var user = randomTrialViewer();
+    var text = TRIAL_AMBIENT_CHATTER[Math.floor(Math.random() * TRIAL_AMBIENT_CHATTER.length)];
+    var el = document.createElement('div');
+    el.style.marginBottom = '8px';
+    el.style.opacity = '0.65';
+    el.innerHTML = '<span style="font-size:12px;font-weight:700;color:' + platform.accent + ';">' + escapeHtml(user) + '</span> <span style="font-size:13px;color:var(--text-dim);">' + escapeHtml(text) + '</span>';
+    feed.insertBefore(el, feed.lastChild);
+    while (feed.children.length > 30) feed.removeChild(feed.firstChild);
+    feed.scrollTop = feed.scrollHeight;
+  }
+  function scheduleNextAmbient() {
+    var delay = 600 + Math.random() * 900;
+    state.ambientTimerId = setTimeout(function () {
+      postAmbientComment();
+      scheduleNextAmbient();
+    }, delay);
+  }
+  function startAmbientChatter() {
+    stopAmbientChatter();
     scheduleNextAmbient();
-  }, delay);
-}
-function startAmbientChatter() {
-  stopAmbientChatter();
-  scheduleNextAmbient();
-}
-function stopAmbientChatter() {
-  if (trialAmbientTimerId) { clearTimeout(trialAmbientTimerId); trialAmbientTimerId = null; }
-}
-
-function isCurrentlyShowing() {
-  return !!trialSession && !!trialSession.showingSince && (Date.now() - trialSession.showingSince) < SHOW_WINDOW_MS;
-}
-function toggleShowing() {
-  if (!trialSession) return;
-  trialSession.showingSince = Date.now();
-  updateShowingStatusUI();
-}
-function startShowingTicker() {
-  stopShowingTicker();
-  trialTickerId = setInterval(updateShowingStatusUI, 1000);
-}
-function stopShowingTicker() {
-  if (trialTickerId) { clearInterval(trialTickerId); trialTickerId = null; }
-}
-function updateShowingStatusUI() {
-  var statusEl = document.getElementById('trial-showing-status');
-  var nudgeEl = document.getElementById('trial-nudge');
-  if (!statusEl || !trialSession) return;
-  var showing = isCurrentlyShowing();
-  statusEl.textContent = showing ? '📌 Showing on screen' : '⚠️ Not confirmed on screen right now';
-  statusEl.style.color = showing ? 'var(--success)' : 'var(--text-dim)';
-  if (nudgeEl) {
-    var current = trialSession.comments[trialSession.currentIndex];
-    nudgeEl.style.display = (current && current.def.wantsScreen && !showing) ? 'block' : 'none';
   }
-}
-
-function submitTrialResponse() {
-  var textarea = document.getElementById('trial-response-input');
-  var text = (textarea.value || '').trim();
-  if (!text) return;
-  var current = trialSession.comments[trialSession.currentIndex];
-  trialSession.responses.push({
-    commentText: current.text,
-    commentUser: current.user,
-    def: current.def,
-    text: text,
-    wasShowing: isCurrentlyShowing(),
-  });
-  trialSession.currentIndex++;
-  if (trialSession.currentIndex >= trialSession.comments.length) {
-    finishTrialSession();
-  } else {
-    renderTrialPanel();
+  function stopAmbientChatter() {
+    if (state.ambientTimerId) { clearTimeout(state.ambientTimerId); state.ambientTimerId = null; }
   }
+
+  function isCurrentlyShowing() {
+    return !!state.session && !!state.session.showingSince && (Date.now() - state.session.showingSince) < SHOW_WINDOW_MS;
+  }
+  function toggleShowing() {
+    if (!state.session) return;
+    state.session.showingSince = Date.now();
+    updateShowingStatusUI();
+  }
+  function startShowingTicker() {
+    stopShowingTicker();
+    state.tickerId = setInterval(updateShowingStatusUI, 1000);
+  }
+  function stopShowingTicker() {
+    if (state.tickerId) { clearInterval(state.tickerId); state.tickerId = null; }
+  }
+  function updateShowingStatusUI() {
+    var statusEl = document.getElementById(id('showing-status'));
+    var nudgeEl = document.getElementById(id('nudge'));
+    if (!statusEl || !state.session) return;
+    var showing = isCurrentlyShowing();
+    statusEl.textContent = showing ? '📌 Showing on screen' : '⚠️ Not confirmed on screen right now';
+    statusEl.style.color = showing ? 'var(--success)' : 'var(--text-dim)';
+    if (nudgeEl) {
+      var current = state.session.comments[state.session.currentIndex];
+      nudgeEl.style.display = (current && current.def.wantsScreen && !showing) ? 'block' : 'none';
+    }
+  }
+
+  function submitResponse() {
+    var textarea = document.getElementById(id('response-input'));
+    var text = (textarea.value || '').trim();
+    if (!text) return;
+    var current = state.session.comments[state.session.currentIndex];
+    state.session.responses.push({
+      commentText: current.text,
+      commentUser: current.user,
+      def: current.def,
+      text: text,
+      wasShowing: isCurrentlyShowing(),
+    });
+    state.session.currentIndex++;
+    if (state.session.currentIndex >= state.session.comments.length) {
+      finishSession();
+    } else {
+      renderPanel();
+    }
+  }
+
+  function finishSession() {
+    stopShowingTicker();
+    stopAmbientChatter();
+    var result = gradeTrialSession(state.session);
+    saveResult(state.session.platformId, result.grade);
+    state.lastResult = result;
+    state.view = 'results';
+    renderPanel();
+  }
+
+  function stopTimers() {
+    stopShowingTicker();
+    stopAmbientChatter();
+  }
+
+  return { render: render, stopTimers: stopTimers, panelKey: cfg.panelKey };
 }
 
-function finishTrialSession() {
-  stopShowingTicker();
-  stopAmbientChatter();
-  var result = gradeTrialSession(trialSession);
-  saveLiveTrialResult(trialSession.platformId, result.grade);
-  trialLastResult = result;
-  trialView = 'results';
-  renderTrialPanel();
-}
+var liveTrialEngine = makeLiveSimEngine({
+  idPrefix: 'trial', panelKey: 'trial', storageKey: 'liveTrialResults', categoryFilter: null,
+  showManagerRubric: true, doneLabel: 'Back to Live Trial',
+  intro1: 'Practice a full mock live show before you’re ever live for real. Pick a platform -- a viewer feed acts like a real show, right down to buyers asking to see the item.',
+});
+var sunSimEngine = makeLiveSimEngine({
+  idPrefix: 'sunsim', panelKey: 'sunsim', storageKey: 'sunglassesSimResults', categoryFilter: 'sunglasses',
+  showManagerRubric: false, doneLabel: 'Back to Sunglasses Sim',
+  intro1: 'Practice a mock live show with sunglasses only -- pronunciation, retail price, and the size-code details a buyer will ask about. Pick a platform to start.',
+});
+var bagSimEngine = makeLiveSimEngine({
+  idPrefix: 'bagsim', panelKey: 'bagsim', storageKey: 'bagSimResults', categoryFilter: 'bag',
+  showManagerRubric: false, doneLabel: 'Back to Bag Sim',
+  intro1: 'Practice a mock live show with bags only -- material, hardware, and condition details a buyer will ask about. Pick a platform to start.',
+});
+var LIVE_SIM_ENGINES = [liveTrialEngine, sunSimEngine, bagSimEngine];
 
 function scoreToGrade(score) {
   if (score >= 97) return 'A+';
