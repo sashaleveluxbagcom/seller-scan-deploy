@@ -15,8 +15,17 @@
 // that bag?" inquiry using a real leveluxbag.com listing title. Most of (10) is checked by
 // injecting a copy of index.html's own script (stripped of its outer IIFE) as a second <script>
 // tag, since app state otherwise lives in a top-level IIFE closure Playwright can't reach; a real
-// DOM flow then confirms both new comment types actually render live. Playwright's clock
-// fast-forwards the 3-2-1-GO and 30s countdowns instead of waiting on them in real time.
+// DOM flow then confirms both new comment types actually render live. (11)-(12): the former
+// standalone "Auction Close" tab has been removed and its closing-chant/countdown drill folded
+// into the end of every Sunglasses Sim / Bag Sim session (right before the results screen), using
+// the exact item/brand she just practiced verbal responses for -- (11) confirms the closing-drill
+// setup screen and live overlay both show that real session brand/item (Bag Sim's Louis Vuitton
+// Neverfull MM), not a random pick, and that finishing the drill reaches the completion screen;
+// (12) confirms "End early" inside the live overlay returns to the closing-drill setup screen
+// (not results, not platforms), matching the old standalone tab's End-early behavior, now wired
+// through the generic auctionDoneCallback/auctionEndEarlyCallback mechanism. Playwright's clock
+// fast-forwards the 3-2-1-GO, 30s practice, and closing-drill countdowns instead of waiting on
+// them in real time.
 const { chromium } = require('playwright');
 
 const BASE = 'http://localhost:8795/index.html';
@@ -178,8 +187,9 @@ async function goToTrainingTab(page, tab) {
   ok('Run Next button appears once the countdown hits 0', nextVisibleAtZero);
 
   // ---------- 8. Full go-live -> finish flow on Sunglasses Sim (pressing Run Next through every
-  // comment) writes to its OWN storage key, never touching 'liveTrialResults' (the key
-  // certificationStatus()/Day-14 banner depends on).
+  // comment, then completing the closing drill that now follows it) writes to its OWN storage
+  // key, never touching 'liveTrialResults' (the key certificationStatus()/Day-14 banner depends
+  // on).
   console.log('\n--- Sunglasses Sim results storage isolation ---');
   for (let i = 0; i < 6; i++) {
     const nextBtn = await page.$('#sunsim-practice-next');
@@ -188,13 +198,21 @@ async function goToTrainingTab(page, tab) {
       await page.waitForTimeout(50);
     }
     const startBtn = await page.$('#sunsim-practice-start');
-    if (!startBtn) break; // session screen is gone -- reached the results screen
+    if (!startBtn) break; // session screen is gone -- reached the closing-drill setup screen
     await startBtn.click();
     await page.clock.runFor(30000);
   }
   await page.waitForTimeout(50);
+  const closeoutGoLiveBtn = await page.$('#sunsim-closeout-go-live');
+  ok('Last comment leads to the closing-drill setup screen (not straight to results)', !!closeoutGoLiveBtn);
+  await page.click('#sunsim-closeout-attention');
+  await page.click('#sunsim-closeout-go-live');
+  await page.waitForTimeout(50);
+  ok('Closing-drill live overlay appears after Go Live', await page.isVisible('#auction-live'));
+  await page.clock.runFor(21000); // default 20s closeout timer + buffer
+  await page.waitForTimeout(50);
   const doneBtn = await page.$('#sunsim-done');
-  ok('Reached the verbal-practice completion screen ("Practice complete")', !!doneBtn);
+  ok('Reached the verbal-practice completion screen ("Practice complete") after the closing drill', !!doneBtn);
   const storageState = await page.evaluate(() => ({
     sunsim: localStorage.getItem('sunglassesSimResults'),
     liveTrial: localStorage.getItem('liveTrialResults'),
@@ -331,6 +349,90 @@ async function goToTrainingTab(page, tab) {
   }
   ok('A live-rendered session showed the order-problem comment (not just in isolated logic)', domSawOrderProblem);
   ok('A live-rendered session showed the off-item real-listing-title comment (not just in isolated logic)', domSawOffItemInquiry);
+
+  // ---------- 11. Bag Sim closing drill shows the REAL brand/item from the session she just
+  // practiced (Louis Vuitton Neverfull MM, the first bag in TRIAL_INVENTORY), not a random pick --
+  // confirming findBrandInfo()/startCloseoutDrill() wire the actual session item through. ----------
+  console.log('\n--- Bag Sim closing drill uses the real session item/brand, not a random one ---');
+  await page.evaluate(() => localStorage.clear());
+  await page.reload();
+  await page.clock.install();
+  await bypassGate(page);
+  await goToTrainingTab(page, 'bagsim');
+  await page.click('#training-bagsim [data-platform]');
+  await page.waitForTimeout(50);
+  await page.click('#training-bagsim [data-item]'); // first bag item = Louis Vuitton Neverfull MM
+  await page.waitForTimeout(50);
+  await page.click('#bagsim-go-live');
+  await page.clock.runFor(3300); // 3-2-1-GO
+  // Loop until the practice-start button disappears (i.e. the last comment's "Run Next" click has
+  // fired advancePracticeNext() into beginCloseout()) rather than a fixed iteration count -- the
+  // exact number of start/next clicks needed depends on whether a countdown was already mid-flight
+  // going in, and a fixed count silently undercounts by one and gets test assertions to pass for
+  // the wrong (still-mid-session) reason. Capped well above the 6-comment session length as a
+  // safety net against an infinite loop if something regresses.
+  for (let i = 0; i < 12; i++) {
+    const nextBtn = await page.$('#bagsim-practice-next');
+    if (nextBtn && (await nextBtn.isVisible())) {
+      await nextBtn.click();
+      await page.waitForTimeout(50);
+    }
+    const startBtn = await page.$('#bagsim-practice-start');
+    if (!startBtn) break; // reached the closing-drill setup screen
+    await startBtn.click();
+    await page.clock.runFor(30000);
+  }
+  await page.waitForTimeout(50);
+  ok('Bag Sim reached the closing-drill setup screen (not still mid-session)', !!(await page.$('#bagsim-closeout-go-live')));
+  const bagCloseoutText = await page.evaluate(() => document.body.innerText);
+  ok('Bag Sim closing-drill setup screen shows the real brand (Louis Vuitton), not a random one', bagCloseoutText.includes('Louis Vuitton'));
+  ok('Bag Sim closing-drill setup screen shows the real item name (Neverfull MM)', bagCloseoutText.includes('Neverfull MM'));
+  await page.click('#bagsim-closeout-attention');
+  await page.click('#bagsim-closeout-go-live');
+  await page.waitForTimeout(50);
+  const liveOverlayBrandText = await page.textContent('#auction-live-brand');
+  ok('Live closing overlay names the same real brand (Louis Vuitton), not a random one', (liveOverlayBrandText || '').includes('Louis Vuitton'));
+  await page.clock.runFor(21000);
+  await page.waitForTimeout(50);
+  ok('Bag Sim reaches the completion screen after its own closing drill', !!(await page.$('#bagsim-done')));
+
+  // ---------- 12. "End early" clicked inside the live closing overlay returns to the closing-drill
+  // setup screen (not to results, not back to platforms) -- mirroring how the old standalone
+  // Auction Close tab's "End early" behaved, now via the auctionEndEarlyCallback mechanism. ----------
+  console.log('\n--- "End early" during the closing drill returns to the closing-drill setup screen ---');
+  await page.evaluate(() => localStorage.clear());
+  await page.reload();
+  await page.clock.install();
+  await bypassGate(page);
+  await goToTrainingTab(page, 'sunsim');
+  await page.click('#training-sunsim [data-platform]');
+  await page.waitForTimeout(50);
+  await page.click('#training-sunsim [data-item]');
+  await page.waitForTimeout(50);
+  await page.click('#sunsim-go-live');
+  await page.clock.runFor(3300);
+  for (let i = 0; i < 12; i++) {
+    const nextBtn = await page.$('#sunsim-practice-next');
+    if (nextBtn && (await nextBtn.isVisible())) {
+      await nextBtn.click();
+      await page.waitForTimeout(50);
+    }
+    const startBtn = await page.$('#sunsim-practice-start');
+    if (!startBtn) break;
+    await startBtn.click();
+    await page.clock.runFor(30000);
+  }
+  await page.waitForTimeout(50);
+  ok('Reached the closing-drill setup screen before triggering "End early" mid-drill', !!(await page.$('#sunsim-closeout-go-live')));
+  await page.click('#sunsim-closeout-attention');
+  await page.click('#sunsim-closeout-go-live');
+  await page.waitForTimeout(50);
+  ok('Live closing overlay is showing before "End early" is pressed', await page.isVisible('#auction-live'));
+  await page.click('#auction-live-end');
+  await page.waitForTimeout(50);
+  ok('Overlay is dismissed after "End early"', !(await page.isVisible('#auction-live')));
+  ok('"End early" returns to the closing-drill setup screen (Go Live button back), not to results', !!(await page.$('#sunsim-closeout-go-live')));
+  ok('"End early" during the closing drill does NOT drop her on the completion screen', !(await page.$('#sunsim-done')));
 
   console.log(`\n${failures === 0 ? 'ALL PASS' : failures + ' FAILURE(S)'}`);
   await browser.close();
