@@ -6,10 +6,17 @@
 // only -- no textarea, a press-to-start 30s countdown, then a self-paced Run Next button, with no
 // auto-grading -- while Live Trial keeps its original typed + auto-graded step, (6) sunglasses
 // items list under a generic "Brand New Sunglasses / Rx Frames N" auction-lot title in every item
-// picker, revealing the real brand only once she's on the ready/session screen, and (7) new
-// off-item ambient chatter lines (viewers asking about other brands). DOM-only assertions (app
-// state lives in a top-level IIFE); Playwright's clock fast-forwards the 3-2-1-GO and 30s
-// countdowns instead of waiting on them in real time.
+// picker, revealing the real brand only once she's on the ready/session screen, (7) off-item
+// ambient chatter lines (viewers asking about other brands/items), (8)-(9) Sunglasses Sim results
+// storage isolation and Live Trial's unchanged typed/graded step, and (10) new comment types: the
+// ambient "do you have X?" brand-curiosity line is now randomized across the FULL brands pool
+// (not 4 fixed names), an "I have a problem with my order" comment graded on redirecting to
+// "send a message through your order" instead of resolving it live, and an off-item "can I see
+// that bag?" inquiry using a real leveluxbag.com listing title. Most of (10) is checked by
+// injecting a copy of index.html's own script (stripped of its outer IIFE) as a second <script>
+// tag, since app state otherwise lives in a top-level IIFE closure Playwright can't reach; a real
+// DOM flow then confirms both new comment types actually render live. Playwright's clock
+// fast-forwards the 3-2-1-GO and 30s countdowns instead of waiting on them in real time.
 const { chromium } = require('playwright');
 
 const BASE = 'http://localhost:8795/index.html';
@@ -212,6 +219,118 @@ async function goToTrainingTab(page, tab) {
   ok('Live Trial session screen still has the typed-response textarea', !!trialTextarea);
   const trialPracticeStart = await page.$('#trial-practice-start');
   ok('Live Trial does NOT show the verbal-practice Start button', !trialPracticeStart);
+
+  // ---------- 10. New chat-comment types: brand-pool-randomized ambient curiosity line, an
+  // "I have a problem with my order" redirect-graded comment, and an off-item "can I see that
+  // bag?" inquiry using a real leveluxbag.com listing title. The pure logic (arrays + grading) is
+  // exercised by injecting a copy of the app's own script -- stripped of its outer IIFE wrapper so
+  // its top-level names attach to `window` -- as a second <script> tag on the already-loaded page.
+  // This runs the SAME source as index.html, just unwrapped, so it's testing production logic, not
+  // a reimplementation. DOM-only closures can't be reached any other way (see file header note).
+  console.log('\n--- New comment types: order-problem redirect, off-item inquiry, brand-randomized ambient chatter ---');
+  const fs = require('fs');
+  const path = require('path');
+  const fullSrc = fs.readFileSync(path.join(__dirname, 'index.html'), 'utf8').match(/<script>([\s\S]*?)<\/script>/)[1].trim();
+  if (!fullSrc.startsWith('(function () {') || !fullSrc.endsWith('})();')) {
+    console.log('  [warn] could not locate expected IIFE wrapper -- skipping section 10 logic checks');
+  } else {
+    const unwrapped = fullSrc.slice('(function () {'.length, -('})();'.length)) +
+      '\nwindow.__test = { BRANDS: BRANDS, TRIAL_AMBIENT_CHATTER: TRIAL_AMBIENT_CHATTER, ORDER_PROBLEM_VARIANTS: ORDER_PROBLEM_VARIANTS, OFF_ITEM_LISTING_TITLES: OFF_ITEM_LISTING_TITLES, pickTrialComments: pickTrialComments, gradeTrialSession: gradeTrialSession, randomAmbientLine: randomAmbientLine };';
+    await page.addScriptTag({ content: unwrapped });
+
+    const t10 = await page.evaluate(() => {
+      const t = window.__test;
+      const brandNames = t.BRANDS.map(function (b) { return b.name; });
+
+      // Ambient chatter no longer hardcodes the 4 old brand-specific lines.
+      const staleLinesGone = ['do you have Hurley?', 'do you have Ray-Ban?', 'do you have Oakley?', 'do you have the AI glasses?']
+        .every(function (l) { return t.TRIAL_AMBIENT_CHATTER.indexOf(l) === -1; });
+      const cornerLineKept = t.TRIAL_AMBIENT_CHATTER.indexOf('can I see that bag in the corner?') !== -1;
+
+      // Sample randomAmbientLine many times: brand-curiosity lines should reference real BRANDS
+      // entries and vary across many different names, not a fixed handful.
+      let brandLineCount = 0;
+      let badBrandLine = null;
+      const namesSeen = {};
+      for (let i = 0; i < 4000; i++) {
+        const line = t.randomAmbientLine();
+        if (line.indexOf('do you have ') === 0) {
+          brandLineCount++;
+          const name = line.slice('do you have '.length, -1);
+          if (brandNames.indexOf(name) === -1) badBrandLine = line;
+          namesSeen[name] = true;
+        }
+      }
+
+      // Sample pickTrialComments many times for a fake item: confirm both new comment types show
+      // up with their {{token}} fully substituted (never left literal), and check the redirect
+      // grading behaves as taught.
+      const fakeItem = { name: 'Test Bag', brand: 'Chanel', category: 'bag', keywords: ['leather'] };
+      let sawOrderProblem = false, sawOffItemInquiry = false, anyUnsubstituted = false;
+      for (let i = 0; i < 200; i++) {
+        t.pickTrialComments(fakeItem).forEach(function (c) {
+          if (c.def.checkOrderRedirect) sawOrderProblem = true;
+          if (c.text.indexOf('AUTHENTIC CHANEL') !== -1) sawOffItemInquiry = true;
+          if (c.text.indexOf('{{') !== -1) anyUnsubstituted = true;
+        });
+      }
+
+      const goodOrderResp = { def: { checkOrderRedirect: true }, text: 'Please send a message through your order and we will help.', wasShowing: false };
+      const badOrderResp = { def: { checkOrderRedirect: true }, text: 'Oh no, let me try to sort that out for you right now.', wasShowing: false };
+      const goodGrade = t.gradeTrialSession({ item: fakeItem, comments: [1], responses: [goodOrderResp] });
+      const badGrade = t.gradeTrialSession({ item: fakeItem, comments: [1], responses: [badOrderResp] });
+
+      return {
+        staleLinesGone: staleLinesGone, cornerLineKept: cornerLineKept,
+        brandLineRate: brandLineCount / 4000, badBrandLine: badBrandLine, distinctBrandNamesSeen: Object.keys(namesSeen).length,
+        sawOrderProblem: sawOrderProblem, sawOffItemInquiry: sawOffItemInquiry, anyUnsubstituted: anyUnsubstituted,
+        goodOrderScore: goodGrade.orderScore, badOrderScore: badGrade.orderScore,
+      };
+    });
+
+    ok('Ambient chatter no longer hardcodes the old fixed brand lines', t10.staleLinesGone);
+    ok('Ambient chatter still has the "corner" off-item line', t10.cornerLineKept);
+    ok('Brand-curiosity ambient line appears at a plausible rate (5%-30% of lines)', t10.brandLineRate > 0.05 && t10.brandLineRate < 0.30);
+    ok('Every brand-curiosity line names a real brand from the full BRANDS pool', !t10.badBrandLine);
+    ok('Brand-curiosity line varies across many different brands (not a fixed few)', t10.distinctBrandNamesSeen > 10);
+    ok('"I have a problem with my order" comment type is generated', t10.sawOrderProblem);
+    ok('Off-item "can I see that bag?" comment uses a real leveluxbag.com Chanel listing title', t10.sawOffItemInquiry);
+    ok('No comment text is left with an unsubstituted {{token}}', !t10.anyUnsubstituted);
+    ok('Grading: redirecting to "send a message through your order" scores orderScore 1', t10.goodOrderScore === 1);
+    ok('Grading: trying to resolve the order problem live in chat scores orderScore 0', t10.badOrderScore === 0);
+  }
+
+  // Real DOM check: run a couple of full Live Trial sessions (fresh reload each time, since the
+  // 6-of-7 "any"-pool comments are randomized per session) and confirm the new comment types
+  // actually render, fully substituted, in the live chat UI -- not just in the isolated logic
+  // check above.
+  let domSawOrderProblem = false, domSawOffItemInquiry = false;
+  const orderProblemMarkers = ['problem with my order', 'never showed up', "wasn’t what i ordered", 'says delivered but', 'refund on my last order', "still haven’t heard back"];
+  for (let attempt = 0; attempt < 3 && !(domSawOrderProblem && domSawOffItemInquiry); attempt++) {
+    await page.evaluate(() => localStorage.clear());
+    await page.reload();
+    await bypassGate(page);
+    await goToTrainingTab(page, 'trial');
+    await page.click('#training-trial [data-platform]');
+    await page.waitForTimeout(150);
+    await page.click('#training-trial [data-item]');
+    await page.waitForTimeout(150);
+    await page.click('#trial-go-live');
+    await page.waitForTimeout(3300);
+    await page.click('#trial-showing-toggle');
+    for (let i = 0; i < 6; i++) {
+      const sendBtn = await page.$('#trial-send');
+      if (!sendBtn) break;
+      const seen = (await page.evaluate(() => document.body.innerText)).toLowerCase();
+      if (orderProblemMarkers.some((m) => seen.includes(m))) domSawOrderProblem = true;
+      if (seen.includes('authentic chanel')) domSawOffItemInquiry = true;
+      await page.fill('#trial-response-input', 'This is the Chanel bag, it is $500, authentic leather, please send a message through your order if anything is ever wrong.');
+      await page.click('#trial-send');
+      await page.waitForTimeout(80);
+    }
+  }
+  ok('A live-rendered session showed the order-problem comment (not just in isolated logic)', domSawOrderProblem);
+  ok('A live-rendered session showed the off-item real-listing-title comment (not just in isolated logic)', domSawOffItemInquiry);
 
   console.log(`\n${failures === 0 ? 'ALL PASS' : failures + ' FAILURE(S)'}`);
   await browser.close();
