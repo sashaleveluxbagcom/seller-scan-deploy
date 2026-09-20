@@ -179,15 +179,16 @@ h2, h3 { color: var(--text); }
 <div id="training" style="display:none;">
 <button type="button" id="training-to-hub" style="background:none;border:none;padding:8px 0;margin-bottom:6px;font-size:14px;color:var(--text-dim);">☰ Menu</button>
 <h2 style="margin-bottom:2px;">🎓 Seller Training</h2>
-<p style="color:var(--text-dim);font-size:13px;margin-top:0;">Your day 1&ndash;30 plan, plus a reference you can come back to anytime.</p>
+<p style="color:var(--text-dim);font-size:13px;margin-top:0;">Your day 1&ndash;90 plan, plus a reference you can come back to anytime.</p>
 
 <div style="display:flex;gap:6px;margin:16px 0;flex-wrap:wrap;">
 <button type="button" class="training-tab" data-tab="roadmap" style="flex:1;min-width:90px;padding:10px 6px;font-size:13px;font-weight:600;border-radius:8px;border:1px solid var(--accent);background:var(--accent);color:var(--accent-text);">Day 1&ndash;30 Plan</button>
+<button type="button" class="training-tab" data-tab="roadmap60" style="flex:1;min-width:90px;padding:10px 6px;font-size:13px;font-weight:600;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--text);">Day 31&ndash;60 Plan</button>
+<button type="button" class="training-tab" data-tab="roadmap90" style="flex:1;min-width:90px;padding:10px 6px;font-size:13px;font-weight:600;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--text);">Day 61&ndash;90 Plan</button>
 <button type="button" class="training-tab" data-tab="day1" style="flex:1;min-width:90px;padding:10px 6px;font-size:13px;font-weight:600;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--text);">Day 1</button>
 <button type="button" class="training-tab" data-tab="brands" style="flex:1;min-width:90px;padding:10px 6px;font-size:13px;font-weight:600;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--text);">Brands</button>
 <button type="button" class="training-tab" data-tab="bags" style="flex:1;min-width:90px;padding:10px 6px;font-size:13px;font-weight:600;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--text);">Bags &amp; Leather</button>
 <button type="button" class="training-tab" data-tab="sunglasses" style="flex:1;min-width:90px;padding:10px 6px;font-size:13px;font-weight:600;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--text);">Sunglasses 101</button>
-<button type="button" class="training-tab" data-tab="care" style="flex:1;min-width:90px;padding:10px 6px;font-size:13px;font-weight:600;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--text);">Day 2: Care</button>
 <button type="button" class="training-tab" data-tab="describe" style="flex:1;min-width:90px;padding:10px 6px;font-size:13px;font-weight:600;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--text);">Describe It</button>
 <button type="button" class="training-tab" data-tab="selling" style="flex:1;min-width:90px;padding:10px 6px;font-size:13px;font-weight:600;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--text);">Selling Guide</button>
 <button type="button" class="training-tab" data-tab="trial" style="flex:1;min-width:90px;padding:10px 6px;font-size:13px;font-weight:600;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--text);">🔴 Live Trial</button>
@@ -196,11 +197,12 @@ h2, h3 { color: var(--text); }
 </div>
 
 <div id="training-roadmap"></div>
+<div id="training-roadmap60" style="display:none;"></div>
+<div id="training-roadmap90" style="display:none;"></div>
 <div id="training-day1" style="display:none;"></div>
 <div id="training-brands" style="display:none;"></div>
 <div id="training-bags" style="display:none;"></div>
 <div id="training-sunglasses" style="display:none;"></div>
-<div id="training-care" style="display:none;"></div>
 <div id="training-describe" style="display:none;"></div>
 <div id="training-selling" style="display:none;"></div>
 <div id="training-trial" style="display:none;"></div>
@@ -1425,6 +1427,13 @@ var BAG_TYPES = [
   { name: 'Bucket bag', desc: 'Cylindrical shape with a drawstring closure at the top; worn on the shoulder or crossbody.' },
   { name: 'Clutch', desc: 'No strap, or a thin optional chain -- carried in the hand or tucked under the arm. Evening/formal.' },
   { name: 'Wristlet', desc: 'Small bag with a loop strap that goes around the wrist.' },
+  { name: 'Flap bag', desc: 'A front flap folds down over the opening and closes with a clasp or turn-lock -- Chanel’s classic flap and Dior’s Saddle silhouette are the two most common examples you’ll see.' },
+  { name: 'Saddle bag', desc: 'Curved, saddle-shaped silhouette with a flap closure, usually worn crossbody -- Dior Saddle is the name customers will recognize first.' },
+  { name: 'Backpack', desc: 'Two straps worn over both shoulders. Mini/convertible versions (strap tucks away to wear as a clutch or shoulder bag) are common in luxury -- call that out, it’s a selling point.' },
+  { name: 'Belt bag / fanny pack', desc: 'Small pouch on a strap worn around the waist or across the body -- currently trends as a crossbody, not just at the waist.' },
+  { name: 'Frame / box bag', desc: 'Rigid, structured shape (often with a metal frame or hinged clasp at the top) that holds its form even empty -- think a small hard-sided box rather than a soft slouchy bag.' },
+  { name: 'Trunk / vanity case', desc: 'Small hard-sided case, historically for cosmetics or jewelry -- top handle, boxy structure, often with a lock. Reads as a travel/collector piece.' },
+  { name: 'Weekender / duffle', desc: 'Large soft-sided bag with two handles (sometimes a shoulder strap too), built for overnight travel rather than everyday carry.' },
 ];
 
 // Louis Vuitton vachetta leather -- called out on its own because it comes up on almost every LV item.
@@ -1433,6 +1442,54 @@ var VACHETTA_FACTS = [
   'It starts out pale, cream/honey colored, and darkens over time. That darkening ("patina") comes from light, air, and the natural oils from your hands -- it deepens into a rich caramel/amber/brown with use.',
   'A darker patina is normal and desirable, not damage -- it’s part of the leather’s character and one reason true vintage LV pieces look the way they do.',
   'Because it’s untreated, vachetta stains easily -- water and rain leave dark spots, so keep it dry and out of direct sun for long stretches.',
+];
+
+// Materials & leather glossary across the brands we carry most -- quick material ID, distinct
+// from the full brand history/authentication cards in the Brands tab's Brand Guide. The goal
+// here is: pick up any bag and know what to call the material in one glance.
+var BAG_MATERIALS = [
+  { name: 'Coated canvas', desc: 'A fabric base coated in a durable, water-resistant finish -- LV’s Monogram and Damier canvas, Gucci’s GG Supreme. Wipes clean easily; the coating (not the canvas itself) is what can crack or peel with age.' },
+  { name: 'Lambskin', desc: 'Very soft, fine-grained leather, often quilted (Chanel’s classic flap). Buttery to the touch but delicate -- scratches, water spots, and color transfer are common, so it needs gentler handling than most.' },
+  { name: 'Caviar leather', desc: 'Chanel’s pebbled, textured calfskin -- more durable and scratch-resistant than lambskin, which is exactly why it’s the everyday-recommended Chanel leather.' },
+  { name: 'Togo leather', desc: 'Hermès’ grained, scratch-resistant calfskin with a slightly bouncy structure -- one of their most popular and durable leathers for exactly that reason.' },
+  { name: 'Epsom leather', desc: 'Hermès’ stiff, structured leather with an embossed (not natural) grain -- holds sharp corners and shape, and resists scratches well.' },
+  { name: 'Clemence leather', desc: 'Hermès’ soft, slouchy calfskin with a looser, more relaxed drape than Togo or Epsom -- bags in Clemence feel noticeably softer in hand.' },
+  { name: 'Saffiano leather', desc: 'Prada’s coated, cross-hatch textured leather -- highly scratch- and water-resistant, which is why it’s used on so many of their structured totes and totes-to-go bags.' },
+  { name: 'Epi leather', desc: 'LV’s textured, ridged leather (vertical grain lines pressed into the hide) -- more durable and lower-maintenance than vachetta, and doesn’t patina the same way.' },
+  { name: 'Intrecciato', desc: 'Bottega Veneta’s signature woven-leather technique -- thin leather strips hand-woven into a basketweave. Identify it by the weave itself, not a logo; Bottega famously carries no visible branding.' },
+  { name: 'Cannage / quilted toile', desc: 'Dior’s signature stitched diamond-quilt pattern, seen on both leather (Lady Dior) and canvas (Book Tote) pieces.' },
+  { name: 'Exotic skins (croc, alligator, python)', desc: 'High-value skins with a distinct natural scale pattern -- each scale is slightly irregular, which is part of how you tell real exotic from embossed leather printed to look like it. Handle with extra care; these are usually the most expensive item in the room.' },
+  { name: 'Suede / nubuck', desc: 'Leather with a brushed, napped surface (suede is the underside of the hide, nubuck the top-grain sanded to a similar feel). Stains and water-spots easily -- flag this to a buyer before they ask.' },
+];
+
+// Hardware & closures glossary -- the vocabulary for describing how a bag actually opens,
+// closes, and what its metal is made of, so "the hardware" always becomes something specific.
+var HARDWARE_GLOSSARY = [
+  { name: 'Turn-lock', desc: 'A twist-style clasp (often a logo-shaped piece, like Chanel’s CC or a Gucci horsebit) that rotates a quarter-turn to lock the flap shut.' },
+  { name: 'Push-lock', desc: 'A press-to-open clasp, usually a metal ball or tab that snaps into a receiver -- no twisting motion, just a push.' },
+  { name: 'Magnetic snap', desc: 'Two magnetic discs sewn into the flap and body that snap together -- common on more casual/everyday bags, no hardware to show off, just a clean seam.' },
+  { name: 'Zip closure', desc: 'A full zip-top closure, sometimes with a branded zipper pull -- call out if the zipper pull is engraved, since that’s an authenticity detail worth mentioning.' },
+  { name: 'Drawstring', desc: 'A pulled cord or leather strap that cinches the opening shut -- standard on bucket bags.' },
+  { name: 'Cadena lock & key', desc: 'A small padlock-and-key set (LV’s is the classic example) that locks the zipper pulls or a strap together -- present and matching is a good sign; missing is worth flagging to a buyer.' },
+  { name: 'Feet (bag studs)', desc: 'Small metal or plastic studs on the base of a bag that keep it off the ground -- check these for wear/scuffing since the bottom is the single most-worn spot on any bag.' },
+  { name: 'Gold-tone vs. silver-tone / palladium', desc: 'The two standard hardware finishes. Gold-tone is brass/gold-plated; silver-tone is usually palladium or nickel-plated. Say the finish by name ("gold-tone hardware") rather than just "the metal."' },
+  { name: 'Hardware wear', desc: 'Watch for plating wear (base metal showing through at high-contact edges) and tarnish (dulling, usually polishable) -- same vocabulary as the jewelry terms in Describe It, because it’s the same underlying issue.' },
+];
+
+// Sunglasses care do's and don'ts -- no longer its own tab; folded into the Day 1-30 Plan's
+// day 7 final review (see CURRICULUM_PHASES below) so it's read out loud with a manager the
+// day before going live solo, instead of sitting in a checklist nobody revisits.
+var CARE_DONT = [
+  'Don’t bang or drop them -- hinges and lenses are the first things to fail.',
+  'Don’t lay them face-down -- that’s what scratches the lenses. Fold the arms and set them down on the arms/case instead.',
+  'Don’t put on lotion, sunscreen or perfume right before handling a pair -- it smudges the lenses and can cloud any coating.',
+  'Don’t leave them in a hot car or in direct sun for long stretches -- heat warps frames and can degrade lens coatings.',
+];
+var CARE_DO = [
+  'Do use both hands when putting them on or taking them off -- one-handed removal is what warps the arms over time.',
+  'Do put them back in a case when you’re not modeling them.',
+  'Do wipe the lenses and nose pads with a clean microfiber cloth after wearing -- oils and makeup residue build up fast.',
+  'Do check the arm code before listing or selling a pair -- see Sunglasses 101 if you need a refresher.',
 ];
 
 var DAY1_ITEMS = [
@@ -1450,18 +1507,19 @@ var DAY1_ITEMS = [
 var trainingTabs = document.querySelectorAll('.training-tab');
 var trainingPanels = {
   roadmap: document.getElementById('training-roadmap'),
+  roadmap60: document.getElementById('training-roadmap60'),
+  roadmap90: document.getElementById('training-roadmap90'),
   day1: document.getElementById('training-day1'),
   brands: document.getElementById('training-brands'),
   bags: document.getElementById('training-bags'),
   sunglasses: document.getElementById('training-sunglasses'),
-  care: document.getElementById('training-care'),
   describe: document.getElementById('training-describe'),
   selling: document.getElementById('training-selling'),
   trial: document.getElementById('training-trial'),
   sunsim: document.getElementById('training-sunsim'),
   bagsim: document.getElementById('training-bagsim'),
 };
-var trainingRendered = { roadmap: false, day1: false, brands: false, bags: false, sunglasses: false, care: false, describe: false, selling: false, trial: false, sunsim: false, bagsim: false };
+var trainingRendered = { roadmap: false, roadmap60: false, roadmap90: false, day1: false, brands: false, bags: false, sunglasses: false, describe: false, selling: false, trial: false, sunsim: false, bagsim: false };
 
 function showTrainingTab(name) {
   // Every live-sim engine (Live Trial + the two category sims) shares the same kind of
@@ -1486,11 +1544,12 @@ function showTrainingTab(name) {
   if (!trainingRendered[name]) {
     trainingRendered[name] = true;
     if (name === 'roadmap') renderRoadmap();
+    if (name === 'roadmap60') renderRoadmap60();
+    if (name === 'roadmap90') renderRoadmap90();
     if (name === 'day1') renderDay1();
     if (name === 'brands') renderBrands();
     if (name === 'bags') renderBagsAndLeather();
     if (name === 'sunglasses') renderSunglasses();
-    if (name === 'care') renderCare();
     if (name === 'describe') renderDescribeIt();
     if (name === 'selling') renderSelling();
     if (name === 'trial') liveTrialEngine.render();
@@ -1549,187 +1608,315 @@ function renderDay1() {
 }
 
 // ---- Day 1-30 Plan: the full onboarding roadmap, day by day. Grouped into phases so it's
-// scannable instead of one long list of 30 rows. Day 14 is the hard gate -- nobody goes live
+// scannable instead of one long list of 30 rows. Day 7 is the hard gate -- nobody goes live
 // solo before clearing it (see CERT_THRESHOLD below, checked against real Live Trial grades).
+// 6 days of hands-on/in-person training (days 1-6), then certify and go live solo on day 7 --
+// everything before day 7 is compressed on purpose so a new hire is selling on their own within
+// their first week, not their third.
 // To add or edit a day: find its entry in CURRICULUM_PHASES and change title/bullets/expect --
 // nothing else in this file needs to change.
 var CURRICULUM_PHASES = [
   {
-    id: 'week1', label: 'Week 1 · Foundations', range: 'Days 1–7',
+    id: 'week1', label: 'Week 1 · Foundations', range: 'Days 1–6',
     days: [
       { day: 1, title: 'Onboarding & full vocabulary intro', bullets: [
         'Complete HR paperwork: clock-in setup, I-9, employee handbook (see the Day 1 tab for the checklist)',
         'Meet the team and get a tour of the space',
         'Go through the Brands tab once — every brand + pronunciation',
-        'Go through Bags & Leather once — bag types & vocabulary, plus Louis Vuitton vachetta leather',
+        'Go through Bags & Leather once — bag types, materials & hardware, plus Louis Vuitton vachetta leather',
         'Go through Describe It once — jewelry condition language (tarnish, scratches, hairline scratches, plating wear)',
         'Go through Sunglasses 101 once — how to read a sunglasses arm code',
       ], expect: 'By tonight: you’ve been introduced to every brand, bag type, jewelry term, and sunglasses code — all of it, once. None of it has to be memorized yet. That’s what the rest of this week is for.' },
       { day: 2, title: 'Brands & bags, round 2', bullets: [
         'Brands tab — switch to Practice mode, aim for 15 brands recognized on sight',
-        'Bags & Leather — go back through bag types and vachetta leather, out loud this time',
+        'Bags & Leather — go back through bag types, materials, and vachetta leather, out loud this time',
         'Shadow one full live show start to finish — just watch and take notes',
       ], expect: 'By tonight: brands and bag types are starting to stick without looking them up.' },
-      { day: 3, title: 'Jewelry & sunglasses, round 2', bullets: [
+      { day: 3, title: 'Jewelry, sunglasses & your first Live Trial', bullets: [
         'Describe It — jewelry condition language again: tarnish, scratches, hairline scratches, plating wear',
         'Sunglasses 101 — practice reading the arm code on 5 real pairs',
         'Brands tab Practice mode — keep pushing past 15 brands',
-      ], expect: 'By tonight: you can read any arm code cold, no lookup needed.' },
-      { day: 4, title: 'Describing bags', bullets: [
+        'Run your first Live Trial on the Whatnot tab — no grade pressure, this one’s just to get comfortable',
+      ], expect: 'By tonight: you can read any arm code cold, no lookup needed, and you’ve been live-tested once with zero pressure.' },
+      { day: 4, title: 'Describing bags & Live Trial: eBay Live', bullets: [
         'Describe It — learn the 6 angles to show on every bag',
         'Practice describing 5 real bags out loud, hitting every angle',
         'Finish the Brands tab — every brand, name + pronunciation',
-      ], expect: 'By tonight: you can name every brand we carry on sight, and show a bag through all 6 angles unprompted.' },
-      { day: 5, title: 'Describing jewelry', bullets: [
+        'Run a Live Trial on the eBay Live tab, focused on keeping the item on screen every time someone asks',
+      ], expect: 'By tonight: you can name every brand we carry on sight, show a bag through all 6 angles unprompted, and you’ve run two of the three Live Trial platforms.' },
+      { day: 5, title: 'Describing jewelry & Live Trial: TikTok Shop', bullets: [
         'Practice describing 5 real jewelry pieces out loud, calling out condition unprompted',
-        'Shadow one more live show, narrating quietly along with the seller',
-      ], expect: 'By tonight: you can call out a flaw by its correct name, every time.' },
-      { day: 6, title: 'Selling Guide', bullets: [
-        'Work through the Selling Guide, start to finish',
-        'Do the statement drills: turn every example question into a statement',
-        'Practice your own opening line for 3 different items',
-        'Run Sunglasses Sim and Bag Sim a few times, closing each one out on the clock at the end, until the countdown script feels natural',
-      ], expect: 'The whole game: statements, not questions. That’s the one habit that has to be automatic before day 8.' },
-      { day: 7, title: 'Week 1 review', bullets: [
-        'Recap with your manager: brands, bag types, jewelry language, sunglasses codes, the one big selling rule',
-        'Ask about anything that didn’t stick yet — better now than in a Live Trial',
-        'Rest up — Week 2 is reps',
-      ], expect: 'You should have a general, working idea of everything by now — brands, bags, jewelry, sunglasses, and the selling rule. Not perfect yet, but familiar. Week 2 is where it becomes automatic.' },
+        'Run a Live Trial on the TikTok Shop tab, focused on statements, not questions — check your grade’s tone score',
+        'Review all three of your Live Trial grades with your manager and pick your weakest one to attack tomorrow',
+      ], expect: 'By tonight: you can call out a flaw by its correct name every time, and you’ve run all three Live Trial platforms at least once.' },
+      { day: 6, title: 'Selling Guide, retries & full mock show', bullets: [
+        'Work through the Selling Guide, start to finish, and do the statement drills',
+        'Run Sunglasses Sim and Bag Sim a few times, closing each one out on the clock, until the countdown script feels natural',
+        'Retry yesterday’s weakest Live Trial platform, aiming for a B or better',
+        'Retry the other two platforms, targeting a B or better on all three',
+        'Run all three platforms back-to-back in one sitting, like a real shift — your manager watches at least one segment live and gives written feedback',
+      ], expect: 'Tonight is the last practice night. Statements, not questions, and a B or better on all three platforms — that’s the whole bar for tomorrow.' },
     ],
   },
   {
-    id: 'week2', label: 'Week 2 · Live Trial reps', range: 'Days 8–13',
+    id: 'cert', label: '🎓 Day 7 · Certification & first solo show', range: 'Day 7', milestone: true,
     days: [
-      { day: 8, title: 'First Live Trial — Whatnot', bullets: [
-        'Run one full Live Trial on the Whatnot tab',
-        'This one’s just to get comfortable — no grade pressure',
-        'Review the results together with your manager',
-      ], expect: 'Goal: finish the trial without freezing up. Nothing else.' },
-      { day: 9, title: 'Live Trial — eBay Live', bullets: [
-        'Run a Live Trial on the eBay Live tab',
-        'Focus on keeping the item on screen every time someone asks',
-        'Review your grade breakdown — see what pulled the score down',
-      ], expect: 'Goal: notice your own patterns before your manager has to point them out.' },
-      { day: 10, title: 'Live Trial — TikTok Shop', bullets: [
-        'Run a Live Trial on the TikTok Shop tab',
-        'Focus on statements, not questions — check your grade’s tone score',
-        'Review with your manager',
-      ], expect: 'Goal: complete all three platforms at least once.' },
-      { day: 11, title: 'Retry your weakest platform', bullets: [
-        'Look back at your three grades — pick the lowest one',
-        'Run it again, aiming for a C or better',
-        'Ask your manager to watch this one',
-      ], expect: 'Goal: real, visible improvement over days 8–10.' },
-      { day: 12, title: 'Retry the rest', bullets: [
-        'Run the other two platforms again',
-        'Target a B or better on all three',
-        'Read every note on the manager rubric below each trial',
-      ], expect: 'Goal: B or better, all three platforms.' },
-      { day: 13, title: 'Full mock show', bullets: [
-        'Run all three platforms back-to-back in one sitting, like a real shift',
-        'Your manager watches at least one segment live, not just the grade',
-        'Get written feedback before day 14',
-      ], expect: 'This is your dress rehearsal. Day 14 is the real thing.' },
-    ],
-  },
-  {
-    id: 'cert', label: '🎓 Day 14 · Certification', range: 'Day 14', milestone: true,
-    days: [
-      { day: 14, title: 'Certification — go live solo', bullets: [
+      { day: 7, title: 'Certification — go live solo', bullets: [
         'Score B or better on all three Live Trial platforms (Whatnot, eBay Live, TikTok Shop)',
         'Get manager sign-off on the pronunciation & screen-presence rubric (see Live Trial tab)',
-        'If you’re not there yet, that’s OK — take extra coaching days and re-attempt',
-      ], expect: 'This is the gate. Nobody goes live solo before clearing it — going live is delayed, never skipped.' },
+        'Final sunglasses care review — read every line below out loud with your manager before your first show:',
+      ].concat(CARE_DONT).concat(CARE_DO).concat([
+        'If you’re not there yet, that’s OK — take one extra coaching day and re-attempt. Going live is delayed, never skipped.',
+        'Go live for your first real solo show today',
+        'A manager or senior seller stays reachable in Messages the whole time',
+        'Keep your name in "Selling as" on every item so your commission tracks correctly',
+      ]), expect: 'This is the gate. Six days of hands-on training, then certify and go live solo, today. Nobody goes live before clearing it.' },
     ],
   },
   {
-    id: 'week3', label: 'Week 3 · Solo with support', range: 'Days 15–21',
+    id: 'week2', label: 'Week 2 · Solo with support', range: 'Days 8–14',
     days: [
-      { day: 15, title: 'First solo show', bullets: [
-        'Run your first real solo show',
-        'A manager or senior seller stays reachable in Messages the whole time',
-        'Keep your name in "Selling as" on every item so your commission tracks correctly',
-      ], expect: 'You don’t have to be perfect. You have to be live.' },
-      { day: 16, title: 'Solo show + daily recap', bullets: [
+      { day: 8, title: 'Solo show #2 + daily recap', bullets: [
         'Run a solo show',
+        'A manager or senior seller stays reachable in Messages the whole time',
         '5-minute recap with your manager after: one thing that went well, one thing to work on',
-      ], expect: 'One specific improvement per day beats a vague "good job."' },
-      { day: 17, title: 'Solo show — apply yesterday’s fix', bullets: [
+      ], expect: 'Two shows in, patterns already start to show — that’s exactly what recap is for.' },
+      { day: 9, title: 'Solo show — apply yesterday’s fix', bullets: [
         'Run a solo show',
         'Apply yesterday’s one improvement on purpose — call it out to your manager',
       ], expect: 'Improvements compound — yesterday’s fix should already feel automatic.' },
-      { day: 18, title: 'Solo show — flaw language', bullets: [
+      { day: 10, title: 'Solo show — flaw language', bullets: [
         'Run a solo show',
         'Narrate a defect (scratch, tarnish, wear) using exact Describe It language, unprompted',
       ], expect: 'Flaw language should be second nature by now, not something you look up.' },
-      { day: 19, title: 'Solo show + recap', bullets: [
+      { day: 11, title: 'Solo show + recap', bullets: [
         'Run a solo show',
         '5-minute recap — start tracking your own patterns across the week',
       ], expect: 'You should be able to guess your own feedback before your manager says it.' },
-      { day: 20, title: 'Mid-point check-in', bullets: [
+      { day: 12, title: 'Mid-point check-in', bullets: [
         'Review your sales/engagement numbers from this week with your manager',
         'Talk through what’s working and what isn’t',
       ], expect: 'Numbers plus feedback — not just one or the other.' },
-      { day: 21, title: 'Full show review', bullets: [
+      { day: 13, title: 'Full show review', bullets: [
         'Your manager watches one full solo show, start to finish',
         'Get detailed written feedback afterward',
-      ], expect: 'This is the last checkpoint before full independence.' },
+      ], expect: 'This is the last watched show before full independence.' },
+      { day: 14, title: 'One-week-solo check-in', bullets: [
+        'Review your first week of solo numbers with your manager: sales, engagement, commission earned',
+        'Confirm every recap action item from this week has become automatic',
+        'Get sign-off to move to full independence — no more required daily check-ins after today',
+      ], expect: 'This is the last supported day. From day 15 on, check-ins become optional, not required.' },
     ],
   },
   {
-    id: 'week4', label: 'Week 4 · Full independence', range: 'Days 22–30',
+    id: 'indep1', label: 'Full independence · Core habits', range: 'Days 15–22',
     days: [
-      { day: 22, title: 'Solo shows — focus: statements', bullets: [
+      { day: 15, title: 'Solo shows — focus: statements', bullets: [
         'Run your regular show schedule solo',
         'Self-audit: catch yourself turning a statement into a question, and correct it live',
       ], expect: 'Keep logging your name on every scan for commission tracking.' },
-      { day: 23, title: 'Solo shows — focus: screen presence', bullets: [
+      { day: 16, title: 'Solo shows — focus: screen presence', bullets: [
         'Keep the item up for the whole answer, not just at the start of it',
         'Bring anything you’re unsure about to Messages — don’t guess on camera',
       ], expect: '' },
-      { day: 24, title: 'Solo shows — focus: pricing confidence', bullets: [
+      { day: 17, title: 'Solo shows — focus: pricing confidence', bullets: [
         'State the price plainly — no apologizing for it, no hedging',
       ], expect: '' },
-      { day: 25, title: 'Solo shows — focus: jewelry flaws', bullets: [
+      { day: 18, title: 'Solo shows — focus: jewelry flaws', bullets: [
         'Call out tarnish, scratches, or plating wear unprompted, before anyone asks',
       ], expect: '' },
-      { day: 26, title: 'Solo shows — focus: bag angles', bullets: [
+      { day: 19, title: 'Solo shows — focus: bag angles', bullets: [
         'Show all 6 Describe It angles without being asked',
       ], expect: '' },
-      { day: 27, title: 'Solo shows — focus: pacing & energy', bullets: [
+      { day: 20, title: 'Solo shows — focus: pacing & energy', bullets: [
         'Restate brand + price every couple of minutes, as a statement',
       ], expect: '' },
-      { day: 28, title: 'Solo shows — focus: handling price pushback', bullets: [
+      { day: 21, title: 'Solo shows — focus: handling price pushback', bullets: [
         'Respond to price objections with a calm statement, never flustered',
       ], expect: '' },
-      { day: 29, title: 'Solo shows — focus: urgency', bullets: [
+      { day: 22, title: 'Solo shows — focus: urgency', bullets: [
         'Practice true-urgency statements — "only one in this color" — never a hype-question',
+      ], expect: '' },
+    ],
+  },
+  {
+    id: 'indep2', label: 'Full independence · Leveling up', range: 'Days 23–30',
+    days: [
+      { day: 23, title: 'Solo shows — focus: authentication deep dive', bullets: [
+        'Before your show, pull 3 items and walk through their authentication cues out loud (see the Brands tab’s Brand Guide)',
+        'Call out at least one authentication cue on camera today, unprompted',
+      ], expect: '' },
+      { day: 24, title: 'Solo shows — focus: cross-platform consistency', bullets: [
+        'Use the same opening line, pricing language, and pacing whether you’re on Whatnot, eBay Live, or TikTok Shop',
+        'Notice where your energy or script drifts between platforms and flatten it out',
+      ], expect: '' },
+      { day: 25, title: 'Solo shows — focus: negotiation & lowball offers', bullets: [
+        'Hold your price with a calm, flat statement instead of countering emotionally',
+        'Practice one graceful way to decline a lowball offer without losing the viewer',
+      ], expect: '' },
+      { day: 26, title: 'Solo shows — focus: repeat buyers', bullets: [
+        'Recognize and greet returning viewers by name on camera',
+        'Thank a repeat buyer specifically after a sale — it’s what turns a one-time buyer into a regular',
+      ], expect: '' },
+      { day: 27, title: 'Solo shows — focus: pacing a full show', bullets: [
+        'Run a full-length show start to finish without a mid-show energy dip',
+        'Vary your pacing deliberately between high-energy openers and calmer detail moments',
+      ], expect: '' },
+      { day: 28, title: 'Solo shows — focus: reading your own analytics', bullets: [
+        'Pull your viewer/engagement numbers after today’s show',
+        'Pick one moment where engagement dropped and figure out why',
+      ], expect: '' },
+      { day: 29, title: 'Solo shows — focus: cross-category confidence', bullets: [
+        'Run a show mixing bags, jewelry, and sunglasses back-to-back without hesitating on any category’s vocabulary',
       ], expect: '' },
       { day: 30, title: '30-day review', bullets: [
         'Full performance review with your manager: sales, engagement, commission earned',
         'Talk through what’s working and what to focus on next',
-        'Set goals for days 31–60',
+        'Set goals for days 31–60 — see the Day 31–60 Plan tab',
       ], expect: 'Day 30 isn’t the finish line — it’s the first checkpoint of many.' },
     ],
   },
 ];
 var CURRICULUM_TOTAL_DAYS = CURRICULUM_PHASES.reduce(function (n, p) { return n + p.days.length; }, 0);
 
+// ---- Day 31-60 Plan: month two runs on a weekly cadence, not a daily one -- by now "run a
+// solo show" is assumed every day, so each week has a theme instead of repeating that instruction
+// 7 times. Follows normal live-seller growth: consistency first, then specialization, then
+// growing repeat business, then running an efficient full shift.
+var CURRICULUM_PHASES_31_60 = [
+  {
+    id: 'week5', label: 'Week 5 · Consistency & metrics', range: 'Days 31–37',
+    days: [
+      { day: 31, title: 'Consistency & metrics', bullets: [
+        'Run your full regular show schedule solo, no check-ins required',
+        'Track your own weekly sales, engagement, and commission totals — don’t wait for your manager to pull them',
+        'Compare this week’s numbers to your first 30 days and note one trend',
+        'Keep every habit from the first 30 days automatic: statements not questions, all 6 Describe It angles, unprompted flaw language',
+      ], expect: 'By the end of this week your numbers should be steady, not spiky — consistency is the whole goal of month two.' },
+    ],
+  },
+  {
+    id: 'week6', label: 'Week 6 · Specialization', range: 'Days 38–44',
+    days: [
+      { day: 38, title: 'Specialization', bullets: [
+        'Pick one category to go deeper on — bags, jewelry, or sunglasses — based on what you’re already strongest at',
+        'Study that category’s Brand Guide entries (Brands tab) until you can go off-script on authentication cues and materials',
+        'Volunteer to run the lineup segments in your category during at least one show',
+        'Ask your manager which category the business needs more expertise in right now',
+      ], expect: 'You should be the person your manager or teammates ask first about your chosen category.' },
+    ],
+  },
+  {
+    id: 'week7', label: 'Week 7 · Repeat buyers & average order value', range: 'Days 45–51',
+    days: [
+      { day: 45, title: 'Repeat buyers & average order value', bullets: [
+        'Recognize repeat viewers by name on camera and thank them specifically after a purchase',
+        'Practice pairing/upsell statements — suggest a second item that pairs with what someone just bought, as a statement, not a question',
+        'Track your average order value for the week and compare it to week 5',
+        'Ask 2 regular buyers, in Messages after a show, what they’d like to see more of',
+      ], expect: 'Repeat buyers and a slightly higher average order value are the two numbers that should be moving by now.' },
+    ],
+  },
+  {
+    id: 'week8', label: 'Week 8 · Running an efficient shift', range: 'Days 52–58',
+    days: [
+      { day: 52, title: 'Running an efficient shift', bullets: [
+        'Practice pacing a full back-to-back multi-platform shift — Whatnot, eBay Live, and TikTok Shop in one sitting — without losing energy',
+        'Time your own transitions between items and platforms; tighten any that run long',
+        'Handle at least one technical hiccup (dropped stream, slow item, chat glitch) calmly on camera',
+        'Log any items that consistently under- or over-perform so pricing/sourcing can adjust',
+      ], expect: 'By the end of week 8 a full shift should feel routine, not draining.' },
+    ],
+  },
+  {
+    id: 'day60', label: '🎓 60-day review', range: 'Day 60', milestone: true,
+    days: [
+      { day: 60, title: '60-day performance review', bullets: [
+        'Full performance review with your manager: sales, engagement, commission, and the category you specialized in',
+        'Talk through repeat-buyer growth and average order value trends since day 30',
+        'Set specific goals for days 61–90 — see the Day 61–90 Plan tab',
+      ], expect: 'Two months in, the question isn’t "can you run a show" anymore — it’s "how well are you growing it."' },
+    ],
+  },
+];
+var CURRICULUM_TOTAL_31_60 = CURRICULUM_PHASES_31_60.reduce(function (n, p) { return n + p.days.length; }, 0);
+
+// ---- Day 61-90 Plan: month three is about ownership -- mentoring newer hires, shaping the
+// show lineup instead of just running it, and handling problems before a manager has to.
+// Ends with the 90-day review, the natural checkpoint for senior-seller/commission-tier
+// conversations, not a hard finish line.
+var CURRICULUM_PHASES_61_90 = [
+  {
+    id: 'week9', label: 'Week 9 · Mentoring', range: 'Days 61–67',
+    days: [
+      { day: 61, title: 'Mentoring', bullets: [
+        'Shadow-support a newer trainee during their Week 1 foundations — answer questions, model the habits from your own first 30 days',
+        'Narrate your own on-camera decisions out loud for a trainee once, so they hear the reasoning, not just the result',
+        'Give one piece of specific, kind feedback to a trainee after watching them practice',
+      ], expect: 'Explaining a habit out loud is the real test of whether it’s actually automatic for you.' },
+    ],
+  },
+  {
+    id: 'week10', label: 'Week 10 · Advanced merchandising', range: 'Days 68–74',
+    days: [
+      { day: 68, title: 'Advanced merchandising', bullets: [
+        'Curate and pitch a themed lineup for an upcoming show (e.g. all-LV night, sunglasses flash sale) to your manager',
+        'Practice cross-selling across categories within one show — pairing a bag with jewelry or sunglasses in the same segment',
+        'Get manager feedback on your pitched lineup and run it live',
+      ], expect: 'You should be generating show ideas, not just executing someone else’s lineup.' },
+    ],
+  },
+  {
+    id: 'week11', label: 'Week 11 · Ownership', range: 'Days 75–81',
+    days: [
+      { day: 75, title: 'Ownership', bullets: [
+        'Handle one buyer escalation (return request, shipping issue, price dispute) start to finish without pulling in a manager, then report how it went',
+        'Propose one pricing or promotion idea based on your own sales data from the last month',
+        'Keep a running log of what worked and what didn’t for your specialized category',
+      ], expect: 'By now you should be catching and solving small problems before anyone has to ask.' },
+    ],
+  },
+  {
+    id: 'week12', label: 'Week 12 · Leadership readiness', range: 'Days 82–88',
+    days: [
+      { day: 82, title: 'Leadership readiness', bullets: [
+        'Run full shows confidently across every category we carry, not just your specialty',
+        'Take the lead on-camera during at least one show a newer trainee is shadowing',
+        'Reflect on your 90 days so far: strongest category, biggest growth area, one goal for the next 90',
+      ], expect: 'Full autonomy, every category, every platform — this is the bar for the 90-day review.' },
+    ],
+  },
+  {
+    id: 'day90', label: '🎓 90-day review & next chapter', range: 'Day 90', milestone: true,
+    days: [
+      { day: 90, title: '90-day review & next chapter', bullets: [
+        'Full 90-day performance review with your manager: sales, engagement, commission, specialization, and mentoring',
+        'Discuss next steps — senior seller responsibilities, commission tier, or a new focus area',
+        'Set your own goals for the next 90 days',
+      ], expect: 'Day 90 is a checkpoint, not a finish line — the habits keep compounding from here.' },
+    ],
+  },
+];
+var CURRICULUM_TOTAL_61_90 = CURRICULUM_PHASES_61_90.reduce(function (n, p) { return n + p.days.length; }, 0);
+
 // Grade scale shared by the Day 1-30 Plan (certification check) and the Live Trial tab.
 var GRADE_SCALE = ['D', 'C-', 'C', 'C+', 'B-', 'B', 'B+', 'A-', 'A', 'A+'];
 var GRADE_VALUE = { 'D': 1.0, 'C-': 1.7, 'C': 2.0, 'C+': 2.3, 'B-': 2.7, 'B': 3.0, 'B+': 3.3, 'A-': 3.7, 'A': 4.0, 'A+': 4.3 };
-var CERT_THRESHOLD = 'B'; // the bar every Live Trial platform must clear for Day 14 sign-off
+var CERT_THRESHOLD = 'B'; // the bar every Live Trial platform must clear for Day 7 sign-off
 var CERT_PLATFORMS = ['whatnot', 'ebay', 'tiktok'];
 
 function gradeMeetsThreshold(grade, threshold) {
   return GRADE_VALUE[grade] >= GRADE_VALUE[threshold];
 }
 
-function loadRoadmapProgress() {
-  try { return JSON.parse(localStorage.getItem('roadmapProgress') || '{}'); } catch (e) { return {}; }
+// Generic progress store used by all three roadmap tabs (Day 1-30 keeps the original
+// 'roadmapProgress' key so nobody's saved progress is lost by this restructure; the two new
+// roadmaps get their own keys).
+function loadProgressStore(key) {
+  try { return JSON.parse(localStorage.getItem(key) || '{}'); } catch (e) { return {}; }
 }
-function saveRoadmapProgress(progress) {
-  try { localStorage.setItem('roadmapProgress', JSON.stringify(progress)); } catch (e) { /* ignore */ }
+function saveProgressStore(key, progress) {
+  try { localStorage.setItem(key, JSON.stringify(progress)); } catch (e) { /* ignore */ }
 }
 
 // Live Trial results, shared with the Live Trial tab -- {whatnot: {grade, date}, ebay: {...}, tiktok: {...}}
@@ -1748,40 +1935,49 @@ function certificationStatus() {
   return { passedCount: passed.length, total: CERT_PLATFORMS.length, ready: passed.length === CERT_PLATFORMS.length, results: results };
 }
 
-function renderRoadmap() {
-  var panel = trainingPanels.roadmap;
-  var progress = loadRoadmapProgress();
+// Shared renderer for all three roadmap tabs (Day 1-30 / 31-60 / 61-90). opts:
+//   storageKey  -- localStorage key for this roadmap's checkbox progress
+//   intro       -- intro paragraph HTML shown above the progress bar
+//   totalDays   -- CURRICULUM_TOTAL_DAYS / _31_60 / _61_90 for this phase set
+//   showCert    -- true only for the Day 1-30 plan, whose milestone is graded by real Live
+//                  Trial results; the 60/90-day roadmaps are checklist-only, no cert banner
+//   certLabel   -- banner heading text, only used when showCert is true
+function renderRoadmapPanel(panel, phases, opts) {
+  var progress = loadProgressStore(opts.storageKey);
   var doneCount = 0;
-  CURRICULUM_PHASES.forEach(function (phase) { phase.days.forEach(function (d) { if (progress[d.day]) doneCount++; }); });
-  var cert = certificationStatus();
-  var platformLabel = { whatnot: 'Whatnot', ebay: 'eBay Live', tiktok: 'TikTok Shop' };
+  phases.forEach(function (phase) { phase.days.forEach(function (d) { if (progress[d.day]) doneCount++; }); });
 
-  var certBanner =
-    '<div style="border-radius:12px;padding:16px;margin-bottom:16px;background:' + (cert.ready ? 'var(--success-bg)' : 'var(--surface)') + ';border:1px solid ' + (cert.ready ? 'var(--success)' : 'var(--border)') + ';">' +
-    '<div style="font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:0.04em;color:' + (cert.ready ? 'var(--success)' : 'var(--accent)') + ';">Day 14 certification — ' + (cert.ready ? 'Ready to go live solo ✓' : cert.passedCount + ' of ' + cert.total + ' platforms cleared') + '</div>' +
-    '<div style="font-size:13px;color:var(--text-dim);margin-top:6px;line-height:1.5;">Needs a ' + CERT_THRESHOLD + ' or better on Whatnot, eBay Live, and TikTok Shop in the Live Trial tab.</div>' +
-    '<div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;">' +
-    CERT_PLATFORMS.map(function (p) {
-      var r = cert.results[p];
-      var ok = r && gradeMeetsThreshold(r.grade, CERT_THRESHOLD);
-      return '<div style="flex:1;min-width:90px;text-align:center;padding:8px;border-radius:8px;background:var(--surface-alt);">' +
-        '<div style="font-size:11px;color:var(--text-dim);">' + platformLabel[p] + '</div>' +
-        '<div style="font-size:15px;font-weight:700;color:' + (ok ? 'var(--success)' : (r ? 'var(--danger)' : 'var(--text-dim)')) + ';">' + (r ? r.grade : '—') + '</div>' +
-        '</div>';
-    }).join('') +
-    '</div></div>';
+  var certBanner = '';
+  if (opts.showCert) {
+    var cert = certificationStatus();
+    var platformLabel = { whatnot: 'Whatnot', ebay: 'eBay Live', tiktok: 'TikTok Shop' };
+    certBanner =
+      '<div style="border-radius:12px;padding:16px;margin-bottom:16px;background:' + (cert.ready ? 'var(--success-bg)' : 'var(--surface)') + ';border:1px solid ' + (cert.ready ? 'var(--success)' : 'var(--border)') + ';">' +
+      '<div style="font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:0.04em;color:' + (cert.ready ? 'var(--success)' : 'var(--accent)') + ';">' + escapeHtml(opts.certLabel) + ' — ' + (cert.ready ? 'Ready to go live solo ✓' : cert.passedCount + ' of ' + cert.total + ' platforms cleared') + '</div>' +
+      '<div style="font-size:13px;color:var(--text-dim);margin-top:6px;line-height:1.5;">Needs a ' + CERT_THRESHOLD + ' or better on Whatnot, eBay Live, and TikTok Shop in the Live Trial tab.</div>' +
+      '<div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;">' +
+      CERT_PLATFORMS.map(function (p) {
+        var r = cert.results[p];
+        var ok = r && gradeMeetsThreshold(r.grade, CERT_THRESHOLD);
+        return '<div style="flex:1;min-width:90px;text-align:center;padding:8px;border-radius:8px;background:var(--surface-alt);">' +
+          '<div style="font-size:11px;color:var(--text-dim);">' + platformLabel[p] + '</div>' +
+          '<div style="font-size:15px;font-weight:700;color:' + (ok ? 'var(--success)' : (r ? 'var(--danger)' : 'var(--text-dim)')) + ';">' + (r ? r.grade : '—') + '</div>' +
+          '</div>';
+      }).join('') +
+      '</div></div>';
+  }
 
   panel.innerHTML =
-    '<p style="color:var(--text-dim);font-size:13px;margin-top:0;">Your full onboarding, day by day. The goal: ready to run a show completely on your own by <b style="color:var(--text);">day 14</b>.</p>' +
+    '<p style="color:var(--text-dim);font-size:13px;margin-top:0;">' + opts.intro + '</p>' +
     '<div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px 16px;margin-bottom:14px;">' +
     '<div style="font-size:13px;color:var(--text-dim);margin-bottom:6px;">Overall progress</div>' +
     '<div style="height:8px;border-radius:4px;background:var(--surface-alt);overflow:hidden;">' +
-    '<div style="height:100%;width:' + Math.round((doneCount / CURRICULUM_TOTAL_DAYS) * 100) + '%;background:var(--accent);"></div>' +
+    '<div style="height:100%;width:' + Math.round((doneCount / opts.totalDays) * 100) + '%;background:var(--accent);"></div>' +
     '</div>' +
-    '<div style="font-size:12px;color:var(--text-dim);margin-top:6px;">' + doneCount + ' of ' + CURRICULUM_TOTAL_DAYS + ' days marked complete</div>' +
+    '<div style="font-size:12px;color:var(--text-dim);margin-top:6px;">' + doneCount + ' of ' + opts.totalDays + ' marked complete</div>' +
     '</div>' +
     certBanner +
-    CURRICULUM_PHASES.map(function (phase) {
+    phases.map(function (phase) {
       return '<div style="margin-bottom:10px;">' +
         '<button type="button" class="roadmap-phase-toggle" data-phase="' + phase.id + '" style="width:100%;text-align:left;padding:12px 14px;font-size:14px;font-weight:700;border-radius:10px;border:1px solid ' + (phase.milestone ? 'var(--accent)' : 'var(--border)') + ';background:' + (phase.milestone ? 'var(--surface-alt)' : 'var(--surface)') + ';color:var(--text);display:flex;justify-content:space-between;align-items:center;">' +
         '<span>' + escapeHtml(phase.label) + ' <span style="color:var(--text-dim);font-weight:500;font-size:12px;">(' + phase.range + ')</span></span>' +
@@ -1806,10 +2002,10 @@ function renderRoadmap() {
   var checks = panel.querySelectorAll('.roadmap-check');
   for (var i = 0; i < checks.length; i++) {
     checks[i].addEventListener('change', function (e) {
-      var p = loadRoadmapProgress();
+      var p = loadProgressStore(opts.storageKey);
       p[e.currentTarget.getAttribute('data-day')] = e.currentTarget.checked;
-      saveRoadmapProgress(p);
-      renderRoadmap();
+      saveProgressStore(opts.storageKey, p);
+      renderRoadmapPanel(panel, phases, opts);
     });
   }
   var toggles = panel.querySelectorAll('.roadmap-phase-toggle');
@@ -1826,13 +2022,39 @@ function renderRoadmap() {
   // Open the phase containing the next incomplete day by default so there's always something
   // expanded, instead of every seller landing on a wall of collapsed rows.
   var nextPhase = null;
-  for (var pi = 0; pi < CURRICULUM_PHASES.length && !nextPhase; pi++) {
-    if (CURRICULUM_PHASES[pi].days.some(function (d) { return !progress[d.day]; })) nextPhase = CURRICULUM_PHASES[pi].id;
+  for (var pi = 0; pi < phases.length && !nextPhase; pi++) {
+    if (phases[pi].days.some(function (d) { return !progress[d.day]; })) nextPhase = phases[pi].id;
   }
-  if (!nextPhase) nextPhase = CURRICULUM_PHASES[0].id;
+  if (!nextPhase) nextPhase = phases[0].id;
   var openBody = panel.querySelector('.roadmap-phase-body[data-phase="' + nextPhase + '"]');
   var openCaret = panel.querySelector('.roadmap-phase-caret[data-phase="' + nextPhase + '"]');
   if (openBody) { openBody.style.display = 'block'; openCaret.textContent = '▴'; }
+}
+
+function renderRoadmap() {
+  renderRoadmapPanel(trainingPanels.roadmap, CURRICULUM_PHASES, {
+    storageKey: 'roadmapProgress',
+    intro: 'Your full onboarding, day by day. The goal: ready to run a show completely on your own by <b style="color:var(--text);">day 7</b>.',
+    totalDays: CURRICULUM_TOTAL_DAYS,
+    showCert: true,
+    certLabel: 'Day 7 certification',
+  });
+}
+function renderRoadmap60() {
+  renderRoadmapPanel(trainingPanels.roadmap60, CURRICULUM_PHASES_31_60, {
+    storageKey: 'roadmapProgress3160',
+    intro: 'Month two: full independence is assumed, so this plan runs week by week instead of day by day. The goal: steady, growing numbers and a category you own.',
+    totalDays: CURRICULUM_TOTAL_31_60,
+    showCert: false,
+  });
+}
+function renderRoadmap90() {
+  renderRoadmapPanel(trainingPanels.roadmap90, CURRICULUM_PHASES_61_90, {
+    storageKey: 'roadmapProgress6190',
+    intro: 'Month three: ownership. Mentoring newer hires, shaping the show instead of just running it, and the 90-day review.',
+    totalDays: CURRICULUM_TOTAL_61_90,
+    showCert: false,
+  });
 }
 
 // ---- Brands: Study list / Practice flashcards / Brand Guide deep-dive ----
@@ -2191,38 +2413,27 @@ function renderBagsAndLeather() {
         '<div style="font-size:13px;color:var(--text);margin-top:4px;line-height:1.5;">' + escapeHtml(t.desc) + '</div>' +
         '</div>';
     }).join('') +
+    '<div style="font-size:13px;font-weight:700;color:var(--accent);margin:20px 0 10px;text-transform:uppercase;letter-spacing:0.04em;">Materials &amp; leather glossary</div>' +
+    '<p style="color:var(--text-dim);font-size:13px;margin-top:0;">Quick material ID -- pick up any bag and know what to call what it’s made of. See the Brands tab’s Brand Guide for full per-brand authentication detail.</p>' +
+    BAG_MATERIALS.map(function (m) {
+      return '<div style="padding:12px 14px;border:1px solid var(--border);border-radius:10px;margin-bottom:8px;">' +
+        '<div style="font-size:15px;font-weight:700;">' + escapeHtml(m.name) + '</div>' +
+        '<div style="font-size:13px;color:var(--text);margin-top:4px;line-height:1.5;">' + escapeHtml(m.desc) + '</div>' +
+        '</div>';
+    }).join('') +
     '<div style="font-size:13px;font-weight:700;color:var(--accent);margin:20px 0 10px;text-transform:uppercase;letter-spacing:0.04em;">Louis Vuitton vachetta leather</div>' +
-    '<div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px 16px;">' +
+    '<div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px 16px;margin-bottom:16px;">' +
     VACHETTA_FACTS.map(function (f) {
       return '<div style="font-size:14px;line-height:1.6;margin-bottom:10px;">&bull; ' + escapeHtml(f) + '</div>';
     }).join('') +
-    '</div>';
-}
-
-// ---- Day 2: Sunglasses care do's and don'ts ----
-var CARE_DONT = [
-  'Don’t bang or drop them -- hinges and lenses are the first things to fail.',
-  'Don’t lay them face-down -- that’s what scratches the lenses. Fold the arms and set them down on the arms/case instead.',
-  'Don’t put on lotion, sunscreen or perfume right before handling a pair -- it smudges the lenses and can cloud any coating.',
-  'Don’t leave them in a hot car or in direct sun for long stretches -- heat warps frames and can degrade lens coatings.',
-];
-var CARE_DO = [
-  'Do use both hands when putting them on or taking them off -- one-handed removal is what warps the arms over time.',
-  'Do put them back in a case when you’re not modeling them.',
-  'Do wipe the lenses and nose pads with a clean microfiber cloth after wearing -- oils and makeup residue build up fast.',
-  'Do check the arm code before listing or selling a pair -- see Sunglasses 101 if you need a refresher.',
-];
-function renderCare() {
-  var panel = trainingPanels.care;
-  panel.innerHTML =
-    '<p style="color:var(--text-dim);font-size:13px;margin-top:0;">Every pair that comes through here needs to look and feel brand-new. That comes down to a handful of habits.</p>' +
-    '<div style="font-size:13px;font-weight:700;color:var(--danger);margin:16px 0 10px;text-transform:uppercase;letter-spacing:0.04em;">Don’t</div>' +
-    CARE_DONT.map(function (l) {
-      return '<div style="padding:12px 14px;border:1px solid var(--border);border-left:4px solid var(--danger);border-radius:8px;margin-bottom:8px;font-size:14px;line-height:1.5;">' + escapeHtml(l) + '</div>';
-    }).join('') +
-    '<div style="font-size:13px;font-weight:700;color:var(--success);margin:20px 0 10px;text-transform:uppercase;letter-spacing:0.04em;">Do</div>' +
-    CARE_DO.map(function (l) {
-      return '<div style="padding:12px 14px;border:1px solid var(--border);border-left:4px solid var(--success);border-radius:8px;margin-bottom:8px;font-size:14px;line-height:1.5;">' + escapeHtml(l) + '</div>';
+    '</div>' +
+    '<div style="font-size:13px;font-weight:700;color:var(--accent);margin:20px 0 10px;text-transform:uppercase;letter-spacing:0.04em;">Hardware &amp; closures</div>' +
+    '<p style="color:var(--text-dim);font-size:13px;margin-top:0;">How a bag actually opens and closes, and what to call its metal -- turns "the hardware" into something specific.</p>' +
+    HARDWARE_GLOSSARY.map(function (h) {
+      return '<div style="padding:12px 14px;border:1px solid var(--border);border-radius:10px;margin-bottom:8px;">' +
+        '<div style="font-size:15px;font-weight:700;">' + escapeHtml(h.name) + '</div>' +
+        '<div style="font-size:13px;color:var(--text);margin-top:4px;line-height:1.5;">' + escapeHtml(h.desc) + '</div>' +
+        '</div>';
     }).join('');
 }
 
@@ -2540,7 +2751,7 @@ function managerRubricHtml() {
 // Sim). Each instance gets its own closed-over state and DOM-id prefix (cfg.idPrefix), so the
 // three never collide -- including in localStorage, where each writes to its own cfg.storageKey.
 // Live Trial keeps using the pre-existing loadLiveTrialResults/saveLiveTrialResult (the exact
-// functions certificationStatus()/renderRoadmap() already depend on) so Day-14 certification
+// functions certificationStatus()/renderRoadmap() already depend on) so Day-7 certification
 // tracking is completely untouched by this refactor. The two category sims get their own,
 // separate results storage and are never read by certification logic.
 function makeLiveSimEngine(cfg) {
