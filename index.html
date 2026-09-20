@@ -62,7 +62,7 @@ h2, h3 { color: var(--text); }
 </button>
 <button type="button" id="hub-training" style="width:100%;padding:20px;margin-bottom:12px;font-size:17px;font-weight:700;border-radius:12px;border:1px solid var(--border);background:var(--surface);color:var(--text);text-align:left;">
 🎓 Training
-<div style="font-size:13px;font-weight:500;margin-top:4px;color:var(--text-dim);">Day 1 checklist, brands, pronunciation, sunglasses 101</div>
+<div style="font-size:13px;font-weight:500;margin-top:4px;color:var(--text-dim);">Your 30-day plan, brands, pronunciation, describing items &amp; live trial runs</div>
 </button>
 <button type="button" id="hub-messages" style="width:100%;padding:20px;font-size:17px;font-weight:700;border-radius:12px;border:1px solid var(--border);background:var(--surface);color:var(--text);text-align:left;">
 💬 Messages
@@ -172,23 +172,29 @@ h2, h3 { color: var(--text); }
 <div id="training" style="display:none;">
 <button type="button" id="training-to-hub" style="background:none;border:none;padding:8px 0;margin-bottom:6px;font-size:14px;color:var(--text-dim);">☰ Menu</button>
 <h2 style="margin-bottom:2px;">🎓 Seller Training</h2>
-<p style="color:var(--text-dim);font-size:13px;margin-top:0;">Day 1 essentials, plus a reference you can come back to anytime.</p>
+<p style="color:var(--text-dim);font-size:13px;margin-top:0;">Your day 1&ndash;30 plan, plus a reference you can come back to anytime.</p>
 
 <div style="display:flex;gap:6px;margin:16px 0;flex-wrap:wrap;">
-<button type="button" class="training-tab" data-tab="day1" style="flex:1;min-width:90px;padding:10px 6px;font-size:13px;font-weight:600;border-radius:8px;border:1px solid var(--accent);background:var(--accent);color:var(--accent-text);">Day 1</button>
+<button type="button" class="training-tab" data-tab="roadmap" style="flex:1;min-width:90px;padding:10px 6px;font-size:13px;font-weight:600;border-radius:8px;border:1px solid var(--accent);background:var(--accent);color:var(--accent-text);">Day 1&ndash;30 Plan</button>
+<button type="button" class="training-tab" data-tab="day1" style="flex:1;min-width:90px;padding:10px 6px;font-size:13px;font-weight:600;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--text);">Day 1</button>
 <button type="button" class="training-tab" data-tab="brands" style="flex:1;min-width:90px;padding:10px 6px;font-size:13px;font-weight:600;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--text);">Brands</button>
 <button type="button" class="training-tab" data-tab="bags" style="flex:1;min-width:90px;padding:10px 6px;font-size:13px;font-weight:600;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--text);">Bags &amp; Leather</button>
 <button type="button" class="training-tab" data-tab="sunglasses" style="flex:1;min-width:90px;padding:10px 6px;font-size:13px;font-weight:600;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--text);">Sunglasses 101</button>
 <button type="button" class="training-tab" data-tab="care" style="flex:1;min-width:90px;padding:10px 6px;font-size:13px;font-weight:600;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--text);">Day 2: Care</button>
+<button type="button" class="training-tab" data-tab="describe" style="flex:1;min-width:90px;padding:10px 6px;font-size:13px;font-weight:600;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--text);">Describe It</button>
 <button type="button" class="training-tab" data-tab="selling" style="flex:1;min-width:90px;padding:10px 6px;font-size:13px;font-weight:600;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--text);">Selling Guide</button>
+<button type="button" class="training-tab" data-tab="trial" style="flex:1;min-width:90px;padding:10px 6px;font-size:13px;font-weight:600;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--text);">🔴 Live Trial</button>
 </div>
 
-<div id="training-day1"></div>
+<div id="training-roadmap"></div>
+<div id="training-day1" style="display:none;"></div>
 <div id="training-brands" style="display:none;"></div>
 <div id="training-bags" style="display:none;"></div>
 <div id="training-sunglasses" style="display:none;"></div>
 <div id="training-care" style="display:none;"></div>
+<div id="training-describe" style="display:none;"></div>
 <div id="training-selling" style="display:none;"></div>
+<div id="training-trial" style="display:none;"></div>
 </div>
 
 <div id="teleprompter" style="display:none;position:fixed;inset:0;background:var(--bg);z-index:9999;flex-direction:column;">
@@ -997,7 +1003,7 @@ document.getElementById('hub-sell').addEventListener('click', function () {
 document.getElementById('hub-training').addEventListener('click', function () {
   hub.style.display = 'none';
   training.style.display = 'block';
-  showTrainingTab('day1');
+  showTrainingTab('roadmap');
 });
 document.getElementById('hub-messages').addEventListener('click', function () {
   window.open('https://levelux-chat.vercel.app', '_blank');
@@ -1101,14 +1107,17 @@ var DAY1_ITEMS = [
 
 var trainingTabs = document.querySelectorAll('.training-tab');
 var trainingPanels = {
+  roadmap: document.getElementById('training-roadmap'),
   day1: document.getElementById('training-day1'),
   brands: document.getElementById('training-brands'),
   bags: document.getElementById('training-bags'),
   sunglasses: document.getElementById('training-sunglasses'),
   care: document.getElementById('training-care'),
+  describe: document.getElementById('training-describe'),
   selling: document.getElementById('training-selling'),
+  trial: document.getElementById('training-trial'),
 };
-var trainingRendered = { day1: false, brands: false, bags: false, sunglasses: false, care: false, selling: false };
+var trainingRendered = { roadmap: false, day1: false, brands: false, bags: false, sunglasses: false, care: false, describe: false, selling: false, trial: false };
 
 function showTrainingTab(name) {
   for (var i = 0; i < trainingTabs.length; i++) {
@@ -1123,14 +1132,19 @@ function showTrainingTab(name) {
   }
   if (!trainingRendered[name]) {
     trainingRendered[name] = true;
+    if (name === 'roadmap') renderRoadmap();
     if (name === 'day1') renderDay1();
     if (name === 'brands') renderBrands();
     if (name === 'bags') renderBagsAndLeather();
     if (name === 'sunglasses') renderSunglasses();
     if (name === 'care') renderCare();
+    if (name === 'describe') renderDescribeIt();
     if (name === 'selling') renderSelling();
+    if (name === 'trial') renderLiveTrial();
   } else if (name === 'day1') {
     renderDay1(); // cheap to re-render; keeps the progress bar honest if it changed elsewhere
+  } else if (name === 'roadmap') {
+    renderRoadmap(); // re-render so certification status reflects the latest Live Trial results
   }
 }
 for (var ti = 0; ti < trainingTabs.length; ti++) {
@@ -1177,6 +1191,290 @@ function renderDay1() {
       renderDay1();
     });
   }
+}
+
+// ---- Day 1-30 Plan: the full onboarding roadmap, day by day. Grouped into phases so it's
+// scannable instead of one long list of 30 rows. Day 14 is the hard gate -- nobody goes live
+// solo before clearing it (see CERT_THRESHOLD below, checked against real Live Trial grades).
+// To add or edit a day: find its entry in CURRICULUM_PHASES and change title/bullets/expect --
+// nothing else in this file needs to change.
+var CURRICULUM_PHASES = [
+  {
+    id: 'week1', label: 'Week 1 · Foundations', range: 'Days 1–7',
+    days: [
+      { day: 1, title: 'Onboarding & orientation', bullets: [
+        'Complete HR paperwork: clock-in setup, I-9, employee handbook (see the Day 1 tab for the checklist)',
+        'Meet the team and get a tour of the space',
+        'Shadow one full live show start to finish — just watch and take notes',
+      ], expect: 'By tonight: you know where everything is, and you’ve seen one full show.' },
+      { day: 2, title: 'Sunglasses & care basics', bullets: [
+        'Learn to read a sunglasses arm code (see Sunglasses 101)',
+        'Learn the Day 2 care do’s and don’ts (see Day 2: Care)',
+        'Practice reading the arm code on 5 real pairs',
+      ], expect: 'By tonight: you can read any arm code cold, no lookup needed.' },
+      { day: 3, title: 'Brands, part 1', bullets: [
+        'Start the Brands tab — Study list, then Practice mode',
+        'Learn bag types & vocabulary (see Bags & Leather)',
+        'Learn Louis Vuitton vachetta leather (see Bags & Leather)',
+      ], expect: 'By tonight: name at least 15 brands on sight, and know what vachetta is.' },
+      { day: 4, title: 'Brands, part 2 + describing bags', bullets: [
+        'Finish the Brands tab — every brand, name + pronunciation',
+        'Start Describe It: learn the 6 angles to show on every bag',
+        'Practice describing 5 real bags out loud, hitting every angle',
+      ], expect: 'By tonight: you can name every brand we carry on sight.' },
+      { day: 5, title: 'Describing jewelry', bullets: [
+        'Finish Describe It: jewelry condition language (tarnish, scratches, hairline scratches, plating wear)',
+        'Practice describing 5 real jewelry pieces out loud',
+        'Shadow one more live show, narrating quietly along with the seller',
+      ], expect: 'By tonight: you can call out a flaw by its correct name, every time.' },
+      { day: 6, title: 'Selling Guide', bullets: [
+        'Work through the Selling Guide, start to finish',
+        'Do the statement drills: turn every example question into a statement',
+        'Practice your own opening line for 3 different items',
+      ], expect: 'The whole game: statements, not questions. That’s the one habit that has to be automatic before day 8.' },
+      { day: 7, title: 'Week 1 review', bullets: [
+        'Recap with your manager: brands, bag types, jewelry language, the one big selling rule',
+        'Ask about anything that didn’t stick yet — better now than in a Live Trial',
+        'Rest up — Week 2 is reps',
+      ], expect: 'You should feel ready to practice live, even if it’s not perfect yet.' },
+    ],
+  },
+  {
+    id: 'week2', label: 'Week 2 · Live Trial reps', range: 'Days 8–13',
+    days: [
+      { day: 8, title: 'First Live Trial — Whatnot', bullets: [
+        'Run one full Live Trial on the Whatnot tab',
+        'This one’s just to get comfortable — no grade pressure',
+        'Review the results together with your manager',
+      ], expect: 'Goal: finish the trial without freezing up. Nothing else.' },
+      { day: 9, title: 'Live Trial — eBay Live', bullets: [
+        'Run a Live Trial on the eBay Live tab',
+        'Focus on keeping the item on screen every time someone asks',
+        'Review your grade breakdown — see what pulled the score down',
+      ], expect: 'Goal: notice your own patterns before your manager has to point them out.' },
+      { day: 10, title: 'Live Trial — TikTok Shop', bullets: [
+        'Run a Live Trial on the TikTok Shop tab',
+        'Focus on statements, not questions — check your grade’s tone score',
+        'Review with your manager',
+      ], expect: 'Goal: complete all three platforms at least once.' },
+      { day: 11, title: 'Retry your weakest platform', bullets: [
+        'Look back at your three grades — pick the lowest one',
+        'Run it again, aiming for a C or better',
+        'Ask your manager to watch this one',
+      ], expect: 'Goal: real, visible improvement over days 8–10.' },
+      { day: 12, title: 'Retry the rest', bullets: [
+        'Run the other two platforms again',
+        'Target a B or better on all three',
+        'Read every note on the manager rubric below each trial',
+      ], expect: 'Goal: B or better, all three platforms.' },
+      { day: 13, title: 'Full mock show', bullets: [
+        'Run all three platforms back-to-back in one sitting, like a real shift',
+        'Your manager watches at least one segment live, not just the grade',
+        'Get written feedback before day 14',
+      ], expect: 'This is your dress rehearsal. Day 14 is the real thing.' },
+    ],
+  },
+  {
+    id: 'cert', label: '🎓 Day 14 · Certification', range: 'Day 14', milestone: true,
+    days: [
+      { day: 14, title: 'Certification — go live solo', bullets: [
+        'Score B or better on all three Live Trial platforms (Whatnot, eBay Live, TikTok Shop)',
+        'Get manager sign-off on the pronunciation & screen-presence rubric (see Live Trial tab)',
+        'If you’re not there yet, that’s OK — take extra coaching days and re-attempt',
+      ], expect: 'This is the gate. Nobody goes live solo before clearing it — going live is delayed, never skipped.' },
+    ],
+  },
+  {
+    id: 'week3', label: 'Week 3 · Solo with support', range: 'Days 15–21',
+    days: [
+      { day: 15, title: 'First solo show', bullets: [
+        'Run your first real solo show',
+        'A manager or senior seller stays reachable in Messages the whole time',
+        'Keep your name in "Selling as" on every item so your commission tracks correctly',
+      ], expect: 'You don’t have to be perfect. You have to be live.' },
+      { day: 16, title: 'Solo show + daily recap', bullets: [
+        'Run a solo show',
+        '5-minute recap with your manager after: one thing that went well, one thing to work on',
+      ], expect: 'One specific improvement per day beats a vague "good job."' },
+      { day: 17, title: 'Solo show — apply yesterday’s fix', bullets: [
+        'Run a solo show',
+        'Apply yesterday’s one improvement on purpose — call it out to your manager',
+      ], expect: 'Improvements compound — yesterday’s fix should already feel automatic.' },
+      { day: 18, title: 'Solo show — flaw language', bullets: [
+        'Run a solo show',
+        'Narrate a defect (scratch, tarnish, wear) using exact Describe It language, unprompted',
+      ], expect: 'Flaw language should be second nature by now, not something you look up.' },
+      { day: 19, title: 'Solo show + recap', bullets: [
+        'Run a solo show',
+        '5-minute recap — start tracking your own patterns across the week',
+      ], expect: 'You should be able to guess your own feedback before your manager says it.' },
+      { day: 20, title: 'Mid-point check-in', bullets: [
+        'Review your sales/engagement numbers from this week with your manager',
+        'Talk through what’s working and what isn’t',
+      ], expect: 'Numbers plus feedback — not just one or the other.' },
+      { day: 21, title: 'Full show review', bullets: [
+        'Your manager watches one full solo show, start to finish',
+        'Get detailed written feedback afterward',
+      ], expect: 'This is the last checkpoint before full independence.' },
+    ],
+  },
+  {
+    id: 'week4', label: 'Week 4 · Full independence', range: 'Days 22–30',
+    days: [
+      { day: 22, title: 'Solo shows — focus: statements', bullets: [
+        'Run your regular show schedule solo',
+        'Self-audit: catch yourself turning a statement into a question, and correct it live',
+      ], expect: 'Keep logging your name on every scan for commission tracking.' },
+      { day: 23, title: 'Solo shows — focus: screen presence', bullets: [
+        'Keep the item up for the whole answer, not just at the start of it',
+        'Bring anything you’re unsure about to Messages — don’t guess on camera',
+      ], expect: '' },
+      { day: 24, title: 'Solo shows — focus: pricing confidence', bullets: [
+        'State the price plainly — no apologizing for it, no hedging',
+      ], expect: '' },
+      { day: 25, title: 'Solo shows — focus: jewelry flaws', bullets: [
+        'Call out tarnish, scratches, or plating wear unprompted, before anyone asks',
+      ], expect: '' },
+      { day: 26, title: 'Solo shows — focus: bag angles', bullets: [
+        'Show all 6 Describe It angles without being asked',
+      ], expect: '' },
+      { day: 27, title: 'Solo shows — focus: pacing & energy', bullets: [
+        'Restate brand + price every couple of minutes, as a statement',
+      ], expect: '' },
+      { day: 28, title: 'Solo shows — focus: handling price pushback', bullets: [
+        'Respond to price objections with a calm statement, never flustered',
+      ], expect: '' },
+      { day: 29, title: 'Solo shows — focus: urgency', bullets: [
+        'Practice true-urgency statements — "only one in this color" — never a hype-question',
+      ], expect: '' },
+      { day: 30, title: '30-day review', bullets: [
+        'Full performance review with your manager: sales, engagement, commission earned',
+        'Talk through what’s working and what to focus on next',
+        'Set goals for days 31–60',
+      ], expect: 'Day 30 isn’t the finish line — it’s the first checkpoint of many.' },
+    ],
+  },
+];
+var CURRICULUM_TOTAL_DAYS = CURRICULUM_PHASES.reduce(function (n, p) { return n + p.days.length; }, 0);
+
+// Grade scale shared by the Day 1-30 Plan (certification check) and the Live Trial tab.
+var GRADE_SCALE = ['D', 'C-', 'C', 'C+', 'B-', 'B', 'B+', 'A-', 'A', 'A+'];
+var GRADE_VALUE = { 'D': 1.0, 'C-': 1.7, 'C': 2.0, 'C+': 2.3, 'B-': 2.7, 'B': 3.0, 'B+': 3.3, 'A-': 3.7, 'A': 4.0, 'A+': 4.3 };
+var CERT_THRESHOLD = 'B'; // the bar every Live Trial platform must clear for Day 14 sign-off
+var CERT_PLATFORMS = ['whatnot', 'ebay', 'tiktok'];
+
+function gradeMeetsThreshold(grade, threshold) {
+  return GRADE_VALUE[grade] >= GRADE_VALUE[threshold];
+}
+
+function loadRoadmapProgress() {
+  try { return JSON.parse(localStorage.getItem('roadmapProgress') || '{}'); } catch (e) { return {}; }
+}
+function saveRoadmapProgress(progress) {
+  try { localStorage.setItem('roadmapProgress', JSON.stringify(progress)); } catch (e) { /* ignore */ }
+}
+
+// Live Trial results, shared with the Live Trial tab -- {whatnot: {grade, date}, ebay: {...}, tiktok: {...}}
+function loadLiveTrialResults() {
+  try { return JSON.parse(localStorage.getItem('liveTrialResults') || '{}'); } catch (e) { return {}; }
+}
+function saveLiveTrialResult(platformId, grade) {
+  var results = loadLiveTrialResults();
+  results[platformId] = { grade: grade, date: new Date().toISOString().slice(0, 10) };
+  try { localStorage.setItem('liveTrialResults', JSON.stringify(results)); } catch (e) { /* ignore */ }
+}
+
+function certificationStatus() {
+  var results = loadLiveTrialResults();
+  var passed = CERT_PLATFORMS.filter(function (p) { return results[p] && gradeMeetsThreshold(results[p].grade, CERT_THRESHOLD); });
+  return { passedCount: passed.length, total: CERT_PLATFORMS.length, ready: passed.length === CERT_PLATFORMS.length, results: results };
+}
+
+function renderRoadmap() {
+  var panel = trainingPanels.roadmap;
+  var progress = loadRoadmapProgress();
+  var doneCount = 0;
+  CURRICULUM_PHASES.forEach(function (phase) { phase.days.forEach(function (d) { if (progress[d.day]) doneCount++; }); });
+  var cert = certificationStatus();
+  var platformLabel = { whatnot: 'Whatnot', ebay: 'eBay Live', tiktok: 'TikTok Shop' };
+
+  var certBanner =
+    '<div style="border-radius:12px;padding:16px;margin-bottom:16px;background:' + (cert.ready ? 'var(--success-bg)' : 'var(--surface)') + ';border:1px solid ' + (cert.ready ? 'var(--success)' : 'var(--border)') + ';">' +
+    '<div style="font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:0.04em;color:' + (cert.ready ? 'var(--success)' : 'var(--accent)') + ';">Day 14 certification — ' + (cert.ready ? 'Ready to go live solo ✓' : cert.passedCount + ' of ' + cert.total + ' platforms cleared') + '</div>' +
+    '<div style="font-size:13px;color:var(--text-dim);margin-top:6px;line-height:1.5;">Needs a ' + CERT_THRESHOLD + ' or better on Whatnot, eBay Live, and TikTok Shop in the Live Trial tab.</div>' +
+    '<div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;">' +
+    CERT_PLATFORMS.map(function (p) {
+      var r = cert.results[p];
+      var ok = r && gradeMeetsThreshold(r.grade, CERT_THRESHOLD);
+      return '<div style="flex:1;min-width:90px;text-align:center;padding:8px;border-radius:8px;background:var(--surface-alt);">' +
+        '<div style="font-size:11px;color:var(--text-dim);">' + platformLabel[p] + '</div>' +
+        '<div style="font-size:15px;font-weight:700;color:' + (ok ? 'var(--success)' : (r ? 'var(--danger)' : 'var(--text-dim)')) + ';">' + (r ? r.grade : '—') + '</div>' +
+        '</div>';
+    }).join('') +
+    '</div></div>';
+
+  panel.innerHTML =
+    '<p style="color:var(--text-dim);font-size:13px;margin-top:0;">Your full onboarding, day by day. The goal: ready to run a show completely on your own by <b style="color:var(--text);">day 14</b>.</p>' +
+    '<div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px 16px;margin-bottom:14px;">' +
+    '<div style="font-size:13px;color:var(--text-dim);margin-bottom:6px;">Overall progress</div>' +
+    '<div style="height:8px;border-radius:4px;background:var(--surface-alt);overflow:hidden;">' +
+    '<div style="height:100%;width:' + Math.round((doneCount / CURRICULUM_TOTAL_DAYS) * 100) + '%;background:var(--accent);"></div>' +
+    '</div>' +
+    '<div style="font-size:12px;color:var(--text-dim);margin-top:6px;">' + doneCount + ' of ' + CURRICULUM_TOTAL_DAYS + ' days marked complete</div>' +
+    '</div>' +
+    certBanner +
+    CURRICULUM_PHASES.map(function (phase) {
+      return '<div style="margin-bottom:10px;">' +
+        '<button type="button" class="roadmap-phase-toggle" data-phase="' + phase.id + '" style="width:100%;text-align:left;padding:12px 14px;font-size:14px;font-weight:700;border-radius:10px;border:1px solid ' + (phase.milestone ? 'var(--accent)' : 'var(--border)') + ';background:' + (phase.milestone ? 'var(--surface-alt)' : 'var(--surface)') + ';color:var(--text);display:flex;justify-content:space-between;align-items:center;">' +
+        '<span>' + escapeHtml(phase.label) + ' <span style="color:var(--text-dim);font-weight:500;font-size:12px;">(' + phase.range + ')</span></span>' +
+        '<span class="roadmap-phase-caret" data-phase="' + phase.id + '" style="color:var(--text-dim);">▾</span>' +
+        '</button>' +
+        '<div class="roadmap-phase-body" data-phase="' + phase.id + '" style="display:none;padding-top:8px;">' +
+        phase.days.map(function (d) {
+          var checked = !!progress[d.day];
+          return '<label style="display:flex;gap:12px;align-items:flex-start;padding:12px 14px;border:1px solid var(--border);border-radius:10px;margin-bottom:8px;cursor:pointer;">' +
+            '<input type="checkbox" class="roadmap-check" data-day="' + d.day + '" ' + (checked ? 'checked' : '') + ' style="margin-top:3px;width:18px;height:18px;flex:none;" />' +
+            '<span style="flex:1;">' +
+            '<div style="font-size:14px;font-weight:700;' + (checked ? 'text-decoration:line-through;color:var(--text-dim);' : '') + '">Day ' + d.day + ' — ' + escapeHtml(d.title) + '</div>' +
+            '<ul style="margin:6px 0 0;padding-left:18px;font-size:13px;line-height:1.6;color:var(--text);">' +
+            d.bullets.map(function (b) { return '<li>' + escapeHtml(b) + '</li>'; }).join('') +
+            '</ul>' +
+            (d.expect ? '<div style="font-size:12px;color:var(--accent);margin-top:6px;font-style:italic;">' + escapeHtml(d.expect) + '</div>' : '') +
+            '</span></label>';
+        }).join('') +
+        '</div></div>';
+    }).join('');
+
+  var checks = panel.querySelectorAll('.roadmap-check');
+  for (var i = 0; i < checks.length; i++) {
+    checks[i].addEventListener('change', function (e) {
+      var p = loadRoadmapProgress();
+      p[e.currentTarget.getAttribute('data-day')] = e.currentTarget.checked;
+      saveRoadmapProgress(p);
+      renderRoadmap();
+    });
+  }
+  var toggles = panel.querySelectorAll('.roadmap-phase-toggle');
+  for (var j = 0; j < toggles.length; j++) {
+    toggles[j].addEventListener('click', function (e) {
+      var id = e.currentTarget.getAttribute('data-phase');
+      var body = panel.querySelector('.roadmap-phase-body[data-phase="' + id + '"]');
+      var caret = panel.querySelector('.roadmap-phase-caret[data-phase="' + id + '"]');
+      var open = body.style.display !== 'none';
+      body.style.display = open ? 'none' : 'block';
+      caret.textContent = open ? '▾' : '▴';
+    });
+  }
+  // Open the phase containing the next incomplete day by default so there's always something
+  // expanded, instead of every seller landing on a wall of collapsed rows.
+  var nextPhase = null;
+  for (var pi = 0; pi < CURRICULUM_PHASES.length && !nextPhase; pi++) {
+    if (CURRICULUM_PHASES[pi].days.some(function (d) { return !progress[d.day]; })) nextPhase = CURRICULUM_PHASES[pi].id;
+  }
+  if (!nextPhase) nextPhase = CURRICULUM_PHASES[0].id;
+  var openBody = panel.querySelector('.roadmap-phase-body[data-phase="' + nextPhase + '"]');
+  var openCaret = panel.querySelector('.roadmap-phase-caret[data-phase="' + nextPhase + '"]');
+  if (openBody) { openBody.style.display = 'block'; openCaret.textContent = '▴'; }
 }
 
 // ---- Brands: Study list / Practice flashcards ----
@@ -1420,6 +1718,62 @@ function renderCare() {
     }).join('');
 }
 
+// ---- Describe It: how to actually present an item on screen -- every angle for bags, and the
+// exact condition vocabulary for jewelry. This is what a "good show" looks like, mechanically,
+// before the Live Trial tab asks anyone to practice it under pressure.
+var BAG_ANGLES = [
+  { name: '1. Front', how: 'Full front view, held straight on, centered in frame -- this is the first thing every viewer needs to see.' },
+  { name: '2. Back', how: 'Flip it and hold the back panel to the camera just as steadily as the front.' },
+  { name: '3. Interior', how: 'Open it all the way. Show the lining, every pocket, and call out any staining, pen marks, or odor before anyone has to ask.' },
+  { name: '4. Bottom & corners', how: 'Tilt it to show the base and all four corners -- this is the single most-worn spot on any bag, so it’s the first place a buyer will look for wear.' },
+  { name: '5. Hardware', how: 'Zippers, clasps, buckles, feet. Call out any tarnish, scratching, or a worn date/serial stamp if one is visible.' },
+  { name: '6. Straps & handles', how: 'Show the full length of the strap or handle, both sides -- point out any cracking, stickiness, or fraying stitching.' },
+];
+var JEWELRY_TERMS = [
+  { term: 'Tarnish', def: 'The metal has dulled or darkened -- normal on silver and base metals over time. Often polishes off, unlike plating wear.' },
+  { term: 'Surface scratches', def: 'Light marks from normal wear, usually only visible when the light hits at an angle. Expected on anything pre-owned.' },
+  { term: 'Hairline scratches', def: 'Very fine, thread-thin scratches -- name these specifically instead of lumping them into "scratches." It sets the right expectation and builds trust.' },
+  { term: 'Plating wear / brassing', def: 'The gold or silver plating has worn through to the base metal underneath, usually at edges or high-contact points. Unlike tarnish, this can’t be polished away.' },
+  { term: 'Clasp function', def: 'Does it open, close, and latch securely? Test it on camera, don’t just say it works.' },
+  { term: 'Stone clarity & setting', def: 'Call out any visible chips, cloudiness, or a stone that wiggles loose in its setting.' },
+  { term: 'Hallmarks & stamps', def: 'Identifying marks like 925, 14K, or a designer stamp. Show these on screen too -- they’re part of what confirms authenticity.' },
+];
+var DESCRIBE_STATEMENTS = [
+  { bad: 'Isn’t there some little scratch or something on here?', good: 'There’s a hairline scratch here on the clasp.' },
+  { bad: 'Do you see how the corners look kind of worn?', good: 'The corners show light wear, consistent with normal use.' },
+  { bad: 'Is this maybe a little tarnished?', good: 'This has some tarnish here on the chain -- it polishes off easily.' },
+];
+function renderDescribeIt() {
+  var panel = trainingPanels.describe;
+  panel.innerHTML =
+    '<p style="color:var(--text-dim);font-size:13px;margin-top:0;">A buyer can only judge what you actually put on screen. Show every angle, name every flaw correctly, and say it as a statement.</p>' +
+    '<div style="background:var(--surface);border:1px solid var(--accent);border-radius:10px;padding:12px 14px;margin-bottom:16px;">' +
+    '<div style="font-size:13px;font-weight:700;color:var(--accent);">Keep it in frame</div>' +
+    '<div style="font-size:13px;color:var(--text);margin-top:4px;line-height:1.5;">Hold the item steady in the same spot on screen as you rotate it -- move the item, not the camera. If you drift off screen, get back on before you keep talking.</div>' +
+    '</div>' +
+    '<div style="font-size:13px;font-weight:700;color:var(--accent);margin:16px 0 10px;text-transform:uppercase;letter-spacing:0.04em;">Bags -- the 6 angles, every time</div>' +
+    BAG_ANGLES.map(function (a) {
+      return '<div style="padding:12px 14px;border:1px solid var(--border);border-radius:10px;margin-bottom:8px;">' +
+        '<div style="font-size:15px;font-weight:700;">' + escapeHtml(a.name) + '</div>' +
+        '<div style="font-size:13px;color:var(--text);margin-top:4px;line-height:1.5;">' + escapeHtml(a.how) + '</div>' +
+        '</div>';
+    }).join('') +
+    '<div style="font-size:13px;font-weight:700;color:var(--accent);margin:20px 0 10px;text-transform:uppercase;letter-spacing:0.04em;">Jewelry -- condition vocabulary</div>' +
+    JEWELRY_TERMS.map(function (j) {
+      return '<div style="padding:12px 14px;border:1px solid var(--border);border-radius:10px;margin-bottom:8px;">' +
+        '<div style="font-size:15px;font-weight:700;">' + escapeHtml(j.term) + '</div>' +
+        '<div style="font-size:13px;color:var(--text);margin-top:4px;line-height:1.5;">' + escapeHtml(j.def) + '</div>' +
+        '</div>';
+    }).join('') +
+    '<div style="font-size:13px;font-weight:700;color:var(--accent);margin:20px 0 10px;text-transform:uppercase;letter-spacing:0.04em;">Say it as a statement</div>' +
+    DESCRIBE_STATEMENTS.map(function (ex) {
+      return '<div style="border:1px solid var(--border);border-radius:10px;padding:12px 14px;margin-bottom:8px;">' +
+        '<div style="font-size:13px;color:var(--danger);"><s>' + escapeHtml(ex.bad) + '</s></div>' +
+        '<div style="font-size:14px;color:var(--success);font-weight:600;margin-top:4px;">→ ' + escapeHtml(ex.good) + '</div>' +
+        '</div>';
+    }).join('');
+}
+
 // ---- Selling Guide: live-selling coaching, built around one rule repeated on purpose --
 // statements sell, questions don't. Every section below reinforces it at least once,
 // because it's the single most important habit a new seller has to build.
@@ -1465,6 +1819,443 @@ function renderSelling() {
     '<div style="font-size:14px;font-weight:700;">One more time, because it’s the whole game:</div>' +
     '<div style="font-size:15px;margin-top:4px;">' + escapeHtml(SELLING_RULE) + '</div>' +
     '</div>';
+}
+
+// ---------------------------------------------------------------------------
+// Live Trial: an interactive mock-live simulation so a seller can practice handling real buyer
+// comments -- one skin per platform (Whatnot, eBay Live, TikTok Shop) sharing one engine --
+// before ever going live for real. A viewer feed fires scripted comments at a sample item;
+// the seller types back exactly what they'd say out loud, and can toggle "Showing on screen"
+// (auto-expires after 15s, same as real life -- you have to keep affirming it). If a viewer
+// asks to see the item while that's expired, a nudge banner fires immediately.
+//
+// Auto-grading is deliberately simple and transparent -- keyword/heuristic matching, not real
+// speech or video analysis -- so it's a strong first pass, not a replacement for a human. The
+// Manager Rubric beneath the platform picker is where pronunciation and true screen presence
+// (things this code genuinely cannot verify) get judged by someone watching and listening.
+// ---------------------------------------------------------------------------
+var TRIAL_PLATFORMS = [
+  { id: 'whatnot', label: 'Whatnot', icon: '🟣', headerBg: '#5b21b6', headerText: '#ffffff', bubbleBg: '#3b0764', accent: '#c4b5fd' },
+  { id: 'ebay', label: 'eBay Live', icon: '🔵', headerBg: '#0064d2', headerText: '#ffffff', bubbleBg: '#063a6b', accent: '#8ecbff' },
+  { id: 'tiktok', label: 'TikTok Shop', icon: '⬛', headerBg: '#000000', headerText: '#ffffff', bubbleBg: '#1f1f1f', accent: '#ff5c7a' },
+];
+function trialPlatformById(id) { return TRIAL_PLATFORMS.filter(function (p) { return p.id === id; })[0]; }
+
+var TRIAL_CATEGORY_ICON = { bag: '👜', jewelry: '💍', sunglasses: '😎' };
+
+// Sample inventory for practice only -- separate from the real Scan/Search catalog, so a
+// training run never touches live listings. Add an item the same way as BRANDS: one object.
+var TRIAL_INVENTORY = [
+  { id: 'lv-neverfull', category: 'bag', brand: 'Louis Vuitton', name: 'Neverfull MM', price: 895, keywords: ['monogram', 'canvas', 'vachetta', 'tote', 'patina'] },
+  { id: 'chanel-flap', category: 'bag', brand: 'Chanel', name: 'Classic Flap, medium', price: 4200, keywords: ['caviar', 'lambskin', 'quilted', 'chain', 'turnlock'] },
+  { id: 'gucci-marmont', category: 'bag', brand: 'Gucci', name: 'GG Marmont shoulder bag', price: 1350, keywords: ['matelasse', 'leather', 'antique gold hardware'] },
+  { id: 'tiffany-bracelet', category: 'jewelry', brand: 'Tiffany & Co.', name: 'Return to Tiffany bracelet', price: 220, keywords: ['sterling silver', 'tarnish', 'hallmark', 'clasp'] },
+  { id: 'cartier-love', category: 'jewelry', brand: 'Cartier', name: 'Love bracelet', price: 6800, keywords: ['18k gold', 'screw motif', 'hallmark', 'plating'] },
+  { id: 'rayban-aviator', category: 'sunglasses', brand: 'Ray-Ban', name: 'Aviator Classic', price: 95, keywords: ['arm code', 'lens', 'hinge', 'gold frame'] },
+];
+
+// Comment bank -- {{item}}/{{brand}} fill in at runtime. checkPrice/checkKeywordCategory mark
+// which responses get scanned for the specific detail a real buyer would need to hear.
+var TRIAL_COMMENTS = [
+  { text: 'Can I see {{item}}?', category: 'any', wantsScreen: true },
+  { text: 'How much is it?', category: 'any', wantsScreen: false, checkPrice: true },
+  { text: 'Is this authentic?', category: 'any', wantsScreen: false },
+  { text: 'Can you show me the inside?', category: 'bag', wantsScreen: true },
+  { text: 'What do the corners and bottom look like?', category: 'bag', wantsScreen: true, checkKeywordCategory: true },
+  { text: 'What’s it made of?', category: 'bag', wantsScreen: false, checkKeywordCategory: true },
+  { text: 'Any tarnish or scratches on it?', category: 'jewelry', wantsScreen: true, checkKeywordCategory: true },
+  { text: 'Does the clasp close securely?', category: 'jewelry', wantsScreen: true },
+  { text: 'Can you show the size code on the arm?', category: 'sunglasses', wantsScreen: true },
+  { text: 'Any scratches on the lenses?', category: 'sunglasses', wantsScreen: true, checkKeywordCategory: true },
+];
+var TRIAL_VIEWERS = ['@lux_fan22', '@bagqueen91', '@resell_ray', '@vintage_vee', '@thrift2flip', '@dealseeker', '@charmcollector', '@shopwithsam', '@closetcurator', '@preloved_finds'];
+function randomTrialViewer() { return TRIAL_VIEWERS[Math.floor(Math.random() * TRIAL_VIEWERS.length)]; }
+function shuffledCopy(arr) {
+  var copy = arr.slice();
+  for (var j = copy.length - 1; j > 0; j--) {
+    var k = Math.floor(Math.random() * (j + 1));
+    var tmp = copy[j]; copy[j] = copy[k]; copy[k] = tmp;
+  }
+  return copy;
+}
+function pickTrialComments(item) {
+  var pool = TRIAL_COMMENTS.filter(function (c) { return c.category === 'any' || c.category === item.category; });
+  return shuffledCopy(pool).slice(0, Math.min(6, pool.length)).map(function (c) {
+    return { def: c, text: c.text.replace('{{item}}', 'the ' + item.name).replace('{{brand}}', item.brand), user: randomTrialViewer() };
+  });
+}
+
+var SHOW_WINDOW_MS = 15000; // how long "Showing on screen" stays confirmed before it needs re-tapping
+var RUBRIC_ITEMS = [
+  'Pronounced every brand/product name correctly',
+  'Kept the item clearly and steadily in frame throughout',
+  'Confident, warm tone -- didn’t sound like reading a script',
+  'Handled pricing or objections smoothly, without hedging',
+  'Overall energy matched a real live show',
+];
+function loadManagerRubrics() { try { return JSON.parse(localStorage.getItem('managerRubricEntries') || '[]'); } catch (e) { return []; } }
+function saveManagerRubrics(list) { try { localStorage.setItem('managerRubricEntries', JSON.stringify(list)); } catch (e) { /* ignore */ } }
+
+var trialView = 'platforms'; // 'platforms' | 'items' | 'session' | 'results'
+var trialSelectedPlatform = null;
+var trialSession = null;
+var trialLastResult = null;
+var trialTickerId = null;
+
+function renderLiveTrial() {
+  trialView = 'platforms';
+  renderTrialPanel();
+}
+
+function renderTrialPanel() {
+  var panel = trainingPanels.trial;
+  if (trialView === 'platforms') panel.innerHTML = trialPlatformsHtml();
+  else if (trialView === 'items') panel.innerHTML = trialItemsHtml();
+  else if (trialView === 'session') panel.innerHTML = trialSessionHtml();
+  else if (trialView === 'results') panel.innerHTML = trialResultsHtml();
+  wireTrialPanel();
+}
+
+function trialPlatformsHtml() {
+  var results = loadLiveTrialResults();
+  return '<p style="color:var(--text-dim);font-size:13px;margin-top:0;">Practice a full mock live show before you’re ever live for real. Pick a platform -- a viewer feed acts like a real show, right down to buyers asking to see the item.</p>' +
+    '<div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:10px 14px;margin-bottom:16px;font-size:12px;color:var(--text-dim);line-height:1.5;">Auto-graded on statements-vs-questions, item accuracy, and screen presence -- a strong first pass, not a substitute for a manager watching and listening. Use the Manager Rubric below for pronunciation and true screen presence.</div>' +
+    TRIAL_PLATFORMS.map(function (p) {
+      var r = results[p.id];
+      return '<button type="button" class="trial-platform-pick" data-platform="' + p.id + '" style="display:block;width:100%;text-align:left;padding:16px;margin-bottom:10px;border-radius:12px;border:1px solid var(--border);background:var(--surface);color:var(--text);">' +
+        '<div style="display:flex;justify-content:space-between;align-items:center;">' +
+        '<span style="font-size:16px;font-weight:700;">' + p.icon + ' ' + p.label + '</span>' +
+        (r ? '<span style="font-size:14px;font-weight:700;color:' + (gradeMeetsThreshold(r.grade, CERT_THRESHOLD) ? 'var(--success)' : 'var(--danger)') + ';">Last: ' + r.grade + '</span>' : '<span style="font-size:12px;color:var(--text-dim);">Not attempted</span>') +
+        '</div></button>';
+    }).join('') +
+    '<div style="margin-top:24px;">' + managerRubricHtml() + '</div>';
+}
+
+function trialItemsHtml() {
+  var platform = trialPlatformById(trialSelectedPlatform);
+  return '<button type="button" id="trial-back-platforms" style="background:none;border:none;padding:6px 0;margin-bottom:10px;font-size:13px;color:var(--text-dim);">← Choose a different platform</button>' +
+    '<div style="font-size:15px;font-weight:700;margin-bottom:10px;">' + platform.icon + ' ' + platform.label + ' -- pick an item to go live with</div>' +
+    TRIAL_INVENTORY.map(function (it) {
+      return '<button type="button" class="trial-item-pick" data-item="' + it.id + '" style="display:block;width:100%;text-align:left;padding:14px;margin-bottom:8px;border-radius:10px;border:1px solid var(--border);background:var(--surface);color:var(--text);">' +
+        '<div style="font-size:14px;font-weight:700;">' + TRIAL_CATEGORY_ICON[it.category] + ' ' + escapeHtml(it.brand) + ' ' + escapeHtml(it.name) + '</div>' +
+        '<div style="font-size:13px;color:var(--text-dim);margin-top:2px;">$' + it.price + '</div></button>';
+    }).join('');
+}
+
+function commentBubbleHtml(platform, user, text) {
+  return '<div style="margin-bottom:8px;">' +
+    '<span style="font-size:12px;font-weight:700;color:' + platform.accent + ';">' + escapeHtml(user) + '</span> ' +
+    '<span style="font-size:13px;color:var(--text);">' + escapeHtml(text) + '</span></div>';
+}
+function responseBubbleHtml(platform, text) {
+  return '<div style="margin:4px 0 14px;text-align:right;">' +
+    '<span style="display:inline-block;padding:8px 12px;border-radius:12px;background:' + platform.bubbleBg + ';color:#ffffff;font-size:13px;max-width:85%;text-align:left;">' + escapeHtml(text) + '</span></div>';
+}
+
+function trialSessionHtml() {
+  var platform = trialPlatformById(trialSession.platformId);
+  var item = trialSession.item;
+  var current = trialSession.comments[trialSession.currentIndex];
+  var progressPct = Math.round((trialSession.currentIndex / trialSession.comments.length) * 100);
+
+  return '<div style="border-radius:12px;overflow:hidden;border:1px solid var(--border);margin-bottom:14px;">' +
+    '<div style="background:' + platform.headerBg + ';color:' + platform.headerText + ';padding:12px 14px;display:flex;justify-content:space-between;align-items:center;">' +
+    '<div style="font-size:13px;font-weight:700;">' + platform.icon + ' ' + platform.label + ' &middot; 🔴 LIVE</div>' +
+    '<div style="font-size:12px;">Comment ' + (trialSession.currentIndex + 1) + ' of ' + trialSession.comments.length + '</div>' +
+    '</div>' +
+    '<div style="padding:12px 14px;background:var(--surface-alt);display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;">' +
+    '<div style="font-size:13px;font-weight:700;">' + TRIAL_CATEGORY_ICON[item.category] + ' ' + escapeHtml(item.brand) + ' ' + escapeHtml(item.name) + ' &middot; $' + item.price + '</div>' +
+    '<button type="button" id="trial-showing-toggle" style="flex:none;padding:8px 12px;font-size:12px;font-weight:700;border-radius:8px;border:1px solid var(--accent);background:var(--accent);color:var(--accent-text);white-space:nowrap;">📌 Showing on screen</button>' +
+    '</div>' +
+    '<div style="padding:4px 14px;background:var(--surface-alt);"><span id="trial-showing-status" style="font-size:12px;"></span></div>' +
+    '<div style="height:4px;background:var(--border);"><div style="height:100%;width:' + progressPct + '%;background:var(--accent);"></div></div>' +
+    '</div>' +
+    '<div id="trial-nudge" style="display:none;background:var(--danger-bg);color:var(--danger);border-radius:10px;padding:10px 14px;margin-bottom:12px;font-size:13px;font-weight:600;">⚠️ You’re not confirmed on screen -- a viewer just asked to see ' + escapeHtml(item.name) + '. Tap "Showing on screen" and hold it up before you respond.</div>' +
+    '<div style="max-height:280px;overflow-y:auto;padding:4px 2px;margin-bottom:12px;">' +
+    trialSession.responses.map(function (r) { return commentBubbleHtml(platform, r.commentUser, r.commentText) + responseBubbleHtml(platform, r.text); }).join('') +
+    commentBubbleHtml(platform, current.user, current.text) +
+    '</div>' +
+    '<textarea id="trial-response-input" placeholder="Type exactly what you’d say out loud right now..." rows="3" style="width:100%;padding:12px;font-size:14px;border-radius:10px;resize:vertical;"></textarea>' +
+    '<div style="display:flex;gap:8px;margin-top:8px;">' +
+    '<button type="button" id="trial-end-early" style="padding:12px 14px;font-size:13px;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--text-dim);">End early</button>' +
+    '<button type="button" id="trial-send" style="flex:1;padding:12px;font-size:14px;font-weight:700;border-radius:8px;border:none;background:var(--accent);color:var(--accent-text);">Send response</button>' +
+    '</div>';
+}
+
+function trialScoreBox(label, ratio) {
+  var pct = Math.round(ratio * 100);
+  return '<div style="flex:1;min-width:110px;text-align:center;padding:10px;border-radius:8px;background:var(--surface-alt);">' +
+    '<div style="font-size:11px;color:var(--text-dim);">' + label + '</div>' +
+    '<div style="font-size:16px;font-weight:700;color:' + (pct >= 80 ? 'var(--success)' : pct >= 60 ? 'var(--accent)' : 'var(--danger)') + ';">' + pct + '%</div></div>';
+}
+
+function trialResultsHtml() {
+  var r = trialLastResult;
+  var platform = trialPlatformById(r.platformId);
+  var gradeColor = GRADE_VALUE[r.grade] >= GRADE_VALUE[CERT_THRESHOLD] ? 'var(--success)' : GRADE_VALUE[r.grade] >= GRADE_VALUE['C'] ? 'var(--accent)' : 'var(--danger)';
+  return '<div style="text-align:center;padding:24px 16px;border-radius:12px;background:var(--surface);border:1px solid var(--border);margin-bottom:16px;">' +
+    '<div style="font-size:13px;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.04em;">' + platform.icon + ' ' + platform.label + ' &middot; ' + escapeHtml(r.item.brand) + ' ' + escapeHtml(r.item.name) + '</div>' +
+    '<div style="font-size:56px;font-weight:800;color:' + gradeColor + ';margin:8px 0;">' + r.grade + '</div>' +
+    '<div style="font-size:13px;color:var(--text-dim);">Score: ' + r.score + '/100</div>' +
+    '</div>' +
+    '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;">' +
+    trialScoreBox('Statements', r.statementRatio) +
+    trialScoreBox('Item accuracy', r.conditionScore) +
+    trialScoreBox('Price handling', r.priceScore) +
+    trialScoreBox('Screen presence', r.screenScore) +
+    '</div>' +
+    '<div style="font-size:13px;font-weight:700;color:var(--accent);margin:16px 0 10px;text-transform:uppercase;letter-spacing:0.04em;">Feedback</div>' +
+    r.feedback.map(function (f) {
+      return '<div style="padding:12px 14px;border:1px solid var(--border);border-radius:10px;margin-bottom:8px;font-size:13px;line-height:1.5;">' + escapeHtml(f) + '</div>';
+    }).join('') +
+    '<div style="display:flex;gap:8px;margin-top:16px;">' +
+    '<button type="button" id="trial-retry" style="flex:1;padding:14px;font-size:14px;font-weight:700;border-radius:10px;border:1px solid var(--accent);background:var(--surface);color:var(--accent);">Try again</button>' +
+    '<button type="button" id="trial-done" style="flex:1;padding:14px;font-size:14px;font-weight:700;border-radius:10px;border:none;background:var(--accent);color:var(--accent-text);">Back to Live Trial</button>' +
+    '</div>';
+}
+
+function managerRubricHtml() {
+  var entries = loadManagerRubrics();
+  return '<div style="font-size:13px;font-weight:700;color:var(--accent);margin-bottom:10px;text-transform:uppercase;letter-spacing:0.04em;">Manager rubric -- pronunciation &amp; screen presence</div>' +
+    '<p style="color:var(--text-dim);font-size:12px;margin-top:0;">Auto-grading can’t hear pronunciation or truly confirm what’s on screen -- a manager watching (live or on a recording) fills this out instead.</p>' +
+    '<div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:14px;">' +
+    '<input id="rubric-seller" type="text" placeholder="Seller name" value="' + escapeHtml(currentSellerName()) + '" style="width:100%;padding:10px;font-size:13px;border-radius:8px;margin-bottom:8px;" />' +
+    '<select id="rubric-platform" style="width:100%;padding:10px;font-size:13px;border-radius:8px;margin-bottom:8px;">' +
+    TRIAL_PLATFORMS.map(function (p) { return '<option value="' + p.id + '">' + p.label + '</option>'; }).join('') +
+    '</select>' +
+    RUBRIC_ITEMS.map(function (item, i) {
+      return '<label style="display:flex;gap:10px;align-items:flex-start;padding:8px 0;cursor:pointer;">' +
+        '<input type="checkbox" class="rubric-check" data-idx="' + i + '" style="margin-top:2px;width:16px;height:16px;flex:none;" />' +
+        '<span style="font-size:13px;">' + escapeHtml(item) + '</span></label>';
+    }).join('') +
+    '<select id="rubric-grade" style="width:100%;padding:10px;font-size:13px;border-radius:8px;margin:8px 0;">' +
+    GRADE_SCALE.slice().reverse().map(function (g) { return '<option value="' + g + '"' + (g === 'B' ? ' selected' : '') + '>' + g + '</option>'; }).join('') +
+    '</select>' +
+    '<textarea id="rubric-notes" placeholder="Notes (what to work on, what went well)..." rows="2" style="width:100%;padding:10px;font-size:13px;border-radius:8px;margin-bottom:8px;resize:vertical;"></textarea>' +
+    '<button type="button" id="rubric-save" style="width:100%;padding:12px;font-size:13px;font-weight:700;border-radius:8px;border:none;background:var(--accent);color:var(--accent-text);">Save rubric</button>' +
+    '</div>' +
+    (entries.length ? entries.slice().reverse().slice(0, 10).map(function (e, idx) {
+      var realIdx = entries.length - 1 - idx;
+      return '<div style="border:1px solid var(--border);border-radius:10px;padding:10px 12px;margin-bottom:8px;position:relative;">' +
+        '<button type="button" class="rubric-delete" data-idx="' + realIdx + '" style="position:absolute;top:8px;right:8px;background:none;border:none;color:var(--text-dim);font-size:14px;">✕</button>' +
+        '<div style="font-size:13px;font-weight:700;">' + escapeHtml(e.seller || 'Unnamed') + ' &middot; ' + trialPlatformById(e.platform).label + ' &middot; <span style="color:var(--accent);">' + e.grade + '</span></div>' +
+        '<div style="font-size:11px;color:var(--text-dim);margin-top:2px;">' + e.date + '</div>' +
+        (e.notes ? '<div style="font-size:12px;margin-top:6px;line-height:1.5;">' + escapeHtml(e.notes) + '</div>' : '') +
+        '</div>';
+    }).join('') : '');
+}
+
+function wireTrialPanel() {
+  var panel = trainingPanels.trial;
+  if (trialView === 'platforms') {
+    var picks = panel.querySelectorAll('.trial-platform-pick');
+    for (var i = 0; i < picks.length; i++) {
+      picks[i].addEventListener('click', function (e) {
+        trialSelectedPlatform = e.currentTarget.getAttribute('data-platform');
+        trialView = 'items';
+        renderTrialPanel();
+      });
+    }
+    var saveBtn = document.getElementById('rubric-save');
+    if (saveBtn) saveBtn.addEventListener('click', function () {
+      var checks = panel.querySelectorAll('.rubric-check');
+      var checkedItems = [];
+      for (var c = 0; c < checks.length; c++) { if (checks[c].checked) checkedItems.push(RUBRIC_ITEMS[c]); }
+      var entry = {
+        seller: document.getElementById('rubric-seller').value.trim(),
+        platform: document.getElementById('rubric-platform').value,
+        grade: document.getElementById('rubric-grade').value,
+        notes: document.getElementById('rubric-notes').value.trim(),
+        checked: checkedItems,
+        date: new Date().toISOString().slice(0, 10),
+      };
+      var list = loadManagerRubrics();
+      list.push(entry);
+      saveManagerRubrics(list);
+      renderTrialPanel();
+    });
+    var deletes = panel.querySelectorAll('.rubric-delete');
+    for (var d = 0; d < deletes.length; d++) {
+      deletes[d].addEventListener('click', function (e) {
+        var idx = parseInt(e.currentTarget.getAttribute('data-idx'), 10);
+        var list = loadManagerRubrics();
+        list.splice(idx, 1);
+        saveManagerRubrics(list);
+        renderTrialPanel();
+      });
+    }
+  } else if (trialView === 'items') {
+    document.getElementById('trial-back-platforms').addEventListener('click', function () {
+      trialView = 'platforms';
+      renderTrialPanel();
+    });
+    var itemPicks = panel.querySelectorAll('.trial-item-pick');
+    for (var j = 0; j < itemPicks.length; j++) {
+      itemPicks[j].addEventListener('click', function (e) {
+        startTrialSession(trialSelectedPlatform, e.currentTarget.getAttribute('data-item'));
+      });
+    }
+  } else if (trialView === 'session') {
+    document.getElementById('trial-showing-toggle').addEventListener('click', toggleShowing);
+    document.getElementById('trial-send').addEventListener('click', submitTrialResponse);
+    document.getElementById('trial-end-early').addEventListener('click', function () {
+      if (trialSession.responses.length === 0) {
+        stopShowingTicker();
+        trialView = 'platforms';
+        trialSession = null;
+        renderTrialPanel();
+      } else {
+        finishTrialSession();
+      }
+    });
+    updateShowingStatusUI();
+  } else if (trialView === 'results') {
+    document.getElementById('trial-retry').addEventListener('click', function () {
+      startTrialSession(trialLastResult.platformId, trialLastResult.item.id);
+    });
+    document.getElementById('trial-done').addEventListener('click', function () {
+      trialView = 'platforms';
+      trialSession = null;
+      renderTrialPanel();
+    });
+  }
+}
+
+function startTrialSession(platformId, itemId) {
+  var item = TRIAL_INVENTORY.filter(function (i) { return i.id === itemId; })[0];
+  trialSession = {
+    platformId: platformId,
+    item: item,
+    comments: pickTrialComments(item),
+    currentIndex: 0,
+    responses: [],
+    showingSince: null,
+  };
+  trialView = 'session';
+  renderTrialPanel();
+  startShowingTicker();
+}
+
+function isCurrentlyShowing() {
+  return !!trialSession && !!trialSession.showingSince && (Date.now() - trialSession.showingSince) < SHOW_WINDOW_MS;
+}
+function toggleShowing() {
+  if (!trialSession) return;
+  trialSession.showingSince = Date.now();
+  updateShowingStatusUI();
+}
+function startShowingTicker() {
+  stopShowingTicker();
+  trialTickerId = setInterval(updateShowingStatusUI, 1000);
+}
+function stopShowingTicker() {
+  if (trialTickerId) { clearInterval(trialTickerId); trialTickerId = null; }
+}
+function updateShowingStatusUI() {
+  var statusEl = document.getElementById('trial-showing-status');
+  var nudgeEl = document.getElementById('trial-nudge');
+  if (!statusEl || !trialSession) return;
+  var showing = isCurrentlyShowing();
+  statusEl.textContent = showing ? '📌 Showing on screen' : '⚠️ Not confirmed on screen right now';
+  statusEl.style.color = showing ? 'var(--success)' : 'var(--text-dim)';
+  if (nudgeEl) {
+    var current = trialSession.comments[trialSession.currentIndex];
+    nudgeEl.style.display = (current && current.def.wantsScreen && !showing) ? 'block' : 'none';
+  }
+}
+
+function submitTrialResponse() {
+  var textarea = document.getElementById('trial-response-input');
+  var text = (textarea.value || '').trim();
+  if (!text) return;
+  var current = trialSession.comments[trialSession.currentIndex];
+  trialSession.responses.push({
+    commentText: current.text,
+    commentUser: current.user,
+    def: current.def,
+    text: text,
+    wasShowing: isCurrentlyShowing(),
+  });
+  trialSession.currentIndex++;
+  if (trialSession.currentIndex >= trialSession.comments.length) {
+    finishTrialSession();
+  } else {
+    renderTrialPanel();
+  }
+}
+
+function finishTrialSession() {
+  stopShowingTicker();
+  var result = gradeTrialSession(trialSession);
+  saveLiveTrialResult(trialSession.platformId, result.grade);
+  trialLastResult = result;
+  trialView = 'results';
+  renderTrialPanel();
+}
+
+function scoreToGrade(score) {
+  if (score >= 97) return 'A+';
+  if (score >= 93) return 'A';
+  if (score >= 90) return 'A-';
+  if (score >= 87) return 'B+';
+  if (score >= 83) return 'B';
+  if (score >= 80) return 'B-';
+  if (score >= 77) return 'C+';
+  if (score >= 73) return 'C';
+  if (score >= 70) return 'C-';
+  return 'D';
+}
+
+function gradeTrialSession(session) {
+  var item = session.item;
+  var responses = session.responses;
+  var total = responses.length || 1;
+
+  function isStatement(text) {
+    var t = text.trim();
+    if (/\?\s*$/.test(t)) return false;
+    if (/^(is|are|do|does|did|can|could|would|will|isn't|aren't|don't|doesn't|didn't|wasn't|weren't|have|has)\b/i.test(t)) return false;
+    return true;
+  }
+  function mentionsBrand(text) { return text.toLowerCase().indexOf(item.brand.toLowerCase()) !== -1; }
+  function mentionsKeyword(text) {
+    var lower = text.toLowerCase();
+    return item.keywords.some(function (k) { return lower.indexOf(k.toLowerCase()) !== -1; });
+  }
+  function mentionsPrice(text) { return /\$\s*\d|\b\d{2,}\b/.test(text); }
+
+  var statementCount = responses.filter(function (r) { return isStatement(r.text); }).length;
+  var brandMentioned = responses.some(function (r) { return mentionsBrand(r.text); });
+
+  var conditionChecks = responses.filter(function (r) { return r.def.checkKeywordCategory; });
+  var conditionScore = conditionChecks.length ? conditionChecks.filter(function (r) { return mentionsKeyword(r.text); }).length / conditionChecks.length : 1;
+
+  var priceChecks = responses.filter(function (r) { return r.def.checkPrice; });
+  var priceScore = priceChecks.length ? priceChecks.filter(function (r) { return mentionsPrice(r.text); }).length / priceChecks.length : 1;
+
+  var screenChecks = responses.filter(function (r) { return r.def.wantsScreen; });
+  var screenScore = screenChecks.length ? screenChecks.filter(function (r) { return r.wasShowing; }).length / screenChecks.length : 1;
+
+  var statementRatio = statementCount / total;
+  var responsivenessScore = responses.length / session.comments.length;
+
+  var score = statementRatio * 30 + (brandMentioned ? 10 : 0) + conditionScore * 20 + priceScore * 15 + screenScore * 20 + responsivenessScore * 5;
+  var grade = scoreToGrade(score);
+
+  var feedback = [];
+  if (statementRatio < 0.7) feedback.push('You phrased several responses as questions or hedges (' + Math.round(statementRatio * 100) + '% were clean statements). Revisit the Selling Guide statement drills.');
+  if (!brandMentioned) feedback.push('You never said "' + item.brand + '" out loud. Lead with brand + item on every response.');
+  if (conditionChecks.length && conditionScore < 1) feedback.push('When asked about material or condition, name the specific detail (see Describe It) instead of a general answer.');
+  if (priceChecks.length && priceScore < 1) feedback.push('When asked the price, state it plainly -- don’t dodge or talk around it.');
+  if (screenChecks.length && screenScore < 1) feedback.push('You weren’t confirmed on screen when a viewer asked to see the item. Keep "Showing on screen" active while you answer.');
+  if (responsivenessScore < 1) feedback.push('You ended the trial before responding to every comment -- a real show doesn’t get to skip questions.');
+  if (!feedback.length) feedback.push('Strong run -- no major gaps this time. Keep this up live.');
+
+  return {
+    score: Math.round(score), grade: grade, statementRatio: statementRatio, brandMentioned: brandMentioned,
+    conditionScore: conditionScore, priceScore: priceScore, screenScore: screenScore,
+    responsivenessScore: responsivenessScore, feedback: feedback, item: item, platformId: session.platformId,
+  };
 }
 })();
 </script>
