@@ -30,7 +30,12 @@
 // first, Next advances through house snapshot / materials / icons / authentication cues / talking
 // points in order, Back steps backward without losing place, finishing the deck marks that brand
 // "Done" (persisted to localStorage) on the picker screen, and exiting early via "Back to brand
-// list" before the last card does NOT mark it done.
+// list" before the last card does NOT mark it done. (14): the Day 1-30 Plan roadmap has been
+// restructured (6 days of foundations, then a Day 7 certification + first-solo-show milestone,
+// replacing the old Day 14 gate) and split into three tabs -- Day 1-30 / 31-60 / 61-90 Plan, each
+// with its own localStorage progress key -- while the old standalone "Day 2: Care" tab is gone,
+// its do's/don'ts folded into the Day 7 milestone's bullets instead. Also covers the elaborated
+// Bags & Leather tab (new bag types, a materials/leather glossary, a hardware/closures glossary).
 
 const { chromium } = require('playwright');
 
@@ -506,6 +511,62 @@ async function goToTrainingTab(page, tab) {
   deepDiveText = await page.textContent('#brands-content');
   ok('Exiting Chanel\'s deck early leaves it NOT marked Done', !/Chanel[\s\S]{0,40}Done/.test(deepDiveText));
   ok('Louis Vuitton is still marked Done after visiting Chanel', /Louis Vuitton[\s\S]{0,40}Done/.test(deepDiveText));
+
+  // ---------- 14. Three-roadmap restructure: Day 1-30 / 31-60 / 61-90 Plan tabs, the "Day 2:
+  // Care" tab is gone (its content folded into Day 7 of the Day 1-30 Plan), and the elaborated
+  // Bags & Leather section (materials + hardware glossaries, new bag types) ----------
+  console.log('\n--- Day 1-30 / 31-60 / 61-90 Plan tabs replace the old single roadmap + Day 2: Care ----');
+  await page.evaluate(() => localStorage.clear());
+  await page.reload();
+  await bypassGate(page);
+
+  ok('"Day 2: Care" tab button no longer exists', !(await page.$('.training-tab[data-tab="care"]')));
+  ok('"Day 31–60 Plan" tab button exists', !!(await page.$('.training-tab[data-tab="roadmap60"]')));
+  ok('"Day 61–90 Plan" tab button exists', !!(await page.$('.training-tab[data-tab="roadmap90"]')));
+
+  await goToTrainingTab(page, 'roadmap');
+  let roadmap30Text = await page.textContent('#training-roadmap');
+  ok('Day 1-30 Plan intro now points to day 7, not day 14', roadmap30Text.includes('day 7') && !roadmap30Text.includes('day 14'));
+  ok('Day 1-30 Plan has a Day 7 certification milestone', roadmap30Text.includes('Day 7') && roadmap30Text.includes('Certification'));
+  // The milestone phase auto-opens by default on fresh localStorage (it's the first incomplete
+  // phase), so its bullets -- including the folded-in sunglasses care content -- are in the DOM.
+  ok('Day 7 milestone bullets include the folded-in sunglasses care "Don\'t" content', roadmap30Text.includes('scratches the lenses'));
+  ok('Day 7 milestone bullets include the folded-in sunglasses care "Do" content', roadmap30Text.includes('microfiber cloth'));
+  ok('Day 7 milestone still says "go live solo"', roadmap30Text.includes('go live solo'));
+
+  await goToTrainingTab(page, 'roadmap60');
+  let roadmap60Text = await page.textContent('#training-roadmap60');
+  ok('Day 31-60 Plan shows Week 5 (consistency & metrics)', roadmap60Text.includes('Week 5') && roadmap60Text.includes('Consistency'));
+  ok('Day 31-60 Plan includes a 60-day review milestone', roadmap60Text.includes('60-day review'));
+  ok('Day 31-60 Plan does NOT show a Day 14/Day 7 cert banner (checklist-only, no Live Trial banner)', !roadmap60Text.includes('platforms cleared') && !roadmap60Text.includes('Ready to go live solo'));
+
+  await goToTrainingTab(page, 'roadmap90');
+  let roadmap90Text = await page.textContent('#training-roadmap90');
+  ok('Day 61-90 Plan shows Week 9 (mentoring)', roadmap90Text.includes('Week 9') && roadmap90Text.includes('Mentoring'));
+  ok('Day 61-90 Plan includes the 90-day review milestone', roadmap90Text.includes('90-day review'));
+
+  // Checking a day in the Day 1-30 Plan must not affect the 31-60 / 61-90 progress stores --
+  // each roadmap keeps its own localStorage key.
+  await goToTrainingTab(page, 'roadmap');
+  await page.click('.roadmap-check[data-day="1"]');
+  await page.waitForTimeout(50);
+  const progressKeys = await page.evaluate(() => ({
+    day30: JSON.parse(localStorage.getItem('roadmapProgress') || '{}'),
+    day60: JSON.parse(localStorage.getItem('roadmapProgress3160') || '{}'),
+    day90: JSON.parse(localStorage.getItem('roadmapProgress6190') || '{}'),
+  }));
+  ok('Checking Day 1 writes to the Day 1-30 Plan\'s own storage key', progressKeys.day30['1'] === true);
+  ok('Day 31-60 Plan\'s storage key is untouched by that check', Object.keys(progressKeys.day60).length === 0);
+  ok('Day 61-90 Plan\'s storage key is untouched by that check', Object.keys(progressKeys.day90).length === 0);
+
+  console.log('\n--- Bags & Leather: elaborated with materials & hardware glossaries ----');
+  await goToTrainingTab(page, 'bags');
+  let bagsText = await page.textContent('#training-bags');
+  ok('New bag type "Saddle bag" is present', bagsText.includes('Saddle bag'));
+  ok('New bag type "Backpack" is present', bagsText.includes('Backpack'));
+  ok('Materials & leather glossary section is present', bagsText.includes('Materials & leather glossary') || bagsText.includes('Materials &amp; leather glossary') || bagsText.includes('Saffiano leather'));
+  ok('Hardware & closures glossary section is present', bagsText.includes('Hardware & closures') || bagsText.includes('Hardware &amp; closures') || bagsText.includes('Turn-lock'));
+  ok('Louis Vuitton vachetta section is still present', bagsText.includes('vachetta'));
 
   console.log(`\n${failures === 0 ? 'ALL PASS' : failures + ' FAILURE(S)'}`);
   await browser.close();
