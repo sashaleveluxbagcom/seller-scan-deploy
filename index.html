@@ -215,6 +215,13 @@ Speed
 <div id="tp-text" style="flex:1;overflow-y:auto;padding:48px 32px 70vh;color:var(--text);font-size:32px;line-height:1.7;white-space:pre-wrap;font-family:-apple-system,sans-serif;"></div>
 </div>
 
+<!-- Auction Close "live" overlay -- a full-screen mock of a real Whatnot-style live show (host
+     cam area, scrolling viewer chat, bottom bid box with price/timer) so practicing the closing
+     countdown feels like the real app, not a checklist. The "host cam" area shows the teleprompter
+     instruction instead of a person on camera. See the Auction Close script section below for the
+     logic that drives this. -->
+<div id="auction-live" style="display:none;position:fixed;inset:0;background:#000;z-index:9999;flex-direction:column;color:#fff;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;"></div>
+
 <script>
 (function () {
 var BACKEND_URL = ""; // same-origin: this page is served from the same Vercel project as /api/scan and /api/search
@@ -2323,31 +2330,57 @@ function gradeTrialSession(session) {
 }
 
 // ---------------------------------------------------------------------------
-// Auction Close: a teleprompter-style countdown drill for the exact moment an item's timer
-// runs out and it's time to close the sale -- modeled directly on how Diana runs it live.
-// This is deliberately separate from the Live Trial tab: Live Trial practices handling viewer
-// comments through a whole show, while this practices one specific few-second skill on
-// repeat -- present the item, teach the brand, confirm you actually have the room's attention,
-// then run the clock. To change the closing chant or when it kicks in, edit
-// AUCTION_CLOSE_LINE / AUCTION_CLOSE_TRIGGER_SECONDS below -- nothing else needs to change.
+// Auction Close: a full-screen mock of a real live-show auction close -- styled after the
+// Whatnot/eBay Live/TikTok Shop UI a seller actually sees (host cam area, scrolling viewer
+// chat, bottom bid box with price + countdown), so the drill feels like the real app instead
+// of a checklist. The "host cam" area shows a teleprompter instruction instead of a person on
+// camera -- one script for bags, one for sunglasses, since what you show the camera is
+// different for each. At AUCTION_CLOSE_TRIGGER_SECONDS remaining, the teleprompter locks onto
+// Diana's exact closing chant. This is deliberately separate from the Live Trial tab: Live
+// Trial practices handling viewer comments through a whole show, while this practices one
+// specific few-second skill on repeat -- present the item, teach the brand, confirm you
+// actually have the room's attention, then run the clock.
+// To change the closing chant or when it kicks in, edit AUCTION_CLOSE_LINE /
+// AUCTION_CLOSE_TRIGGER_SECONDS below. To change what the teleprompter asks for, edit
+// AUCTION_SCRIPTS.bag / AUCTION_SCRIPTS.sunglasses -- nothing else in this file needs to change.
 // ---------------------------------------------------------------------------
 var AUCTION_DURATIONS = [15, 20, 30];
 var AUCTION_CLOSE_TRIGGER_SECONDS = 8; // Diana starts the closing chant with 8 seconds left on the clock
 var AUCTION_CLOSE_LINE = '5… 4… 3… 2… Custom max speed, let’s go! Running down below, guys — hit that custom so it bids on your behalf!';
-var AUCTION_HYPE_LINES = [
-  'Restate the brand and price -- as a statement, not a question.',
-  'Point out one more detail while the bids build.',
-  'Keep your energy up -- this is the moment people decide.',
-  'Say the brand name again. Say the price again.',
-];
+var AUCTION_SCRIPTS = {
+  bag: [
+    'Show the FRONT — hold it up, straight on, centered in frame.',
+    'Flip it — show the BACK panel, just as steady.',
+    'Open it up — show the INTERIOR, call out any pockets or staining.',
+    'Tilt it — show the BOTTOM & ALL FOUR CORNERS.',
+    'Show the HARDWARE — zippers, clasps, buckles, feet.',
+    'Show the STRAPS & HANDLES — full length, both sides.',
+  ],
+  sunglasses: [
+    'Put them ON — model them, facing the camera.',
+    'Show the FRONT — both lenses, centered in frame.',
+    'Turn to show BOTH ARMS — call out the brand name printed there.',
+    'Open and close the HINGES, on camera.',
+    'Read the SIZE CODE off the arm — lens, bridge, temple.',
+    'Show the CASE, if one is included.',
+  ],
+};
+var AUCTION_CATEGORY_LABEL = { bag: '👜 Bag', sunglasses: '🕶️ Sunglasses' };
+var AUCTION_CATEGORY_ICON = { bag: '👜', sunglasses: '🕶️' };
 
-var auctionView = 'setup'; // 'setup' | 'countdown' | 'done'
+var auctionView = 'setup'; // 'setup' | 'done' -- the full-screen live overlay is a separate layer, not a panel view
+var auctionCategory = 'bag'; // 'bag' | 'sunglasses'
 var auctionDuration = 20;
 var auctionRemaining = 20;
 var auctionTimerId = null;
+var auctionScriptTimerId = null;
+var auctionChatTimerId = null;
 var auctionAttentionConfirmed = false;
 var auctionBrand = null;
-var auctionHypeIndex = 0;
+var auctionScriptIndex = 0;
+var auctionLiveActive = false;
+var auctionViewerCount = 0;
+var auctionBidAmount = 0;
 
 function randomBrand() { return BRANDS[Math.floor(Math.random() * BRANDS.length)]; }
 
@@ -2361,19 +2394,27 @@ function renderAuctionClose() {
 function renderAuctionPanel() {
   var panel = trainingPanels.auction;
   if (auctionView === 'setup') panel.innerHTML = auctionSetupHtml();
-  else if (auctionView === 'countdown') panel.innerHTML = auctionCountdownHtml();
   else if (auctionView === 'done') panel.innerHTML = auctionDoneHtml();
   wireAuctionPanel();
 }
 
 function auctionSetupHtml() {
-  return '<p style="color:var(--text-dim);font-size:13px;margin-top:0;">Practice the exact few seconds where an item’s timer runs out -- present it, teach the brand, make sure the room is actually watching, then run the clock the way Diana does.</p>' +
+  return '<p style="color:var(--text-dim);font-size:13px;margin-top:0;">Practice the exact few seconds where an item’s timer runs out -- present it, teach the brand, make sure the room is actually watching, then run the clock the way Diana does, in a screen styled just like the real show.</p>' +
     '<div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px 16px;margin-bottom:12px;">' +
-    '<div style="font-size:13px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:0.04em;margin-bottom:6px;">1. Present the item</div>' +
-    '<div style="font-size:14px;line-height:1.6;">Hold it up, or put it on if it’s wearable (sunglasses, jewelry). Hold your pose steady in frame before you say anything.</div>' +
+    '<div style="font-size:13px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:0.04em;margin-bottom:10px;">1. What are you closing?</div>' +
+    '<div style="display:flex;gap:8px;">' +
+    ['bag', 'sunglasses'].map(function (cat) {
+      var active = cat === auctionCategory;
+      return '<button type="button" class="auction-category-pick" data-category="' + cat + '" style="flex:1;padding:12px;font-size:14px;font-weight:700;border-radius:8px;border:1px solid ' + (active ? 'var(--accent)' : 'var(--border)') + ';background:' + (active ? 'var(--accent)' : 'var(--surface-alt)') + ';color:' + (active ? 'var(--accent-text)' : 'var(--text)') + ';">' + AUCTION_CATEGORY_LABEL[cat] + '</button>';
+    }).join('') +
+    '</div>' +
     '</div>' +
     '<div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px 16px;margin-bottom:12px;">' +
-    '<div style="font-size:13px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:0.04em;margin-bottom:6px;">2. Describe it &amp; teach the brand</div>' +
+    '<div style="font-size:13px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:0.04em;margin-bottom:6px;">2. Present the item</div>' +
+    '<div style="font-size:14px;line-height:1.6;">Hold it up, or put it on if it’s wearable. Hold your pose steady in frame before you say anything.</div>' +
+    '</div>' +
+    '<div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px 16px;margin-bottom:12px;">' +
+    '<div style="font-size:13px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:0.04em;margin-bottom:6px;">3. Describe it &amp; teach the brand</div>' +
     '<div style="font-size:14px;line-height:1.6;margin-bottom:10px;">Say the brand name out loud, then share this one fact -- before you ever start the clock.</div>' +
     '<div style="border:1px solid var(--accent);border-radius:8px;padding:10px 12px;">' +
     '<div style="font-size:16px;font-weight:800;">' + escapeHtml(auctionBrand.name) + '</div>' +
@@ -2383,14 +2424,14 @@ function auctionSetupHtml() {
     '<button type="button" id="auction-reroll-brand" style="width:100%;padding:8px;margin-top:10px;font-size:12px;color:var(--text-dim);background:none;border:1px solid var(--border);border-radius:8px;">🔀 Different brand</button>' +
     '</div>' +
     '<div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px 16px;margin-bottom:12px;">' +
-    '<div style="font-size:13px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:0.04em;margin-bottom:6px;">3. Confirm you have their attention</div>' +
+    '<div style="font-size:13px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:0.04em;margin-bottom:6px;">4. Confirm you have their attention</div>' +
     '<label style="display:flex;gap:10px;align-items:flex-start;cursor:pointer;">' +
     '<input type="checkbox" id="auction-attention-check" ' + (auctionAttentionConfirmed ? 'checked' : '') + ' style="margin-top:3px;width:18px;height:18px;flex:none;" />' +
     '<span style="font-size:14px;line-height:1.5;">I can see people actually engaged -- comments, reactions, questions coming in. Never hit the auction button on a quiet room.</span>' +
     '</label>' +
     '</div>' +
     '<div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px 16px;margin-bottom:16px;">' +
-    '<div style="font-size:13px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:0.04em;margin-bottom:10px;">4. Set the timer</div>' +
+    '<div style="font-size:13px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:0.04em;margin-bottom:10px;">5. Set the timer</div>' +
     '<div style="display:flex;gap:8px;">' +
     AUCTION_DURATIONS.map(function (d) {
       var active = d === auctionDuration;
@@ -2398,43 +2439,36 @@ function auctionSetupHtml() {
     }).join('') +
     '</div>' +
     '</div>' +
-    '<button type="button" id="auction-start" ' + (auctionAttentionConfirmed ? '' : 'disabled') + ' style="width:100%;padding:16px;font-size:16px;font-weight:700;border-radius:10px;border:none;background:' + (auctionAttentionConfirmed ? 'var(--accent)' : 'var(--surface-alt)') + ';color:' + (auctionAttentionConfirmed ? 'var(--accent-text)' : 'var(--text-dim)') + ';">▶ Start the auction (' + auctionDuration + 's)</button>' +
+    '<button type="button" id="auction-start" ' + (auctionAttentionConfirmed ? '' : 'disabled') + ' style="width:100%;padding:16px;font-size:16px;font-weight:700;border-radius:10px;border:none;background:' + (auctionAttentionConfirmed ? 'var(--accent)' : 'var(--surface-alt)') + ';color:' + (auctionAttentionConfirmed ? 'var(--accent-text)' : 'var(--text-dim)') + ';">🔴 Go live (' + auctionDuration + 's)</button>' +
     (auctionAttentionConfirmed ? '' : '<div style="font-size:12px;color:var(--text-dim);text-align:center;margin-top:8px;">Check the attention box above to unlock the button -- same as live.</div>');
-}
-
-function auctionCountdownHtml() {
-  var closing = auctionRemaining <= AUCTION_CLOSE_TRIGGER_SECONDS && auctionRemaining > 0;
-  var numberColor = auctionRemaining <= 3 ? 'var(--danger)' : (closing ? 'var(--accent)' : 'var(--text)');
-  return '<div style="text-align:center;padding:28px 16px;border-radius:14px;background:var(--surface);border:1px solid var(--border);margin-bottom:16px;">' +
-    '<div style="font-size:12px;font-weight:700;color:var(--danger);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:6px;">🔴 Live — closing ' + escapeHtml(auctionBrand.name) + '</div>' +
-    '<div style="font-size:88px;font-weight:800;line-height:1;color:' + numberColor + ';">' + auctionRemaining + '</div>' +
-    '</div>' +
-    '<div style="min-height:110px;border-radius:12px;padding:20px;text-align:center;background:' + (closing ? 'var(--accent)' : 'var(--surface)') + ';border:1px solid ' + (closing ? 'var(--accent)' : 'var(--border)') + ';">' +
-    (closing
-      ? '<div style="font-size:11px;font-weight:700;color:var(--accent-text);text-transform:uppercase;letter-spacing:0.06em;opacity:0.85;margin-bottom:8px;">Say it like Diana</div>' +
-        '<div style="font-size:19px;font-weight:800;color:var(--accent-text);line-height:1.5;">' + escapeHtml(AUCTION_CLOSE_LINE) + '</div>'
-      : '<div style="font-size:11px;font-weight:700;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:8px;">Keep talking</div>' +
-        '<div style="font-size:17px;color:var(--text);line-height:1.5;">' + escapeHtml(AUCTION_HYPE_LINES[auctionHypeIndex % AUCTION_HYPE_LINES.length]) + '</div>') +
-    '</div>' +
-    '<button type="button" id="auction-end-early" style="width:100%;padding:12px;margin-top:16px;font-size:13px;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--text-dim);">End early</button>';
 }
 
 function auctionDoneHtml() {
   return '<div style="text-align:center;padding:32px 16px;border-radius:14px;background:var(--success-bg);border:1px solid var(--success);margin-bottom:16px;">' +
     '<div style="font-size:44px;">🔨</div>' +
     '<div style="font-size:24px;font-weight:800;color:var(--success);margin-top:6px;">SOLD!</div>' +
-    '<div style="font-size:13px;color:var(--text-dim);margin-top:6px;">' + escapeHtml(auctionBrand.name) + ' · ' + auctionDuration + 's close</div>' +
+    '<div style="font-size:13px;color:var(--text-dim);margin-top:6px;">' + AUCTION_CATEGORY_ICON[auctionCategory] + ' ' + escapeHtml(auctionBrand.name) + ' · ' + auctionDuration + 's close</div>' +
     '</div>' +
     '<div style="font-size:13px;color:var(--text);line-height:1.6;margin-bottom:16px;">How did that feel? Run it again until the chant comes out automatically, at full speed, without reading it off the screen.</div>' +
-    '<div style="display:flex;gap:8px;">' +
+    '<div style="display:flex;gap:8px;margin-bottom:8px;">' +
     '<button type="button" id="auction-again-same" style="flex:1;padding:14px;font-size:14px;font-weight:700;border-radius:10px;border:1px solid var(--accent);background:var(--surface);color:var(--accent);">Run it again</button>' +
     '<button type="button" id="auction-new-brand" style="flex:1;padding:14px;font-size:14px;font-weight:700;border-radius:10px;border:none;background:var(--accent);color:var(--accent-text);">New brand</button>' +
-    '</div>';
+    '</div>' +
+    '<button type="button" id="auction-switch-category" style="width:100%;padding:12px;font-size:13px;font-weight:600;border-radius:10px;border:1px solid var(--border);background:var(--surface);color:var(--text);">' +
+    (auctionCategory === 'bag' ? '🕶️ Practice sunglasses next' : '👜 Practice a bag next') +
+    '</button>';
 }
 
 function wireAuctionPanel() {
   var panel = trainingPanels.auction;
   if (auctionView === 'setup') {
+    var catBtns = panel.querySelectorAll('.auction-category-pick');
+    for (var c = 0; c < catBtns.length; c++) {
+      catBtns[c].addEventListener('click', function (e) {
+        auctionCategory = e.currentTarget.getAttribute('data-category');
+        renderAuctionPanel();
+      });
+    }
     var check = document.getElementById('auction-attention-check');
     if (check) check.addEventListener('change', function (e) {
       auctionAttentionConfirmed = e.currentTarget.checked;
@@ -2457,12 +2491,6 @@ function wireAuctionPanel() {
       if (!auctionAttentionConfirmed) return;
       startAuctionCountdown();
     });
-  } else if (auctionView === 'countdown') {
-    document.getElementById('auction-end-early').addEventListener('click', function () {
-      stopAuctionTimer();
-      auctionView = 'setup';
-      renderAuctionPanel();
-    });
   } else if (auctionView === 'done') {
     document.getElementById('auction-again-same').addEventListener('click', function () {
       startAuctionCountdown();
@@ -2471,30 +2499,188 @@ function wireAuctionPanel() {
       auctionBrand = randomBrand();
       startAuctionCountdown();
     });
+    document.getElementById('auction-switch-category').addEventListener('click', function () {
+      auctionCategory = auctionCategory === 'bag' ? 'sunglasses' : 'bag';
+      auctionView = 'setup';
+      renderAuctionPanel();
+    });
   }
+}
+
+// ---- The full-screen "live" overlay: built once per run (renderAuctionLiveShell), then only
+// the dynamic bits (timer, teleprompter line, viewer count, bid amount) are patched in place on
+// every tick (updateAuctionLiveDynamic) so the scrolling chat feed never gets wiped out. ----
+function auctionFormatCountdown(seconds) {
+  return '00:' + String(Math.max(0, seconds)).padStart(2, '0');
+}
+
+function renderAuctionLiveShell() {
+  var overlay = document.getElementById('auction-live');
+  overlay.innerHTML =
+    '<div style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px;background:linear-gradient(180deg, rgba(0,0,0,0.6), rgba(0,0,0,0));position:relative;z-index:2;">' +
+    '<div style="display:flex;align-items:center;gap:10px;min-width:0;">' +
+    '<div style="width:36px;height:36px;border-radius:50%;background:var(--accent);color:var(--accent-text);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;flex:none;">LX</div>' +
+    '<div style="min-width:0;">' +
+    '<div style="font-size:14px;font-weight:700;">LeveLux Live</div>' +
+    '<div style="font-size:11px;color:#ddd;">⭐ 5.0 &middot; 👁 <span id="auction-live-viewers"></span> watching</div>' +
+    '</div>' +
+    '</div>' +
+    '<button type="button" id="auction-live-close" style="background:rgba(255,255,255,0.15);border:none;color:#fff;width:32px;height:32px;border-radius:50%;font-size:15px;line-height:1;flex:none;">✕</button>' +
+    '</div>' +
+    '<div style="flex:1;position:relative;background:radial-gradient(circle at 50% 32%, #2a2a2e 0%, #101012 72%);display:flex;flex-direction:column;justify-content:center;align-items:center;padding:24px;text-align:center;overflow:hidden;">' +
+    '<div style="font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:var(--accent);background:rgba(0,0,0,0.45);padding:6px 14px;border-radius:20px;margin-bottom:18px;">' +
+    '<span id="auction-live-icon"></span> <span id="auction-live-brand"></span>' +
+    '</div>' +
+    '<div id="auction-live-teleprompter" style="font-size:25px;font-weight:800;line-height:1.4;max-width:340px;text-shadow:0 2px 14px rgba(0,0,0,0.7);"></div>' +
+    '<div id="auction-live-step-dots" style="display:flex;gap:6px;margin-top:20px;"></div>' +
+    '<div id="auction-chat-feed" style="position:absolute;left:14px;right:14px;bottom:14px;display:flex;flex-direction:column;gap:6px;pointer-events:none;max-height:160px;overflow:hidden;"></div>' +
+    '</div>' +
+    '<div style="background:#111214;padding:12px 14px 18px;position:relative;z-index:2;">' +
+    '<div style="display:flex;align-items:center;gap:12px;background:#1b1b1e;border-radius:12px;padding:10px 12px;margin-bottom:10px;">' +
+    '<div style="width:44px;height:44px;border-radius:8px;background:var(--surface-alt);display:flex;align-items:center;justify-content:center;font-size:22px;flex:none;"><span id="auction-live-icon-2"></span></div>' +
+    '<div style="flex:1;min-width:0;">' +
+    '<div style="font-size:13px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Auction Close practice</div>' +
+    '<div style="font-size:11px;color:#999;">Practice run &middot; not a real sale</div>' +
+    '</div>' +
+    '<div style="text-align:right;flex:none;">' +
+    '<div style="font-size:11px;color:#999;">Bid</div>' +
+    '<div style="font-size:15px;font-weight:800;color:var(--accent);">$<span id="auction-live-bid"></span></div>' +
+    '</div>' +
+    '<div style="text-align:right;flex:none;min-width:50px;">' +
+    '<div id="auction-live-timer" style="font-size:20px;font-weight:800;font-variant-numeric:tabular-nums;"></div>' +
+    '</div>' +
+    '</div>' +
+    '<button type="button" id="auction-live-end" style="width:100%;padding:12px;font-size:13px;font-weight:700;border-radius:10px;border:1px solid rgba(255,255,255,0.25);background:none;color:#ccc;">End early</button>' +
+    '</div>';
+
+  document.getElementById('auction-live-close').addEventListener('click', endAuctionLiveEarly);
+  document.getElementById('auction-live-end').addEventListener('click', endAuctionLiveEarly);
+}
+
+function updateAuctionLiveDynamic() {
+  var overlay = document.getElementById('auction-live');
+  if (!overlay || overlay.style.display === 'none') return;
+
+  var viewersEl = document.getElementById('auction-live-viewers');
+  if (viewersEl) viewersEl.textContent = auctionViewerCount;
+
+  var brandEl = document.getElementById('auction-live-brand');
+  if (brandEl) brandEl.textContent = auctionBrand.name;
+
+  var icon = AUCTION_CATEGORY_ICON[auctionCategory];
+  var iconEl = document.getElementById('auction-live-icon');
+  if (iconEl) iconEl.textContent = icon;
+  var icon2El = document.getElementById('auction-live-icon-2');
+  if (icon2El) icon2El.textContent = icon;
+
+  var bidEl = document.getElementById('auction-live-bid');
+  if (bidEl) bidEl.textContent = auctionBidAmount;
+
+  var timerEl = document.getElementById('auction-live-timer');
+  if (timerEl) {
+    timerEl.textContent = auctionFormatCountdown(auctionRemaining);
+    timerEl.style.color = auctionRemaining <= 3 ? '#ff3b3b' : 'var(--danger)';
+  }
+
+  var closing = auctionRemaining <= AUCTION_CLOSE_TRIGGER_SECONDS;
+  var lines = AUCTION_SCRIPTS[auctionCategory];
+  var teleEl = document.getElementById('auction-live-teleprompter');
+  var dotsEl = document.getElementById('auction-live-step-dots');
+  if (teleEl) {
+    if (closing) {
+      teleEl.textContent = AUCTION_CLOSE_LINE;
+      teleEl.style.color = 'var(--accent)';
+    } else {
+      teleEl.textContent = lines[auctionScriptIndex % lines.length];
+      teleEl.style.color = '#fff';
+    }
+  }
+  if (dotsEl) {
+    if (closing) {
+      dotsEl.innerHTML = '';
+    } else {
+      dotsEl.innerHTML = lines.map(function (l, i) {
+        var active = i === (auctionScriptIndex % lines.length);
+        return '<span style="width:7px;height:7px;border-radius:50%;background:' + (active ? 'var(--accent)' : 'rgba(255,255,255,0.3)') + ';display:inline-block;"></span>';
+      }).join('');
+    }
+  }
+}
+
+// ---- Ambient chat overlay -- cosmetic only, reuses the same viewer names / chatter lines as
+// the Live Trial tab so there's only one place to edit that data. Never touches grading. ----
+function postAuctionChatLine() {
+  var feed = document.getElementById('auction-chat-feed');
+  if (!feed) return;
+  var user = randomTrialViewer();
+  var text = TRIAL_AMBIENT_CHATTER[Math.floor(Math.random() * TRIAL_AMBIENT_CHATTER.length)];
+  var el = document.createElement('div');
+  el.style.cssText = 'background:rgba(0,0,0,0.45);border-radius:10px;padding:4px 10px;font-size:12px;align-self:flex-start;max-width:88%;';
+  el.innerHTML = '<span style="font-weight:700;color:var(--accent);">' + escapeHtml(user) + '</span> <span style="color:#eee;">' + escapeHtml(text) + '</span>';
+  feed.appendChild(el);
+  while (feed.children.length > 5) feed.removeChild(feed.firstChild);
+}
+function scheduleNextAuctionChat() {
+  var delay = 500 + Math.random() * 900;
+  auctionChatTimerId = setTimeout(function () {
+    postAuctionChatLine();
+    scheduleNextAuctionChat();
+  }, delay);
+}
+
+function advanceAuctionScript() {
+  if (!auctionLiveActive) return;
+  if (auctionRemaining <= AUCTION_CLOSE_TRIGGER_SECONDS) return; // the chant has taken over -- stop cycling
+  var lines = AUCTION_SCRIPTS[auctionCategory];
+  auctionScriptIndex = (auctionScriptIndex + 1) % lines.length;
+  updateAuctionLiveDynamic();
+}
+
+function clearAuctionTimers() {
+  if (auctionTimerId) { clearInterval(auctionTimerId); auctionTimerId = null; }
+  if (auctionScriptTimerId) { clearInterval(auctionScriptTimerId); auctionScriptTimerId = null; }
+  if (auctionChatTimerId) { clearTimeout(auctionChatTimerId); auctionChatTimerId = null; }
 }
 
 function startAuctionCountdown() {
   auctionRemaining = auctionDuration;
-  auctionHypeIndex = 0;
-  auctionView = 'countdown';
-  renderAuctionPanel();
-  stopAuctionTimer();
+  auctionScriptIndex = 0;
+  auctionViewerCount = 80 + Math.floor(Math.random() * 400);
+  auctionBidAmount = 60 + Math.floor(Math.random() * 40);
+  clearAuctionTimers();
+  auctionLiveActive = true;
+  renderAuctionLiveShell();
+  document.getElementById('auction-live').style.display = 'flex';
+  updateAuctionLiveDynamic();
   auctionTimerId = setInterval(tickAuctionCountdown, 1000);
+  auctionScriptTimerId = setInterval(advanceAuctionScript, 2500);
+  scheduleNextAuctionChat();
 }
+
 function tickAuctionCountdown() {
   auctionRemaining--;
-  if (auctionRemaining > AUCTION_CLOSE_TRIGGER_SECONDS && auctionRemaining % 3 === 0) auctionHypeIndex++;
+  if (Math.random() < 0.5) auctionBidAmount += (1 + Math.floor(Math.random() * 5));
+  if (Math.random() < 0.3) auctionViewerCount += (1 + Math.floor(Math.random() * 3));
   if (auctionRemaining <= 0) {
     stopAuctionTimer();
     auctionView = 'done';
     renderAuctionPanel();
     return;
   }
+  updateAuctionLiveDynamic();
+}
+
+function endAuctionLiveEarly() {
+  stopAuctionTimer();
+  auctionView = 'setup';
   renderAuctionPanel();
 }
+
 function stopAuctionTimer() {
-  if (auctionTimerId) { clearInterval(auctionTimerId); auctionTimerId = null; }
+  clearAuctionTimers();
+  auctionLiveActive = false;
+  var overlay = document.getElementById('auction-live');
+  if (overlay) overlay.style.display = 'none';
 }
 })();
 </script>
