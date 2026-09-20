@@ -4,9 +4,12 @@
 // Live Trial tab (all categories, manager rubric, 'trial-*' ids) still works unchanged after the
 // engine-factory refactor, (5) that Sunglasses Sim / Bag Sim's response step is verbal-practice
 // only -- no textarea, a press-to-start 30s countdown, then a self-paced Run Next button, with no
-// auto-grading -- while Live Trial keeps its original typed + auto-graded step. DOM-only
-// assertions (app state lives in a top-level IIFE); Playwright's clock fast-forwards the 3-2-1-GO
-// and 30s countdowns instead of waiting on them in real time.
+// auto-grading -- while Live Trial keeps its original typed + auto-graded step, (6) sunglasses
+// items list under a generic "Brand New Sunglasses / Rx Frames N" auction-lot title in every item
+// picker, revealing the real brand only once she's on the ready/session screen, and (7) new
+// off-item ambient chatter lines (viewers asking about other brands). DOM-only assertions (app
+// state lives in a top-level IIFE); Playwright's clock fast-forwards the 3-2-1-GO and 30s
+// countdowns instead of waiting on them in real time.
 const { chromium } = require('playwright');
 
 const BASE = 'http://localhost:8795/index.html';
@@ -59,7 +62,10 @@ async function goToTrainingTab(page, tab) {
     await sunsimPlatform.click();
     await page.waitForTimeout(200);
     const bodyText = await page.evaluate(() => document.body.innerText);
-    ok('Sunglasses Sim item list mentions a sunglasses brand (Versace)', bodyText.includes('Versace'));
+    // Sunglasses items list under a generic "Rx Frames" auction-lot title, not the real brand
+    // name -- the real brand only comes out once she's live with the item (see the "ready" /
+    // "session" screen checks further down).
+    ok('Sunglasses Sim item list uses the generic "Rx Frames" listing title, not the real brand', /rx frames/i.test(bodyText) && !bodyText.includes('Versace'));
     ok('Sunglasses Sim item list does NOT include a bag-only brand (Chanel)', !bodyText.includes('Chanel'));
   }
 
@@ -99,7 +105,9 @@ async function goToTrainingTab(page, tab) {
     await trialPlatform.click();
     await page.waitForTimeout(200);
     const bodyText = await page.evaluate(() => document.body.innerText);
-    ok('Live Trial item list includes a bag AND a sunglasses brand (all categories)', bodyText.includes('Louis Vuitton') && bodyText.includes('Ray-Ban'));
+    // Sunglasses items show under the generic "Rx Frames" listing title here too (Live Trial
+    // shares the same item picker), so check for that instead of the real sunglasses brand name.
+    ok('Live Trial item list includes a bag brand AND a sunglasses item (all categories)', bodyText.includes('Louis Vuitton') && /rx frames/i.test(bodyText));
   }
 
   // ---------- 5. Selling Guide: tone data points ----------
@@ -135,6 +143,10 @@ async function goToTrainingTab(page, tab) {
   await page.waitForTimeout(50);
   await page.click('#training-sunsim [data-item]');
   await page.waitForTimeout(50);
+  // The generic "Rx Frames" listing title was only for the picker -- once she's on the "ready"
+  // screen (about to go live with the item in hand), the real brand shows again.
+  const readyBodyText = await page.evaluate(() => document.body.innerText);
+  ok('Ready screen reveals the real brand (Ray-Ban), not the generic listing title', readyBodyText.includes('Ray-Ban'));
   await page.click('#sunsim-go-live');
   await page.clock.runFor(3300); // 3-2-1-GO (800ms/tick) + 400ms buffer
 
