@@ -72,7 +72,14 @@ h2, h3 { color: var(--text); }
 
 <div id="scanner" style="display:none;">
 
-<button type="button" id="scanner-to-hub" style="background:none;border:none;padding:8px 0;margin-bottom:6px;font-size:14px;color:var(--text-dim);">☰ Menu</button>
+<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+<button type="button" id="scanner-to-hub" style="background:none;border:none;padding:8px 0;font-size:14px;color:var(--text-dim);">☰ Menu</button>
+<!-- LeveLux Chat, right inside the sell screen -- so messaging a manager or teammate about an
+     item mid-show doesn't mean leaving the scanner (Sasha, 2026-09-19). Opens the same chat app
+     that's already linked from the hub, in a panel over this screen; the "Open in new tab" link
+     is a fallback in case the chat app can't be shown in a frame. -->
+<button type="button" id="scanner-chat-open" style="background:none;border:1px solid var(--border);border-radius:8px;padding:6px 12px;font-size:13px;color:var(--text);">💬 Chat</button>
+</div>
 
 <!-- Seller attribution: who is currently working this device, so every item scanned/pulled up
      can be credited to a person for the CEO Dashboard's per-seller commission breakdown
@@ -221,6 +228,20 @@ Speed
      instruction instead of a person on camera. See the Auction Close script section below for the
      logic that drives this. -->
 <div id="auction-live" style="display:none;position:fixed;inset:0;background:#000;z-index:9999;flex-direction:column;color:#fff;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;"></div>
+
+<!-- LeveLux Chat panel, embedded directly in the Sell Live screen (Sasha, 2026-09-19) -- the
+     iframe src is only set when this is opened, so the chat app isn't loaded in the background
+     on every page load. "Open in new tab" always works even if the chat app can't be framed. -->
+<div id="sell-chat-panel" style="display:none;position:fixed;inset:0;background:var(--bg);z-index:9999;flex-direction:column;">
+<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:var(--surface);border-bottom:1px solid var(--border);">
+<div style="font-size:15px;font-weight:700;">💬 LeveLux Chat</div>
+<div style="display:flex;gap:14px;align-items:center;">
+<a id="sell-chat-newtab" href="https://levelux-chat.vercel.app" target="_blank" rel="noopener" style="font-size:12px;color:var(--text-dim);text-decoration:none;">Open in new tab ↗</a>
+<button type="button" id="sell-chat-close" style="background:none;border:none;color:var(--text);font-size:22px;line-height:1;padding:4px 8px;">✕</button>
+</div>
+</div>
+<iframe id="sell-chat-iframe" title="LeveLux Chat" src="" style="flex:1;border:none;width:100%;background:var(--bg);"></iframe>
+</div>
 
 <script>
 (function () {
@@ -1017,6 +1038,14 @@ document.getElementById('hub-training').addEventListener('click', function () {
 document.getElementById('hub-messages').addEventListener('click', function () {
   window.open('https://levelux-chat.vercel.app', '_blank');
 });
+document.getElementById('scanner-chat-open').addEventListener('click', function () {
+  document.getElementById('sell-chat-iframe').src = 'https://levelux-chat.vercel.app';
+  document.getElementById('sell-chat-panel').style.display = 'flex';
+});
+document.getElementById('sell-chat-close').addEventListener('click', function () {
+  document.getElementById('sell-chat-panel').style.display = 'none';
+  document.getElementById('sell-chat-iframe').src = '';
+});
 document.getElementById('scanner-to-hub').addEventListener('click', function () {
   endShow();
   hideItemView();
@@ -1046,9 +1075,13 @@ document.getElementById('training-to-hub').addEventListener('click', function ()
 // in Scan/Search. Nothing else in this file needs to change.
 var BRANDS = [
   { name: 'Balenciaga', pron: 'bah-len-see-AH-gah', tidbit: 'Founded in Spain in 1917 by Cristóbal Balenciaga; known today for bold, sculptural shapes like the City bag and Le Cagole.' },
+  { name: 'Bally', pron: 'BAL-ee', tidbit: 'Swiss leather goods and footwear house founded in 1851 -- one of the oldest luxury leather brands still operating.' },
+  { name: 'Bastide', pron: 'bah-STEED', tidbit: 'A home fragrance and candle line, not bags or eyewear -- if you see this tag, it\'s almost always a candle or diffuser.' },
+  { name: 'Bebe', pron: 'BEE-bee', tidbit: 'Los Angeles contemporary fashion label founded 1976, known for going-out dresses and accessories.' },
   { name: 'Bottega Veneta', pron: 'boh-TEH-gah VEH-neh-tah', tidbit: 'Italian house (Vicenza, 1966) built around "intrecciato" -- the signature woven-leather technique. Historically logo-free on purpose: the craftsmanship was meant to speak for itself.' },
   { name: 'Bulgari', pron: 'BUL-gah-ree', tidbit: 'Roman jeweler founded in 1884. Big, bold Italian glamour -- look for the Serpenti (snake) motif.' },
   { name: 'Burberry', pron: '', tidbit: 'British house founded 1856; invented the trench coat. The tan/black/red/white check is one of the most recognized patterns in fashion.' },
+  { name: 'Carolina Lemke', pron: 'CARE-oh-LEE-nah LEM-kuh', tidbit: 'Berlin-based sunglasses label known for bold, colorful frames.' },
   { name: 'Carrera', pron: 'kuh-RARE-uh', tidbit: 'Austrian eyewear brand (1956) named after the Carrera Panamericana road race -- sporty, motorsport-inspired frames.' },
   { name: 'Celine', pron: 'seh-LEEN', tidbit: 'Paris house founded 1945; known for clean, minimalist luxury -- think structured totes and understated hardware.' },
   { name: 'Chanel', pron: 'shuh-NEL', tidbit: 'Founded in Paris in 1910 by Gabrielle "Coco" Chanel. Signature: the quilted flap bag on a chain strap and the interlocking CC logo.' },
@@ -1057,24 +1090,50 @@ var BRANDS = [
   { name: 'Christian Dior', pron: 'KRIS-chun dee-OR', tidbit: 'Paris house founded 1946 by Christian Dior. Look for the Lady Dior and Saddle bags, and the "CD" logo.' },
   { name: 'Christian Louboutin', pron: 'KRIS-chun loo-boo-TAN (rhymes with "on")', tidbit: 'Paris house (1991), famous worldwide for red-lacquered shoe soles -- always flip the shoe to show it.' },
   { name: 'Coach', pron: '', tidbit: 'American leather goods house founded in New York in 1941.' },
+  { name: 'Diff (Diff Eyewear)', pron: 'DIFF', tidbit: 'American sunglasses brand built around giving back -- historically tied a pair of glasses or vision care to every pair sold.' },
+  { name: 'DKNY', pron: 'say each letter: "D-K-N-Y"', tidbit: 'Donna Karan New York -- the designer\'s more casual, city-inspired line, launched 1989.' },
   { name: 'Dolce & Gabbana', pron: 'DOHL-chay ay gah-BAH-nah', tidbit: 'Milan house (1985), founded by Domenico Dolce and Stefano Gabbana. Bold, Sicilian-inspired glamour.' },
+  { name: 'Escada', pron: 'es-KAH-dah', tidbit: 'German luxury fashion house founded 1976, known for bold color and eveningwear.' },
+  { name: 'Etro', pron: 'EH-troh', tidbit: 'Milan house founded 1968, famous for its signature paisley print.' },
   { name: 'Fendi', pron: 'FEN-dee', tidbit: 'Rome house founded 1925. Known for the Baguette bag and the double-F "Zucca" logo, designed by Karl Lagerfeld.' },
   { name: 'Furla', pron: 'FUR-lah', tidbit: 'Bologna, Italy leather goods house (1927) -- accessible Italian craftsmanship.' },
+  { name: 'Giselle', pron: 'say as spelled', tidbit: 'A fashion eyewear label -- if a customer asks for history beyond that, it\'s fine to say you\'re not sure rather than guess.' },
   { name: 'Givenchy', pron: 'zhee-VAHN-shee', tidbit: 'Paris house founded 1952 by Hubert de Givenchy, who famously dressed Audrey Hepburn.' },
   { name: 'Good American', pron: '', tidbit: 'Los Angeles brand launched 2016 by Khloé Kardashian and Emma Grede; known for size-inclusive denim.' },
   { name: 'Goyard', pron: 'gwah-YAR', tidbit: 'Paris house dating to 1853, known for the hand-painted chevron canvas. Historically never advertised.' },
   { name: 'Gucci', pron: 'GOO-chee', tidbit: 'Founded in Florence, Italy in 1921. Look for the interlocking GG logo and the green-red-green web stripe.' },
+  { name: 'Guess', pron: '', tidbit: 'American denim-and-lifestyle brand founded 1981 by the Marciano brothers -- look for the upside-down triangle logo.' },
   { name: 'Hermes', pron: 'air-MEZ', tidbit: 'Paris house founded 1837, originally a harness and saddlery workshop -- that heritage is why leather craftsmanship is central. Home of the Birkin and Kelly.' },
+  { name: 'Hugo (Hugo Boss)', pron: 'HYOO-goh', tidbit: 'The younger, more casual diffusion line of German fashion house Hugo Boss.' },
+  { name: 'Jimmy Choo', pron: 'JIM-ee CHOO', tidbit: 'London footwear-and-accessories house founded 1996 by Malaysian-Chinese shoemaker Jimmy Choo.' },
+  { name: 'Juicy Couture', pron: '', tidbit: 'Los Angeles brand (1994) that popularized the velour tracksuit in the early 2000s.' },
+  { name: 'Just Cavalli', pron: 'yust cah-VAH-lee', tidbit: 'The younger, more casual diffusion line of Italian designer Roberto Cavalli.' },
+  { name: 'Karl Lagerfeld', pron: 'karl LAH-ger-feld', tidbit: 'Eponymous line of the late designer, who led Chanel and Fendi for decades -- his own silhouette (dark glasses, white collar, black jacket) is the brand\'s visual signature.' },
   { name: 'Kate Spade', pron: '', tidbit: 'New York brand founded 1993; playful, colorful American design.' },
+  { name: 'Kenneth Cole', pron: '', tidbit: 'New York footwear-and-accessories brand founded 1982.' },
+  { name: 'Liz Claiborne', pron: 'liz KLAY-born', tidbit: 'American fashion house founded 1976 -- one of the first major labels built by a woman designer for working women.' },
   { name: 'Loewe', pron: 'LOH-eh-vay', tidbit: 'Madrid house dating to 1846. Known for the Puzzle bag and exceptional leather quality.' },
   { name: 'Longchamp', pron: 'LAWN-shahn', tidbit: 'Paris house (1948), best known for the foldable nylon "Le Pliage" tote.' },
   { name: 'Louis Vuitton', pron: 'loo-EE vee-TAWN (rhymes with "prawn")', tidbit: 'Founded in Paris in 1854 as a trunk maker. The LV monogram canvas debuted in 1896. Natural "vachetta" leather trim is a signature -- see the Bags & Leather tab for how it ages.' },
+  { name: 'Marc by Marc Jacobs', pron: '', tidbit: 'The more casual, lower-priced diffusion line of Marc Jacobs -- discontinued in 2015 and folded back into the main line, so you\'ll mostly see this tag on older pieces.' },
   { name: 'Marc Jacobs', pron: '', tidbit: 'New York brand (1984); the Tote bag and eclectic, playful American style.' },
   { name: 'MCM', pron: 'say each letter: "M-C-M"', tidbit: 'Munich brand founded 1976 -- the name stands for "Modern Creation Munich." Signature Visetos monogram canvas.' },
-  { name: 'Miu Miu', pron: 'MEW-mew', tidbit: 'Milan house founded 1993 by Miuccia Prada as Prada’s younger, more playful sister line.' },
+  { name: 'Michael Kors', pron: '', tidbit: 'American designer brand (1981) known for jet-set American sportswear and the Jet Set tote.' },
+  { name: 'Missoni', pron: 'mee-SOH-nee', tidbit: 'Italian house (1953) famous for its signature zigzag knitwear pattern.' },
+  { name: 'Miu Miu', pron: 'MEW-mew', tidbit: 'Milan house founded 1993 by Miuccia Prada as Prada\'s younger, more playful sister line.' },
+  { name: 'Moschino', pron: 'moss-KEE-noh', tidbit: 'Milan house founded 1983 by Franco Moschino, known for playful, tongue-in-cheek design.' },
+  { name: 'Nike', pron: 'NIGH-kee', tidbit: 'The sportswear giant -- here it\'s almost always eyewear, not apparel.' },
+  { name: 'Paloma Picasso', pron: 'pah-LOH-mah pih-KAH-soh', tidbit: 'Jewelry designer (daughter of Pablo Picasso) best known for her long-running collection at Tiffany & Co.' },
   { name: 'Philipp Plein', pron: 'FIL-ip PLINE (rhymes with "line")', tidbit: 'German brand (1998) known for bold, maximalist, rock-and-roll style -- skulls and studs are signature.' },
   { name: 'Prada', pron: 'PRAH-dah', tidbit: 'Milan house founded 1913. Known for the triangular logo plaque and Re-Nylon bags -- minimalist luxury.' },
+  { name: 'Privè Revaux', pron: 'PREE-vay reh-VOH', tidbit: 'Celebrity-backed American sunglasses brand built around affordable, designer-look frames.' },
+  { name: 'Razza', pron: 'RAHT-sah', tidbit: 'A fashion eyewear label -- if a customer wants more history than that, it\'s fine to say you\'re not sure.' },
+  { name: 'RED Valentino', pron: '', tidbit: 'Valentino\'s younger, more playful diffusion line -- distinct from mainline Valentino Garavani.' },
+  { name: 'Roberta di Camerino', pron: 'roh-BEHR-tah dee cah-meh-REE-noh', tidbit: 'Venice fashion house founded 1945 by Giuliana Camerino; credited with creating the "status bag" concept and known for velvet handbags.' },
   { name: 'Saint Laurent', pron: 'san loh-RAHN', tidbit: 'Founded in Paris in 1961 by Yves Saint Laurent; renamed from "YSL" to "Saint Laurent" in 2012. Look for the Kate and LouLou bags.' },
+  { name: 'Salvatore Ferragamo', pron: 'sal-vah-TOH-ray fair-ah-GAH-moh', tidbit: 'Florence house founded 1927, famous for shoes -- the "shoemaker to the stars" -- and the Gancini hardware logo.' },
+  { name: 'Sean John', pron: '', tidbit: 'Sean "Diddy" Combs\' American fashion label, launched 1998.' },
+  { name: 'Spyder', pron: 'SPY-der', tidbit: 'Colorado ski and outdoor performance brand that also makes sport-styled sunglasses.' },
   { name: 'Stella McCartney', pron: '', tidbit: 'London brand (2001), fully vegetarian -- no leather or fur is ever used, by design.' },
   { name: 'Tiffany & Co.', pron: '', tidbit: 'New York jeweler founded 1837. "Tiffany Blue" is a trademarked color.' },
   { name: 'Tod’s', pron: '', tidbit: 'Italian house best known for the pebbled-sole "Gommino" driving loafer.' },
@@ -1082,6 +1141,9 @@ var BRANDS = [
   { name: 'Tory Burch', pron: '', tidbit: 'New York brand founded 2004. Look for the double-T logo medallion.' },
   { name: 'Valentino Garavani', pron: 'vah-len-TEE-noh gah-rah-VAH-nee', tidbit: 'Rome house founded 1960 by Valentino Garavani. Known for "Valentino Red" and the studded Rockstud line.' },
   { name: 'Versace', pron: 'vur-SAH-chee', tidbit: 'Milan house founded 1978 by Gianni Versace. Look for the Medusa head logo and bold prints.' },
+  { name: 'Vivienne Westwood', pron: 'VIV-ee-en WEST-wood', tidbit: 'London house founded by the late Dame Vivienne Westwood, a pioneer of British punk fashion -- signature is the orb logo.' },
+  { name: 'Web Eyewear', pron: '', tidbit: 'Italian eyewear brand known for retro-inspired, colorful frames.' },
+  { name: 'Zeiss', pron: 'ZYSE (rhymes with "nice")', tidbit: 'Carl Zeiss is a German optics company -- on eyewear this usually refers to the lenses, not the frame brand.' },
 ];
 
 // Bag silhouettes -- the vocabulary sellers need to describe fit and how a bag is carried.
@@ -1926,8 +1988,9 @@ var RUBRIC_ITEMS = [
 function loadManagerRubrics() { try { return JSON.parse(localStorage.getItem('managerRubricEntries') || '[]'); } catch (e) { return []; } }
 function saveManagerRubrics(list) { try { localStorage.setItem('managerRubricEntries', JSON.stringify(list)); } catch (e) { /* ignore */ } }
 
-var trialView = 'platforms'; // 'platforms' | 'items' | 'session' | 'results'
+var trialView = 'platforms'; // 'platforms' | 'items' | 'ready' | 'session' | 'results'
 var trialSelectedPlatform = null;
+var trialSelectedItem = null; // item id chosen on the 'items' screen, held until Go Live is pressed on 'ready'
 var trialSession = null;
 var trialLastResult = null;
 var trialTickerId = null;
@@ -1942,6 +2005,7 @@ function renderTrialPanel() {
   var panel = trainingPanels.trial;
   if (trialView === 'platforms') panel.innerHTML = trialPlatformsHtml();
   else if (trialView === 'items') panel.innerHTML = trialItemsHtml();
+  else if (trialView === 'ready') panel.innerHTML = trialReadyHtml();
   else if (trialView === 'session') panel.innerHTML = trialSessionHtml();
   else if (trialView === 'results') panel.innerHTML = trialResultsHtml();
   wireTrialPanel();
@@ -1972,6 +2036,23 @@ function trialItemsHtml() {
         '<div style="font-size:14px;font-weight:700;">' + TRIAL_CATEGORY_ICON[it.category] + ' ' + escapeHtml(it.brand) + ' ' + escapeHtml(it.name) + '</div>' +
         '<div style="font-size:13px;color:var(--text-dim);margin-top:2px;">$' + it.price + '</div></button>';
     }).join('');
+}
+
+// ---- 'ready' screen: a deliberate pause between picking an item and going live, with a short
+// on-screen countdown, so the chat/comments never start firing before the seller is actually
+// ready -- mirrors hitting "Go Live" on a real platform. ----
+function trialReadyHtml() {
+  var platform = trialPlatformById(trialSelectedPlatform);
+  var item = TRIAL_INVENTORY.filter(function (i) { return i.id === trialSelectedItem; })[0];
+  return '<button type="button" id="trial-back-items" style="background:none;border:none;padding:6px 0;margin-bottom:10px;font-size:13px;color:var(--text-dim);">← Choose a different item</button>' +
+    '<div style="text-align:center;padding:28px 16px;border-radius:12px;background:var(--surface);border:1px solid var(--border);margin-bottom:16px;">' +
+    '<div style="font-size:12px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:0.04em;">' + platform.icon + ' ' + platform.label + '</div>' +
+    '<div style="font-size:18px;font-weight:700;margin-top:8px;">' + TRIAL_CATEGORY_ICON[item.category] + ' ' + escapeHtml(item.brand) + ' ' + escapeHtml(item.name) + '</div>' +
+    '<div style="font-size:14px;color:var(--text-dim);margin-top:4px;">$' + item.price + '</div>' +
+    '</div>' +
+    '<p style="color:var(--text-dim);font-size:13px;">When you hit Go Live, comments start coming in immediately and won’t wait for you -- same as the real show. Get the item in hand and take a breath first.</p>' +
+    '<div id="trial-countdown-display" style="display:none;text-align:center;font-size:64px;font-weight:800;color:var(--accent);padding:20px 0;"></div>' +
+    '<button type="button" id="trial-go-live" style="width:100%;padding:16px;font-size:16px;font-weight:700;border-radius:10px;border:none;background:var(--accent);color:var(--accent-text);">🔴 Go Live</button>';
 }
 
 function commentBubbleHtml(platform, user, text) {
@@ -2128,9 +2209,17 @@ function wireTrialPanel() {
     var itemPicks = panel.querySelectorAll('.trial-item-pick');
     for (var j = 0; j < itemPicks.length; j++) {
       itemPicks[j].addEventListener('click', function (e) {
-        startTrialSession(trialSelectedPlatform, e.currentTarget.getAttribute('data-item'));
+        trialSelectedItem = e.currentTarget.getAttribute('data-item');
+        trialView = 'ready';
+        renderTrialPanel();
       });
     }
+  } else if (trialView === 'ready') {
+    document.getElementById('trial-back-items').addEventListener('click', function () {
+      trialView = 'items';
+      renderTrialPanel();
+    });
+    document.getElementById('trial-go-live').addEventListener('click', beginTrialCountdown);
   } else if (trialView === 'session') {
     document.getElementById('trial-showing-toggle').addEventListener('click', toggleShowing);
     document.getElementById('trial-send').addEventListener('click', submitTrialResponse);
@@ -2148,7 +2237,10 @@ function wireTrialPanel() {
     updateShowingStatusUI();
   } else if (trialView === 'results') {
     document.getElementById('trial-retry').addEventListener('click', function () {
-      startTrialSession(trialLastResult.platformId, trialLastResult.item.id);
+      trialSelectedPlatform = trialLastResult.platformId;
+      trialSelectedItem = trialLastResult.item.id;
+      trialView = 'ready';
+      renderTrialPanel();
     });
     document.getElementById('trial-done').addEventListener('click', function () {
       trialView = 'platforms';
@@ -2156,6 +2248,31 @@ function wireTrialPanel() {
       renderTrialPanel();
     });
   }
+}
+
+// Runs a short 3-2-1 countdown on the 'ready' screen, then hands off to startTrialSession --
+// comments/ambient chatter never start until the countdown actually finishes.
+function beginTrialCountdown() {
+  var btn = document.getElementById('trial-go-live');
+  var display = document.getElementById('trial-countdown-display');
+  if (!btn || !display) return;
+  btn.disabled = true;
+  btn.style.opacity = '0.5';
+  display.style.display = 'block';
+  var count = 3;
+  display.textContent = count;
+  var timer = setInterval(function () {
+    count--;
+    if (count > 0) {
+      display.textContent = count;
+    } else {
+      clearInterval(timer);
+      display.textContent = 'GO!';
+      setTimeout(function () {
+        startTrialSession(trialSelectedPlatform, trialSelectedItem);
+      }, 400);
+    }
+  }, 800);
 }
 
 function startTrialSession(platformId, itemId) {
