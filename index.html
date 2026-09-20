@@ -1016,6 +1016,8 @@ document.getElementById('scanner-to-hub').addEventListener('click', function () 
   hub.style.display = 'flex';
 });
 document.getElementById('training-to-hub').addEventListener('click', function () {
+  stopShowingTicker();
+  stopAmbientChatter();
   training.style.display = 'none';
   hub.style.display = 'flex';
 });
@@ -1120,6 +1122,7 @@ var trainingPanels = {
 var trainingRendered = { roadmap: false, day1: false, brands: false, bags: false, sunglasses: false, care: false, describe: false, selling: false, trial: false };
 
 function showTrainingTab(name) {
+  if (name !== 'trial') { stopShowingTicker(); stopAmbientChatter(); }
   for (var i = 0; i < trainingTabs.length; i++) {
     var btn = trainingTabs[i];
     var active = btn.getAttribute('data-tab') === name;
@@ -1202,29 +1205,31 @@ var CURRICULUM_PHASES = [
   {
     id: 'week1', label: 'Week 1 · Foundations', range: 'Days 1–7',
     days: [
-      { day: 1, title: 'Onboarding & orientation', bullets: [
+      { day: 1, title: 'Onboarding & full vocabulary intro', bullets: [
         'Complete HR paperwork: clock-in setup, I-9, employee handbook (see the Day 1 tab for the checklist)',
         'Meet the team and get a tour of the space',
+        'Go through the Brands tab once — every brand + pronunciation',
+        'Go through Bags & Leather once — bag types & vocabulary, plus Louis Vuitton vachetta leather',
+        'Go through Describe It once — jewelry condition language (tarnish, scratches, hairline scratches, plating wear)',
+        'Go through Sunglasses 101 once — how to read a sunglasses arm code',
+      ], expect: 'By tonight: you’ve been introduced to every brand, bag type, jewelry term, and sunglasses code — all of it, once. None of it has to be memorized yet. That’s what the rest of this week is for.' },
+      { day: 2, title: 'Brands & bags, round 2', bullets: [
+        'Brands tab — switch to Practice mode, aim for 15 brands recognized on sight',
+        'Bags & Leather — go back through bag types and vachetta leather, out loud this time',
         'Shadow one full live show start to finish — just watch and take notes',
-      ], expect: 'By tonight: you know where everything is, and you’ve seen one full show.' },
-      { day: 2, title: 'Sunglasses & care basics', bullets: [
-        'Learn to read a sunglasses arm code (see Sunglasses 101)',
-        'Learn the Day 2 care do’s and don’ts (see Day 2: Care)',
-        'Practice reading the arm code on 5 real pairs',
+      ], expect: 'By tonight: brands and bag types are starting to stick without looking them up.' },
+      { day: 3, title: 'Jewelry & sunglasses, round 2', bullets: [
+        'Describe It — jewelry condition language again: tarnish, scratches, hairline scratches, plating wear',
+        'Sunglasses 101 — practice reading the arm code on 5 real pairs',
+        'Brands tab Practice mode — keep pushing past 15 brands',
       ], expect: 'By tonight: you can read any arm code cold, no lookup needed.' },
-      { day: 3, title: 'Brands, part 1', bullets: [
-        'Start the Brands tab — Study list, then Practice mode',
-        'Learn bag types & vocabulary (see Bags & Leather)',
-        'Learn Louis Vuitton vachetta leather (see Bags & Leather)',
-      ], expect: 'By tonight: name at least 15 brands on sight, and know what vachetta is.' },
-      { day: 4, title: 'Brands, part 2 + describing bags', bullets: [
-        'Finish the Brands tab — every brand, name + pronunciation',
-        'Start Describe It: learn the 6 angles to show on every bag',
+      { day: 4, title: 'Describing bags', bullets: [
+        'Describe It — learn the 6 angles to show on every bag',
         'Practice describing 5 real bags out loud, hitting every angle',
-      ], expect: 'By tonight: you can name every brand we carry on sight.' },
+        'Finish the Brands tab — every brand, name + pronunciation',
+      ], expect: 'By tonight: you can name every brand we carry on sight, and show a bag through all 6 angles unprompted.' },
       { day: 5, title: 'Describing jewelry', bullets: [
-        'Finish Describe It: jewelry condition language (tarnish, scratches, hairline scratches, plating wear)',
-        'Practice describing 5 real jewelry pieces out loud',
+        'Practice describing 5 real jewelry pieces out loud, calling out condition unprompted',
         'Shadow one more live show, narrating quietly along with the seller',
       ], expect: 'By tonight: you can call out a flaw by its correct name, every time.' },
       { day: 6, title: 'Selling Guide', bullets: [
@@ -1233,10 +1238,10 @@ var CURRICULUM_PHASES = [
         'Practice your own opening line for 3 different items',
       ], expect: 'The whole game: statements, not questions. That’s the one habit that has to be automatic before day 8.' },
       { day: 7, title: 'Week 1 review', bullets: [
-        'Recap with your manager: brands, bag types, jewelry language, the one big selling rule',
+        'Recap with your manager: brands, bag types, jewelry language, sunglasses codes, the one big selling rule',
         'Ask about anything that didn’t stick yet — better now than in a Live Trial',
         'Rest up — Week 2 is reps',
-      ], expect: 'You should feel ready to practice live, even if it’s not perfect yet.' },
+      ], expect: 'You should have a general, working idea of everything by now — brands, bags, jewelry, sunglasses, and the selling rule. Not perfect yet, but familiar. Week 2 is where it becomes automatic.' },
     ],
   },
   {
@@ -1870,6 +1875,17 @@ var TRIAL_COMMENTS = [
 ];
 var TRIAL_VIEWERS = ['@lux_fan22', '@bagqueen91', '@resell_ray', '@vintage_vee', '@thrift2flip', '@dealseeker', '@charmcollector', '@shopwithsam', '@closetcurator', '@preloved_finds'];
 function randomTrialViewer() { return TRIAL_VIEWERS[Math.floor(Math.random() * TRIAL_VIEWERS.length)]; }
+
+// Ambient chat noise -- a real live chat never stops and waits for the seller to catch up.
+// These lines are pure background scroll: never a real product question, never read for
+// grading. They just keep moving fast, on their own, so the pinned question below (the one
+// that DOES need an answer) has to be picked out of real chat volume, the way it would live.
+var TRIAL_AMBIENT_CHATTER = [
+  '🔥🔥🔥', '😍😍', 'omg yes', 'need this', '+1', 'watching from the app', 'commenting for the algorithm',
+  'so pretty', 'yesss', '👀👀', 'here for it', 'love this shop', 'first time watching, hi!', '🙋‍♀️',
+  'take my money', 'the lighting is so good', 'can’t wait to see the next item', 'following!', '😭 gorgeous',
+  'been waiting for this one', '👏👏👏', 'is there a waitlist for restocks?', 'hi from Ohio!', 'obsessed',
+];
 function shuffledCopy(arr) {
   var copy = arr.slice();
   for (var j = copy.length - 1; j > 0; j--) {
@@ -1901,6 +1917,7 @@ var trialSelectedPlatform = null;
 var trialSession = null;
 var trialLastResult = null;
 var trialTickerId = null;
+var trialAmbientTimerId = null;
 
 function renderLiveTrial() {
   trialView = 'platforms';
@@ -1919,6 +1936,7 @@ function renderTrialPanel() {
 function trialPlatformsHtml() {
   var results = loadLiveTrialResults();
   return '<p style="color:var(--text-dim);font-size:13px;margin-top:0;">Practice a full mock live show before you’re ever live for real. Pick a platform -- a viewer feed acts like a real show, right down to buyers asking to see the item.</p>' +
+    '<p style="color:var(--text-dim);font-size:13px;margin-top:0;">Once you start, the chat keeps moving on its own -- fast, and it doesn’t wait for you. The question that actually needs an answer stays pinned above your reply box; everything scrolling behind it is just the crowd. That’s what a real live chat feels like.</p>' +
     '<div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:10px 14px;margin-bottom:16px;font-size:12px;color:var(--text-dim);line-height:1.5;">Auto-graded on statements-vs-questions, item accuracy, and screen presence -- a strong first pass, not a substitute for a manager watching and listening. Use the Manager Rubric below for pronunciation and true screen presence.</div>' +
     TRIAL_PLATFORMS.map(function (p) {
       var r = results[p.id];
@@ -1971,8 +1989,12 @@ function trialSessionHtml() {
     '<div style="height:4px;background:var(--border);"><div style="height:100%;width:' + progressPct + '%;background:var(--accent);"></div></div>' +
     '</div>' +
     '<div id="trial-nudge" style="display:none;background:var(--danger-bg);color:var(--danger);border-radius:10px;padding:10px 14px;margin-bottom:12px;font-size:13px;font-weight:600;">⚠️ You’re not confirmed on screen -- a viewer just asked to see ' + escapeHtml(item.name) + '. Tap "Showing on screen" and hold it up before you respond.</div>' +
-    '<div style="max-height:280px;overflow-y:auto;padding:4px 2px;margin-bottom:12px;">' +
+    '<div id="trial-chat-feed" style="max-height:170px;overflow-y:auto;padding:8px 10px;margin-bottom:10px;border:1px solid var(--border);border-radius:8px;background:var(--surface);">' +
     trialSession.responses.map(function (r) { return commentBubbleHtml(platform, r.commentUser, r.commentText) + responseBubbleHtml(platform, r.text); }).join('') +
+    '<div style="text-align:center;font-size:11px;color:var(--text-dim);padding:2px 0;">— live chat, moving in real time —</div>' +
+    '</div>' +
+    '<div style="border:1px solid ' + platform.accent + ';border-radius:10px;padding:10px 12px;margin-bottom:12px;background:var(--surface-alt);">' +
+    '<div style="font-size:11px;font-weight:700;color:' + platform.accent + ';text-transform:uppercase;letter-spacing:0.03em;margin-bottom:6px;">❓ Needs your answer</div>' +
     commentBubbleHtml(platform, current.user, current.text) +
     '</div>' +
     '<textarea id="trial-response-input" placeholder="Type exactly what you’d say out loud right now..." rows="3" style="width:100%;padding:12px;font-size:14px;border-radius:10px;resize:vertical;"></textarea>' +
@@ -2101,6 +2123,7 @@ function wireTrialPanel() {
     document.getElementById('trial-end-early').addEventListener('click', function () {
       if (trialSession.responses.length === 0) {
         stopShowingTicker();
+        stopAmbientChatter();
         trialView = 'platforms';
         trialSession = null;
         renderTrialPanel();
@@ -2134,6 +2157,39 @@ function startTrialSession(platformId, itemId) {
   trialView = 'session';
   renderTrialPanel();
   startShowingTicker();
+  startAmbientChatter();
+}
+
+// Ambient chat ticker -- posts a random crowd line into #trial-chat-feed on an irregular,
+// fast cadence (~0.6-1.5s) so the feed keeps scrolling on its own, the way a real live chat
+// does. Purely cosmetic: it never touches trialSession.comments/responses or grading.
+function postAmbientComment() {
+  var feed = document.getElementById('trial-chat-feed');
+  if (!feed || !trialSession) return;
+  var platform = trialPlatformById(trialSession.platformId);
+  var user = randomTrialViewer();
+  var text = TRIAL_AMBIENT_CHATTER[Math.floor(Math.random() * TRIAL_AMBIENT_CHATTER.length)];
+  var el = document.createElement('div');
+  el.style.marginBottom = '8px';
+  el.style.opacity = '0.65';
+  el.innerHTML = '<span style="font-size:12px;font-weight:700;color:' + platform.accent + ';">' + escapeHtml(user) + '</span> <span style="font-size:13px;color:var(--text-dim);">' + escapeHtml(text) + '</span>';
+  feed.insertBefore(el, feed.lastChild);
+  while (feed.children.length > 30) feed.removeChild(feed.firstChild);
+  feed.scrollTop = feed.scrollHeight;
+}
+function scheduleNextAmbient() {
+  var delay = 600 + Math.random() * 900;
+  trialAmbientTimerId = setTimeout(function () {
+    postAmbientComment();
+    scheduleNextAmbient();
+  }, delay);
+}
+function startAmbientChatter() {
+  stopAmbientChatter();
+  scheduleNextAmbient();
+}
+function stopAmbientChatter() {
+  if (trialAmbientTimerId) { clearTimeout(trialAmbientTimerId); trialAmbientTimerId = null; }
 }
 
 function isCurrentlyShowing() {
@@ -2186,6 +2242,7 @@ function submitTrialResponse() {
 
 function finishTrialSession() {
   stopShowingTicker();
+  stopAmbientChatter();
   var result = gradeTrialSession(trialSession);
   saveLiveTrialResult(trialSession.platformId, result.grade);
   trialLastResult = result;
