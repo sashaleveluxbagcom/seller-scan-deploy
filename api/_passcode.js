@@ -11,7 +11,7 @@
  * One numeric passcode per staff member (see STAFF_CODES below) rather than a
  * single shared code -- add or remove people by editing the list.
  */
-var STAFF_CODES = ["1", "2", "3", "4", "5", "6", "7", "842525"]; // Alexie, Carolina, Diana, Jason, Mariela, Megan, Vanessa, Sasha (owner)
+var STAFF_CODES = ["1", "2", "3", "6", "7", "842525"]; // Alexie, Carolina, Diana, Megan, Vanessa, Sasha (owner)
 
 module.exports = function passcodeMatches(candidate) {
   if (!candidate || typeof candidate !== 'string') return false;
