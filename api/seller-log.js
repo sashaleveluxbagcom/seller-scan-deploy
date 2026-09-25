@@ -33,8 +33,8 @@
  */
 
 const passcodeMatches = require('./_passcode.js');
+const { shopifyGraphQL } = require('../lib/shopify.js');
 
-const SHOPIFY_API_VERSION = '2024-10';
 const NS = 'custom';
 const SELLER_LOG_KEY = 'seller_log';
 
@@ -115,27 +115,8 @@ function trimLog(log) {
 }
 
 // ---------------------------------------------------------------------------
-// Shopify: shop-level metafield read/write (same helpers as show-log.js)
+// Shopify: shop-level metafield read/write (shopifyGraphQL shared from ../lib/shopify.js)
 // ---------------------------------------------------------------------------
-
-async function shopifyGraphQL(query, variables) {
-  const resp = await fetch(
-    `https://${process.env.SHOPIFY_STORE_DOMAIN}/admin/api/${SHOPIFY_API_VERSION}/graphql.json`,
-    {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-Shopify-Access-Token': process.env.SHOPIFY_ADMIN_TOKEN,
-      },
-      body: JSON.stringify({ query, variables }),
-    }
-  );
-  const json = await resp.json();
-  if (json.errors) {
-    throw new Error('Shopify API error: ' + JSON.stringify(json.errors));
-  }
-  return json.data;
-}
 
 let cachedShopId = null;
 async function getShopId() {
