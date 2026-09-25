@@ -86,8 +86,7 @@
 
 const { waitUntil } = require('@vercel/functions');
 const passcodeMatches = require('./_passcode.js');
-
-const SHOPIFY_API_VERSION = '2024-10';
+const { shopifyGraphQL } = require('../lib/shopify.js');
 
 const NS = 'custom';
 const RED_ZONE_KEY_NEW = 'red_zone_price';    // correct key, only 15 products populated so far
@@ -258,27 +257,8 @@ module.exports = async function handler(req, res) {
 };
 
 // ---------------------------------------------------------------------------
-// Shopify lookup
+// Shopify lookup (shopifyGraphQL now shared from ../lib/shopify.js)
 // ---------------------------------------------------------------------------
-
-async function shopifyGraphQL(query, variables) {
-  const resp = await fetch(
-    `https://${process.env.SHOPIFY_STORE_DOMAIN}/admin/api/${SHOPIFY_API_VERSION}/graphql.json`,
-    {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-Shopify-Access-Token': process.env.SHOPIFY_ADMIN_TOKEN,
-      },
-      body: JSON.stringify({ query, variables }),
-    }
-  );
-  const json = await resp.json();
-  if (json.errors) {
-    throw new Error('Shopify API error: ' + JSON.stringify(json.errors));
-  }
-  return json.data;
-}
 
 const PRODUCT_METAFIELDS_GQL = `
   redZoneNew: metafield(namespace: "${NS}", key: "${RED_ZONE_KEY_NEW}") { value }

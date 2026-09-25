@@ -42,7 +42,8 @@
  * CRON_SECRET -- any random string; must match what Vercel sends as the Cron auth header
  */
 
-const SHOPIFY_API_VERSION = '2024-10';
+const { shopifyGraphQL } = require('../lib/shopify.js');
+
 const NS = 'custom';
 const RED_ZONE_KEY_NEW = 'red_zone_price';
 const RED_ZONE_KEY_LEGACY = 'flash_price';
@@ -177,27 +178,8 @@ module.exports = async function handler(req, res) {
 };
 
 // ---------------------------------------------------------------------------
-// Shopify
+// Shopify (shopifyGraphQL shared from ../lib/shopify.js)
 // ---------------------------------------------------------------------------
-
-async function shopifyGraphQL(query, variables) {
-  const resp = await fetch(
-    `https://${process.env.SHOPIFY_STORE_DOMAIN}/admin/api/${SHOPIFY_API_VERSION}/graphql.json`,
-    {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-Shopify-Access-Token': process.env.SHOPIFY_ADMIN_TOKEN,
-      },
-      body: JSON.stringify({ query, variables }),
-    }
-  );
-  const json = await resp.json();
-  if (json.errors) {
-    throw new Error('Shopify API error: ' + JSON.stringify(json.errors));
-  }
-  return json.data;
-}
 
 const PRODUCT_METAFIELDS_GQL = `
   redZoneNew: metafield(namespace: "${NS}", key: "${RED_ZONE_KEY_NEW}") { value }

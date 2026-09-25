@@ -42,8 +42,7 @@
 
 const { readShowLog } = require('./show-log.js');
 const passcodeMatches = require('./_passcode.js');
-
-const SHOPIFY_API_VERSION = '2024-10';
+const { shopifyGraphQL } = require('../lib/shopify.js');
 
 module.exports = async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', process.env.STOREFRONT_ORIGIN || '*');
@@ -139,24 +138,7 @@ function round2(n) {
   return Math.round(n * 100) / 100;
 }
 
-async function shopifyGraphQL(query, variables) {
-  const resp = await fetch(
-    `https://${process.env.SHOPIFY_STORE_DOMAIN}/admin/api/${SHOPIFY_API_VERSION}/graphql.json`,
-    {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-Shopify-Access-Token': process.env.SHOPIFY_ADMIN_TOKEN,
-      },
-      body: JSON.stringify({ query, variables }),
-    }
-  );
-  const json = await resp.json();
-  if (json.errors) {
-    throw new Error('Shopify API error: ' + JSON.stringify(json.errors));
-  }
-  return json.data;
-}
+// shopifyGraphQL now shared from ../lib/shopify.js
 
 async function fetchLineItemsForDay(day) {
   const nextDay = addOneDay(day);
