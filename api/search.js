@@ -57,7 +57,12 @@ module.exports = async function handler(req, res) {
     res.status(200).json({ items });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: 'Something went wrong searching inventory.' });
+    // Surface the real error instead of a generic string -- the frontend already
+    // displays whatever `error` comes back (see runSearch() in index.html), and a
+    // hardcoded message here has meant every past search failure looked identical
+    // on screen no matter what actually broke, with no way to tell throttling,
+    // a bad/expired token, or a GraphQL schema issue apart without server logs.
+    res.status(500).json({ error: 'Something went wrong searching inventory: ' + (err && err.message ? err.message : 'unknown error') });
   }
 };
 
