@@ -68,6 +68,15 @@ h2, h3 { color: var(--text); }
 💬 Messages
 <div style="font-size:13px;font-weight:500;margin-top:4px;color:var(--text-dim);">Open LeveLux Chat</div>
 </button>
+<button type="button" id="hub-login-log" style="width:100%;padding:0;margin-top:16px;font-size:13px;background:none;border:none;color:var(--text-dim);text-decoration:underline;">🕓 Login log</button>
+</div>
+
+<!-- Login log view: who logged in and when -- see api/login-log.js. Deliberately as
+     simple as the rest of this tool: gated by the same passcode, just a plain list. -->
+<div id="login-log-view" style="display:none;">
+<button type="button" id="login-log-back" style="background:none;border:none;padding:8px 0;margin-bottom:8px;font-size:15px;color:var(--text-dim);">← Back</button>
+<h2 style="margin-bottom:12px;">Login log</h2>
+<div id="login-log-list"><p style="color:var(--text-dim);">Loading…</p></div>
 </div>
 
 <div id="scanner" style="display:none;">
@@ -495,6 +504,7 @@ function tryEnter() {
       passcode = entered;
       gate.style.display = 'none';
       hub.style.display = 'flex';
+      recordLogin();
     })
     .catch(function () {
       checkingPasscode = false;
@@ -509,6 +519,20 @@ passcodeSubmit.addEventListener('click', tryEnter);
 passcodeInput.addEventListener('keydown', function (e) {
   if (e.key === 'Enter') tryEnter();
 });
+
+// Login log -- fire-and-forget, once per successful passcode entry (not per scan).
+// Never blocks or slows down the gate: this is bookkeeping, not part of the fast
+// scan flow. See api/login-log.js.
+var loginRecordedThisSession = false;
+function recordLogin() {
+  if (loginRecordedThisSession) return;
+  loginRecordedThisSession = true;
+  fetch(BACKEND_URL + '/api/login-log', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ passcode: passcode }),
+  }).catch(function () { /* fire-and-forget -- a failed login log never blocks the app */ });
+}
 
 scanInput.addEventListener('keydown', function (e) {
   if (e.key !== 'Enter') return;
@@ -1038,6 +1062,39 @@ document.getElementById('hub-training').addEventListener('click', function () {
 });
 document.getElementById('hub-messages').addEventListener('click', function () {
   window.open('https://levelux-chat.vercel.app', '_blank');
+});
+document.getElementById('hub-login-log').addEventListener('click', function () {
+  hub.style.display = 'none';
+  var loginLogView = document.getElementById('login-log-view');
+  var list = document.getElementById('login-log-list');
+  loginLogView.style.display = 'block';
+  list.innerHTML = '<p style="color:var(--text-dim);">Loading…</p>';
+  fetch(BACKEND_URL + '/api/login-log?passcode=' + encodeURIComponent(passcode))
+    .then(function (r) { return r.json().then(function (data) { return { ok: r.ok, data: data }; }); })
+    .then(function (res) {
+      if (!res.ok) {
+        list.innerHTML = '<p style="color:var(--danger);">' + (res.data.error || 'Could not load login log') + '</p>';
+        return;
+      }
+      var entries = res.data.entries || [];
+      if (!entries.length) {
+        list.innerHTML = '<p style="color:var(--text-dim);">No logins recorded yet.</p>';
+        return;
+      }
+      list.innerHTML = entries.map(function (e) {
+        var when = new Date(e.at).toLocaleString();
+        return '<div style="padding:10px 0;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;">' +
+          '<span style="font-weight:600;">' + escapeHtml(e.name) + '</span>' +
+          '<span style="color:var(--text-dim);font-size:13px;">' + escapeHtml(when) + '</span></div>';
+      }).join('');
+    })
+    .catch(function () {
+      list.innerHTML = '<p style="color:var(--danger);">Network error -- try again.</p>';
+    });
+});
+document.getElementById('login-log-back').addEventListener('click', function () {
+  document.getElementById('login-log-view').style.display = 'none';
+  hub.style.display = 'flex';
 });
 document.getElementById('scanner-chat-open').addEventListener('click', function () {
   document.getElementById('sell-chat-iframe').src = 'https://levelux-chat.vercel.app';
