@@ -11,7 +11,12 @@
  * One numeric passcode per staff member (see STAFF_CODES below) rather than a
  * single shared code -- add or remove people by editing the list.
  */
-var STAFF_CODES = ["1", "2", "3", "6", "7", "842525"]; // Alexie, Carolina, Diana, Megan, Vanessa, Sasha (owner)
+/**
+ * Shared passcode check used by every endpoint (scan, search, profit, show-log).
+ * Trims whitespace, ignores case, and strips internal spaces before comparing.
+ * One passcode per person -- add or remove people by editing the list.
+ */
+var STAFF_CODES = ["2864367", "5193702", "8047159"]; // Sasha (owner), Diana, Alexie
 
 module.exports = function passcodeMatches(candidate) {
   if (!candidate || typeof candidate !== 'string') return false;
