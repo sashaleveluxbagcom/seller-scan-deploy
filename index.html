@@ -33,6 +33,18 @@ h2, h3 { color: var(--text); }
 </style>
 </head>
 <body>
+<script>
+/* This copy of Seller Scan has moved into Scan Station: it is the "Products and Sales" tile on
+   leveluxbag.com/pages/scan-station, on the one staff code list and the approved-devices lock.
+   Anyone who lands here from an old bookmark is sent there. Add ?direct=1 to open this page anyway. */
+(function () {
+  try {
+    if (/[?&]direct=1/.test(location.search)) return;
+    if (window.top !== window) return; // embedded somewhere on purpose: leave it be
+    location.replace('https://www.leveluxbag.com/pages/scan-station');
+  } catch (e) {}
+})();
+</script>
 <div id="seller-scan-app" style="max-width:480px;margin:0 auto;padding:24px;min-height:100vh;">
 
 <div id="gate" style="display:flex;flex-direction:column;justify-content:center;min-height:80vh;">
